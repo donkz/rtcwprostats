@@ -1,0 +1,18 @@
+*.swp
+package-lock.json
+__pycache__
+.pytest_cache
+.env
+*.egg-info
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+# CDK env
+.venv/
+
+# Spyder project
+.spyproject/
+
+

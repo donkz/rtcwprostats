@@ -1,0 +1,199 @@
+{
+ "gameinfo": 
+{
+ "serverName": "RtcwPro-NA",
+ "serverIP": "",
+ "gameVersion": "RtcwPro 1.0.1",
+ "jsonGameStatVersion": "0.1",
+ "g_gametype": "6",
+ "date": "11:55:29 (07 /11 /2020)",
+ "unixtime": "1607360129",
+ "map": "mp_ice",
+ "levelTime": "1:00",
+ "round": "1"
+},
+"gamelog": [
+{"event_order": 0, "event": "Captured flag", "unixtime": "1607360147", "levelTime": "0:41", "team": "Axis", "player": "^0KrAzYkAz^1E"},
+{"event_order": 1, "event": "kill", "unixtime": "1607360165", "levelTime": "0:23", "killer": "^0KrAzYkAz^1E", "victim": "name", "weapon": "MOD_MP40", "khealth": 100},
+{"event_order": 2, "event": "Taken objective", "unixtime": "1607360174", "levelTime": "0:14", "team": "Axis", "player": "^0KrAzYkAz^1E"},
+{"event_order": 3, "event": "EOR", "levelTime": "0:00", "unixtime": "1607360189", "result": "Objective NOT reached in time (1:00)"}
+],
+"players": [
+ {
+  "GUID": "BD6A1037FC1621",
+  "alias": "krazykaze",
+  "team": "Axis",
+  "start_time": 66813800,
+  "end_time": 0,
+  "rounds": 2,
+  "kills": 6,
+  "deaths": 0,
+  "gibs": 3,
+  "suicides": 6,
+  "teamkills": 0,
+  "headshots": 0,
+  "damagegiven": 774,
+  "damagereceived": 0,
+  "damageteam": 0,
+  "hits": 8,
+  "shots": 11,
+  "accuracy": 72.727272727272734,
+  "revives": 0,
+  "ammogiven": 0,
+  "healthgiven": 0,
+  "poisoned": 0,
+  "knifekills": 1,
+  "killpeak": 1,
+  "efficiency": 100.0,
+  "score": 12,
+  "dyn_planted": 0,
+  "dyn_defused": 0,
+  "obj_captured": 1,
+  "obj_destroyed": 0,
+  "obj_returned": 0,
+  "obj_taken": 1,
+  "wstats": [
+   {
+    "weapon": "Knife",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 9,
+    "shots": 13
+   },
+   {
+    "weapon": "MP-40",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 8,
+    "shots": 11
+   },
+   {
+    "weapon": "Panzer",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 1,
+    "shots": 1
+   },
+   {
+    "weapon": "F.Thrower",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 20,
+    "shots": 44
+   },
+   {
+    "weapon": "Grenade",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 1
+   },
+   {
+    "weapon": "Airstrike",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 2,
+    "shots": 10
+   },
+   {
+    "weapon": "Artillery",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 2,
+    "shots": 1
+   }
+  ]
+ },
+ {
+  "GUID": "5CB7908DEAF2FB",
+  "alias": "name",
+  "team": "Allied",
+  "start_time": 66813800,
+  "end_time": 0,
+  "rounds": 2,
+  "kills": 0,
+  "deaths": 6,
+  "gibs": 0,
+  "suicides": 1,
+  "teamkills": 0,
+  "headshots": 0,
+  "damagegiven": 0,
+  "damagereceived": 774,
+  "damageteam": 0,
+  "hits": 0,
+  "shots": 0,
+  "accuracy": 0.0,
+  "revives": 0,
+  "ammogiven": 0,
+  "healthgiven": 0,
+  "poisoned": 0,
+  "knifekills": 0,
+  "killpeak": 0,
+  "efficiency": 0.0,
+  "score": 0,
+  "dyn_planted": 0,
+  "dyn_defused": 0,
+  "obj_captured": 0,
+  "obj_destroyed": 0,
+  "obj_returned": 0,
+  "obj_taken": 0,
+  "wstats": [
+   {
+    "weapon": "Knife",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "MP-40",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Panzer",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "F.Thrower",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Airstrike",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Artillery",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   }
+  ]
+ }
+]
+}

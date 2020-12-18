@@ -1,0 +1,130 @@
+{
+ "gameinfo": 
+{
+ "serverName": "RtcwPro-NA",
+ "serverIP": "",
+ "gameVersion": "RtcwPro 1.0.1",
+ "jsonGameStatVersion": "0.1",
+ "g_gametype": "6",
+ "date": "11:32:33 (07 /11 /2020)",
+ "unixtime": "1607358753",
+ "map": "mp_ice",
+ "levelTime": "10:00",
+ "round": "0"
+},
+"gamelog": [
+{"event_order": 0, "event": "kill", "unixtime": "1607358787", "levelTime": "9:25", "killer": "^0KrAzYkAz^1E", "victim": "player", "weapon": "MOD_MP40", "khealth": 100},
+{"event_order": 1, "event": "Captured flag", "unixtime": "1607358788", "levelTime": "9:24", "team": "Axis", "player": "^0KrAzYkAz^1E"},
+{"event_order": 2, "event": "Dynamite planted", "unixtime": "1607358803", "levelTime": "9:09", "team": "Axis", "player": "^0KrAzYkAz^1E"},
+{"event_order": 3, "event": "kill", "unixtime": "1607358823", "levelTime": "8:49", "killer": "^0KrAzYkAz^1E", "victim": "player", "weapon": "MOD_MP40", "khealth": 64},
+{"event_order": 4, "event": "Dynamite planted", "unixtime": "1607358843", "levelTime": "8:30", "team": "Axis", "player": "^0KrAzYkAz^1E"},
+{"event_order": 5, "event": "Taken objective", "unixtime": "1607358878", "levelTime": "7:54", "team": "Axis", "player": "^0KrAzYkAz^1E"},
+{"event_order": 6, "event": "EOR", "levelTime": "7:14", "unixtime": "1607358918", "result": "Clock set to: 2:45"}
+],
+"players": [
+ {
+  "GUID": "BD6A1037FC1621",
+  "alias": "krazykaze",
+  "team": "Axis",
+  "start_time": 65433800,
+  "end_time": 0,
+  "rounds": 1,
+  "kills": 2,
+  "deaths": 0,
+  "gibs": 0,
+  "suicides": 0,
+  "teamkills": 0,
+  "headshots": 2,
+  "damagegiven": 254,
+  "damagereceived": 36,
+  "damageteam": 0,
+  "hits": 13,
+  "shots": 23,
+  "accuracy": 56.521739130434781,
+  "revives": 0,
+  "ammogiven": 0,
+  "healthgiven": 0,
+  "poisoned": 0,
+  "knifekills": 0,
+  "killpeak": 2,
+  "efficiency": 100.0,
+  "score": 38,
+  "dyn_planted": 2,
+  "dyn_defused": 0,
+  "obj_captured": 1,
+  "obj_destroyed": 0,
+  "obj_returned": 0,
+  "obj_taken": 1,
+  "wstats": [
+   {
+    "weapon": "MP-40",
+    "kills": 2,
+    "deaths": 0,
+    "headshots": 2,
+    "hits": 13,
+    "shots": 23
+   },
+   {
+    "weapon": "Dynamite",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 2
+   }
+  ]
+ },
+ {
+  "GUID": "5CB7908DEAF2FB",
+  "alias": "player",
+  "team": "Allied",
+  "start_time": 65433800,
+  "end_time": 0,
+  "rounds": 1,
+  "kills": 0,
+  "deaths": 2,
+  "gibs": 0,
+  "suicides": 0,
+  "teamkills": 0,
+  "headshots": 0,
+  "damagegiven": 36,
+  "damagereceived": 254,
+  "damageteam": 0,
+  "hits": 2,
+  "shots": 14,
+  "accuracy": 14.285714285714286,
+  "revives": 0,
+  "ammogiven": 0,
+  "healthgiven": 0,
+  "poisoned": 0,
+  "knifekills": 0,
+  "killpeak": 0,
+  "efficiency": 0.0,
+  "score": 1,
+  "dyn_planted": 0,
+  "dyn_defused": 0,
+  "obj_captured": 0,
+  "obj_destroyed": 0,
+  "obj_returned": 0,
+  "obj_taken": 0,
+  "wstats": [
+   {
+    "weapon": "MP-40",
+    "kills": 0,
+    "deaths": 2,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Thompson",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 2,
+    "shots": 14
+   }
+  ]
+ }
+]
+}

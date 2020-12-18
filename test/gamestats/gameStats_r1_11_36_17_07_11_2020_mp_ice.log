@@ -1,0 +1,223 @@
+{
+ "gameinfo": 
+{
+ "serverName": "RtcwPro-NA",
+ "serverIP": "",
+ "gameVersion": "RtcwPro 1.0.1",
+ "jsonGameStatVersion": "0.1",
+ "g_gametype": "6",
+ "date": "11:36:17 (07 /11 /2020)",
+ "unixtime": "1607358977",
+ "map": "mp_ice",
+ "levelTime": "2:45",
+ "round": "1"
+},
+"gamelog": [
+{"event_order": 0, "event": "kill", "unixtime": "1607359005", "levelTime": "2:16", "killer": "^0KrAzYkAz^1E", "victim": "player", "weapon": "MOD_ROCKET_SPLASH", "khealth": 100},
+{"event_order": 1, "event": "suicide", "unixtime": "1607359042", "levelTime": "1:39", "player": "^0KrAzYkAz^1E"},
+{"event_order": 2, "event": "Captured flag", "unixtime": "1607359068", "levelTime": "1:13", "team": "Axis", "player": "player"},
+{"event_order": 3, "event": "kill", "unixtime": "1607359070", "levelTime": "1:11", "killer": "WolfPlayer", "victim": "player", "weapon": "MOD_STEN", "khealth": 100},
+{"event_order": 4, "event": "kill", "unixtime": "1607359089", "levelTime": "0:52", "killer": "^0KrAzYkAz^1E", "victim": "player", "weapon": "MOD_FLAMETHROWER", "khealth": 100},
+{"event_order": 5, "event": "suicide", "unixtime": "1607359091", "levelTime": "0:50", "player": "^0KrAzYkAz^1E"},
+{"event_order": 6, "event": "kill", "unixtime": "1607359119", "levelTime": "0:22", "killer": "WolfPlayer", "victim": "player", "weapon": "MOD_STEN", "khealth": 100},
+{"event_order": 7, "event": "EOR", "levelTime": "0:00", "unixtime": "1607359142", "result": "Objective NOT reached in time (2:45)"}
+],
+"players": [
+ {
+  "GUID": "5CB7908DEAF2FB",
+  "alias": "player",
+  "team": "Axis",
+  "start_time": 65658200,
+  "end_time": 0,
+  "rounds": 2,
+  "kills": 0,
+  "deaths": 6,
+  "gibs": 0,
+  "suicides": 0,
+  "teamkills": 0,
+  "headshots": 0,
+  "damagegiven": 36,
+  "damagereceived": 783,
+  "damageteam": 0,
+  "hits": 2,
+  "shots": 46,
+  "accuracy": 4.3478260869565215,
+  "revives": 0,
+  "ammogiven": 0,
+  "healthgiven": 0,
+  "poisoned": 0,
+  "knifekills": 0,
+  "killpeak": 0,
+  "efficiency": 0.0,
+  "score": 1,
+  "dyn_planted": 0,
+  "dyn_defused": 0,
+  "obj_captured": 1,
+  "obj_destroyed": 0,
+  "obj_returned": 0,
+  "obj_taken": 0,
+  "wstats": [
+   {
+    "weapon": "MP-40",
+    "kills": 0,
+    "deaths": 2,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 32
+   },
+   {
+    "weapon": "Thompson",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 2,
+    "shots": 14
+   },
+   {
+    "weapon": "Sten",
+    "kills": 0,
+    "deaths": 2,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Panzer",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "F.Thrower",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   }
+  ]
+ },
+ {
+  "GUID": "8976BAB5A21835",
+  "alias": "wolfplayer",
+  "team": "Allied",
+  "start_time": 65658200,
+  "end_time": 0,
+  "rounds": 1,
+  "kills": 2,
+  "deaths": 0,
+  "gibs": 0,
+  "suicides": 0,
+  "teamkills": 0,
+  "headshots": 1,
+  "damagegiven": 176,
+  "damagereceived": 0,
+  "damageteam": 0,
+  "hits": 13,
+  "shots": 31,
+  "accuracy": 41.935483870967744,
+  "revives": 0,
+  "ammogiven": 1,
+  "healthgiven": 0,
+  "poisoned": 0,
+  "knifekills": 0,
+  "killpeak": 2,
+  "efficiency": 100.0,
+  "score": 3,
+  "dyn_planted": 0,
+  "dyn_defused": 0,
+  "obj_captured": 0,
+  "obj_destroyed": 0,
+  "obj_returned": 0,
+  "obj_taken": 0,
+  "wstats": [
+   {
+    "weapon": "Sten",
+    "kills": 2,
+    "deaths": 0,
+    "headshots": 1,
+    "hits": 10,
+    "shots": 31
+   }
+  ]
+ },
+ {
+  "GUID": "BD6A1037FC1621",
+  "alias": "krazykaze",
+  "team": "Allied",
+  "start_time": 65658200,
+  "end_time": 0,
+  "rounds": 2,
+  "kills": 4,
+  "deaths": 0,
+  "gibs": 4,
+  "suicides": 2,
+  "teamkills": 0,
+  "headshots": 2,
+  "damagegiven": 607,
+  "damagereceived": 36,
+  "damageteam": 0,
+  "hits": 13,
+  "shots": 23,
+  "accuracy": 56.521739130434781,
+  "revives": 0,
+  "ammogiven": 0,
+  "healthgiven": 0,
+  "poisoned": 0,
+  "knifekills": 0,
+  "killpeak": 1,
+  "efficiency": 100.0,
+  "score": -3,
+  "dyn_planted": 0,
+  "dyn_defused": 0,
+  "obj_captured": 0,
+  "obj_destroyed": 0,
+  "obj_returned": 0,
+  "obj_taken": 0,
+  "wstats": [
+   {
+    "weapon": "Knife",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 6,
+    "shots": 22
+   },
+   {
+    "weapon": "MP-40",
+    "kills": 2,
+    "deaths": 0,
+    "headshots": 2,
+    "hits": 13,
+    "shots": 23
+   },
+   {
+    "weapon": "Panzer",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 1,
+    "shots": 1
+   },
+   {
+    "weapon": "F.Thrower",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 20,
+    "shots": 45
+   },
+   {
+    "weapon": "Dynamite",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 2
+   }
+  ]
+ }
+]
+}

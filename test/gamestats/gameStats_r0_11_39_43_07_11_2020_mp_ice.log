@@ -1,0 +1,24 @@
+{
+ "gameinfo": 
+{
+ "serverName": "RtcwPro-NA",
+ "serverIP": "",
+ "gameVersion": "RtcwPro 1.0.1",
+ "jsonGameStatVersion": "0.1",
+ "g_gametype": "6",
+ "date": "11:39:43 (07 /11 /2020)",
+ "unixtime": "1607359183",
+ "map": "mp_ice",
+ "levelTime": "10:00",
+ "round": "0"
+},
+"gamelog": [
+{"event_order": 0, "event": "teamkill", "levelTime": "9:44", "unixtime": "1607359197", "killer": "WolfPlayer", "victim": "^0KrAzYkAz^1E"},
+{"event_order": 1, "event": "teamkill", "levelTime": "8:58", "unixtime": "1607359243", "killer": "WolfPlayer", "victim": "^0KrAzYkAz^1E"},
+{"event_order": 2, "event": "suicide", "unixtime": "1607359249", "levelTime": "8:52", "player": "WolfPlayer"},
+{"event_order": 3, "event": "Dynamite planted", "unixtime": "1607359265", "levelTime": "8:37", "team": "Axis", "player": "player"},
+{"event_order": 4, "event": "Captured flag", "unixtime": "1607359279", "levelTime": "8:22", "team": "Axis", "player": "player"},
+{"event_order": 5, "event": "kill", "unixtime": "1607359287", "levelTime": "8:14", "killer": "^0KrAzYkAz^1E", "victim": "player", "weapon": "MOD_KNIFE_STEALTH", "khealth": 100},
+{"event_order": 6, "event": "kill", "unixtime": "1607359348", "levelTime": "7:14", "killer": "^0KrAzYkAz^1E", "victim": "player", "weapon": "MOD_SWITCHTEAM", "khealth": 100},
+{"event_order": 7, "event": "kill", "unixtime": "1607359410", "levelTime": "6:12", "killer": "^0KrAzYkAz^1E", "victim": "player", "weapon": "MOD_AIRSTRIKE", "khealth": 100},
+{"event_order": 8, "event": "suicide", "unixtime": "1607359426", "levelTime": "5:56", "player": "^0KrAzYkAz^1E"},

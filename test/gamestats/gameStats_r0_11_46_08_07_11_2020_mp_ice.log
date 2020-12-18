@@ -1,0 +1,19 @@
+{
+ "gameinfo": 
+{
+ "serverName": "RtcwPro-NA",
+ "serverIP": "",
+ "gameVersion": "RtcwPro 1.0.1",
+ "jsonGameStatVersion": "0.1",
+ "g_gametype": "6",
+ "date": "11:46:08 (07 /11 /2020)",
+ "unixtime": "1607359568",
+ "map": "mp_ice",
+ "levelTime": "10:00",
+ "round": "0"
+},
+"gamelog": [
+{"event_order": 0, "event": "kill", "unixtime": "1607359609", "levelTime": "9:18", "killer": "^0KrAzYkAz^1E", "victim": "name", "weapon": "MOD_SNIPERRIFLE", "khealth": 100},
+{"event_order": 1, "event": "Captured flag", "unixtime": "1607359689", "levelTime": "7:58", "team": "Axis", "player": "name"},
+{"event_order": 2, "event": "suicide", "unixtime": "1607359695", "levelTime": "7:53", "player": "^0KrAzYkAz^1E"},
+{"event_order": 3, "event": "kill", "unixtime": "1607359718", "levelTime": "7:30", "killer": "WolfPlayer", "victim": "name", "weapon": "MOD_KNIFE_STEALTH", "khealth": 100},

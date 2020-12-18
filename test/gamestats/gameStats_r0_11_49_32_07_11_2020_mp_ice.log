@@ -1,0 +1,185 @@
+{
+ "gameinfo": 
+{
+ "serverName": "RtcwPro-NA",
+ "serverIP": "",
+ "gameVersion": "RtcwPro 1.0.1",
+ "jsonGameStatVersion": "0.1",
+ "g_gametype": "6",
+ "date": "11:49:32 (07 /11 /2020)",
+ "unixtime": "1607359772",
+ "map": "mp_ice",
+ "levelTime": "10:00",
+ "round": "0"
+},
+"gamelog": [
+{"event_order": 0, "event": "Captured flag", "unixtime": "1607359820", "levelTime": "9:11", "team": "Axis", "player": "name"},
+{"event_order": 1, "event": "suicide", "unixtime": "1607359821", "levelTime": "9:10", "player": "^0KrAzYkAz^1E"},
+{"event_order": 2, "event": "kill", "unixtime": "1607359821", "levelTime": "9:10", "killer": "^0KrAzYkAz^1E", "victim": "name", "weapon": "MOD_ROCKET_SPLASH", "khealth": -176},
+{"event_order": 3, "event": "suicide", "unixtime": "1607359845", "levelTime": "8:46", "player": "^0KrAzYkAz^1E"},
+{"event_order": 4, "event": "kill", "unixtime": "1607359856", "levelTime": "8:35", "killer": "^0KrAzYkAz^1E", "victim": "name", "weapon": "MOD_SWITCHTEAM", "khealth": 100},
+{"event_order": 5, "event": "suicide", "unixtime": "1607359869", "levelTime": "8:22", "player": "^0KrAzYkAz^1E"},
+{"event_order": 6, "event": "kill", "unixtime": "1607359906", "levelTime": "7:45", "killer": "^0KrAzYkAz^1E", "victim": "name", "weapon": "MOD_AIRSTRIKE", "khealth": 100},
+{"event_order": 7, "event": "suicide", "unixtime": "1607359912", "levelTime": "7:39", "player": "^0KrAzYkAz^1E"},
+{"event_order": 8, "event": "suicide", "unixtime": "1607359935", "levelTime": "7:16", "player": "^0KrAzYkAz^1E"},
+{"event_order": 9, "event": "kill", "unixtime": "1607359970", "levelTime": "6:41", "killer": "^0KrAzYkAz^1E", "victim": "name", "weapon": "MOD_FLAMETHROWER", "khealth": 100},
+{"event_order": 10, "event": "suicide", "unixtime": "1607359986", "levelTime": "6:25", "player": "name"},
+{"event_order": 11, "event": "kill", "unixtime": "1607360037", "levelTime": "5:34", "killer": "^0KrAzYkAz^1E", "victim": "name", "weapon": "MOD_KNIFE", "khealth": 100},
+{"event_order": 12, "event": "suicide", "unixtime": "1607360040", "levelTime": "5:31", "player": "^0KrAzYkAz^1E"},
+{"event_order": 13, "event": "EOR", "levelTime": "0:00", "unixtime": "1607360069", "result": "Clock set to: 1:00"}
+],
+"players": [
+ {
+  "GUID": "5CB7908DEAF2FB",
+  "alias": "name",
+  "team": "Axis",
+  "start_time": 66455650,
+  "end_time": 0,
+  "rounds": 1,
+  "kills": 0,
+  "deaths": 5,
+  "gibs": 0,
+  "suicides": 1,
+  "teamkills": 0,
+  "headshots": 0,
+  "damagegiven": 0,
+  "damagereceived": 662,
+  "damageteam": 0,
+  "hits": 0,
+  "shots": 0,
+  "accuracy": 0.0,
+  "revives": 0,
+  "ammogiven": 0,
+  "healthgiven": 0,
+  "poisoned": 0,
+  "knifekills": 0,
+  "killpeak": 0,
+  "efficiency": 0.0,
+  "score": -2,
+  "dyn_planted": 0,
+  "dyn_defused": 0,
+  "obj_captured": 1,
+  "obj_destroyed": 0,
+  "obj_returned": 0,
+  "obj_taken": 0,
+  "wstats": [
+   {
+    "weapon": "Knife",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Panzer",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "F.Thrower",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Airstrike",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Artillery",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   }
+  ]
+ },
+ {
+  "GUID": "BD6A1037FC1621",
+  "alias": "krazykaze",
+  "team": "Allied",
+  "start_time": 66510400,
+  "end_time": 0,
+  "rounds": 1,
+  "kills": 5,
+  "deaths": 0,
+  "gibs": 3,
+  "suicides": 6,
+  "teamkills": 0,
+  "headshots": 0,
+  "damagegiven": 662,
+  "damagereceived": 0,
+  "damageteam": 0,
+  "hits": 0,
+  "shots": 0,
+  "accuracy": 0.0,
+  "revives": 0,
+  "ammogiven": 0,
+  "healthgiven": 0,
+  "poisoned": 0,
+  "knifekills": 1,
+  "killpeak": 2,
+  "efficiency": 100.0,
+  "score": -11,
+  "dyn_planted": 0,
+  "dyn_defused": 0,
+  "obj_captured": 0,
+  "obj_destroyed": 0,
+  "obj_returned": 0,
+  "obj_taken": 0,
+  "wstats": [
+   {
+    "weapon": "Knife",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 9,
+    "shots": 13
+   },
+   {
+    "weapon": "Panzer",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 1,
+    "shots": 1
+   },
+   {
+    "weapon": "F.Thrower",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 20,
+    "shots": 44
+   },
+   {
+    "weapon": "Airstrike",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 2,
+    "shots": 10
+   },
+   {
+    "weapon": "Artillery",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 2,
+    "shots": 1
+   }
+  ]
+ }
+]
+}
