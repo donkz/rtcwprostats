@@ -15,4 +15,6 @@ cdk.out
 # Spyder project
 .spyproject/
 
+#db connection
+installdb/dbconnection.py
 
