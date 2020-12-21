@@ -3,8 +3,9 @@ import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String   
 from sqlalchemy.orm import sessionmaker
+from installdb.dbconnection import get_db_connection_string
 
-engine = sqlalchemy.create_engine('sqlite:///..//test//database.db', echo=True)
+engine = sqlalchemy.create_engine(get_db_connection_string(environment = "prod"), echo=True)
 Base = declarative_base()
 Base.metadata.bind = engine
 Session = sessionmaker(bind=engine)

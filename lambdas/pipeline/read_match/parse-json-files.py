@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import mapper
 
+from installdb.dbconnection import get_db_connection_string
 
 #! denotes difference between class property and json field name
 class MatchLine(object):
@@ -102,7 +103,7 @@ class WeaponLine(object):
         
 directory = r"..\..\..\\test\gamestats\\"
 
-engine = sqlalchemy.create_engine('sqlite:///../../../test/database.db', echo=True)
+engine = sqlalchemy.create_engine(get_db_connection_string(environment = "prod"), echo=True)
 Session = sessionmaker(bind=engine)
 session = Session()
 Base = declarative_base()

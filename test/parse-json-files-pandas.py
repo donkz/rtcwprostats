@@ -180,5 +180,36 @@ logsdf = pd.DataFrame(logs, columns=logcols)
 statsdf = pd.DataFrame(stats, columns=statcols)    
 weapondf = pd.DataFrame(weapons, columns=weaponcols) 
 
+master = {}
+for key in j.keys():
+    if isinstance(j[key], dict):
+       print(key, " - dict \n")
+    elif isinstance(j[key], list):
+       print(key, " - list \n")
+    else: 
+        print(key, "not either  \n")
 
 
+def json_extract(obj):
+    """Recursively fetch values from nested JSON."""
+    master = {}
+
+    def extract(obj, master):
+        """Recursively search for values of key in JSON tree."""
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if isinstance(v, (dict, list)):
+                    print("Extracting " + k)
+                    extract(v, master)
+                master[k]=master.get(k,0) +1 
+        elif isinstance(obj, list):
+            for item in obj:
+                extract(item, master)
+        return master
+
+    values = extract(obj, master)
+    return values
+
+# Find every instance of `name` in a Python dictionary.
+names = json_extract(r.json(), 'name')
+print(names)
