@@ -190,26 +190,23 @@ for key in j.keys():
         print(key, "not either  \n")
 
 
-def json_extract(obj):
+def json_extract(obj, skeleton):
     """Recursively fetch values from nested JSON."""
-    master = {}
+    if skeleton == None:
+        skeleton = {}
 
-    def extract(obj, master):
+    def extract(obj, skeleton):
         """Recursively search for values of key in JSON tree."""
         if isinstance(obj, dict):
             for k, v in obj.items():
                 if isinstance(v, (dict, list)):
                     print("Extracting " + k)
-                    extract(v, master)
-                master[k]=master.get(k,0) +1 
+                    extract(v, skeleton)
+                skeleton[k]=skeleton.get(k,0) +1 
         elif isinstance(obj, list):
             for item in obj:
-                extract(item, master)
-        return master
+                extract(item, skeleton)
+        return skeleton
 
-    values = extract(obj, master)
+    values = extract(obj, skeleton)
     return values
-
-# Find every instance of `name` in a Python dictionary.
-names = json_extract(r.json(), 'name')
-print(names)
