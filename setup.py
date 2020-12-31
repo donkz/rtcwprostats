@@ -27,7 +27,9 @@ setuptools.setup(
         "aws-cdk.aws-s3-notifications>=1.74.0",
         "aws-cdk.aws-sns-subscriptions>=1.74.0",
         "aws-cdk.aws-apigateway>=1.74.0",
-        "aws-cdk.aws-route53>=1.74.0"
+        "aws-cdk.aws-route53>=1.74.0",
+        "aws-cdk.aws_route53_targets",
+        "aws-cdk.aws_events_targets",    
     ],
 
     python_requires=">=3.6",

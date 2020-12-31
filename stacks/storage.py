@@ -57,6 +57,6 @@ class StorageStack(core.Stack):
                                                       prefix="intake_dlq/",
                                                       suffix="*.json")
                                               )
-        #fffffff storage_bucket.add_event_notification(s3.EventType.OBJECT_CREATED, read_match, s3.NotificationKeyFilter(prefix="intake/")) 
+        #storage_bucket.add_event_notification(s3.EventType.OBJECT_CREATED, read_match, s3.NotificationKeyFilter(prefix="intake/")) 
         
         self.storage_bucket = storage_bucket
