@@ -178,7 +178,7 @@ for j in jsons:
     for playerstat in j["players"]:
         stat = StatLine()
         stat.round_id = match.unixtime
-        for (key, value) in line.items():
+        for (key, value) in playerstat.items():
             if key == 'GUID': stat.GUID = value
             if key == 'alias': stat.alias = value
             if key == 'team': stat.team = value
@@ -219,7 +219,7 @@ for j in jsons:
             wstat.round_id = match.unixtime
             wstat.GUID = stat.GUID
             wstat.alias = stat.alias
-            for (key, value) in line.items():
+            for (key, value) in weapon.items():
                 if key == 'weapon': wstat.weapon = value
                 if key == 'kills': wstat.kills = value 
                 if key == 'deaths': wstat.deaths = value 

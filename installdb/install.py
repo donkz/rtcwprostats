@@ -5,7 +5,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import sessionmaker
 from installdb.dbconnection import get_db_connection_string
 
-engine = sqlalchemy.create_engine(get_db_connection_string(environment = "prod"), echo=True)
+engine = sqlalchemy.create_engine(get_db_connection_string(environment = "prod"), echo=True, pool_size=20, max_overflow=0)
 Base = declarative_base()
 Base.metadata.bind = engine
 Session = sessionmaker(bind=engine)
@@ -15,7 +15,7 @@ session = Session()
 class MatchTable(Base):
     __tablename__ = 'matches'
     
-    unixtime = Column(Integer, primary_key=True)
+    unixtime = Column(Integer, primary_key=True,nullable=False, unique=True)
     serverName = Column(String(200))
     serverIP = Column(String(15))
     gameVersion = Column(String(20))
@@ -33,9 +33,9 @@ class MatchTable(Base):
 class LogTable(Base):
     __tablename__ = 'logs'
     
-    round_id = Column(Integer, primary_key=True)
-    event_order = Column(Integer, primary_key=True)
-    event_order = Column(String(20))
+    round_id = Column(Integer, primary_key=True, nullable=False, autoincrement=False)
+    event_order = Column(Integer, primary_key=True, nullable=False, autoincrement=False)
+    event = Column(String(20))
     unixtime = Column(Integer)
     levelTime = Column(String(5))
     team = Column(String(6))
@@ -105,4 +105,16 @@ class WeaponsTable(Base):
         return "<Weapon(roundid='%s', GUID='%s', GUID='%s' , team='%s')>" % (self.round_id, self.GUID, self.alias, self.weapon)
 
 Base.metadata.create_all(engine)
+
+def drop_all():
+    Base.metadata.bind = engine
+    MetaData = sqlalchemy.MetaData(bind=engine)
+    MetaData.reflect()
+    for tbl in reversed(MetaData.sorted_tables):
+        engine.execute(tbl.drop())
+
+#    DROP TABLE `rtcwprostats`.`matches`;
+#    DROP TABLE `rtcwprostats`.`logs`;
+#    DROP TABLE `rtcwprostats`.`stats`;
+#    DROP TABLE `rtcwprostats`.`weapons`;
 
