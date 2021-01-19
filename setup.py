@@ -29,7 +29,8 @@ setuptools.setup(
         "aws-cdk.aws-apigateway>=1.74.0",
         "aws-cdk.aws-route53>=1.74.0",
         "aws-cdk.aws_route53_targets",
-        "aws-cdk.aws_events_targets",    
+        "aws-cdk.aws_events_targets",
+        "aws-cdk.aws_dynamodb",
     ],
 
     python_requires=">=3.6",

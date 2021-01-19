@@ -11,6 +11,10 @@ cdk.out
 
 # CDK env
 .venv/
+venv/
+
+#pycharm project
+.idea/
 
 # Spyder project
 .spyproject/
