@@ -1,9 +1,5 @@
 from aws_cdk import (
-    aws_s3 as s3,
-    aws_iam as iam,
     aws_lambda as _lambda,
-    aws_sns as sns,
-    aws_s3_notifications as s3n,
     core
 )
 
@@ -11,7 +7,7 @@ from aws_cdk.aws_dynamodb import (
     Table,
     Attribute,
     AttributeType,
-    StreamViewType,
+#    StreamViewType,
     BillingMode,
     TableEncryption
 )
@@ -30,6 +26,7 @@ class DatabaseStack(core.Stack):
             partition_key=Attribute(name="pk",type=AttributeType.STRING),
             sort_key=Attribute(name="sk", type=AttributeType.STRING),
             billing_mode=BillingMode.PAY_PER_REQUEST,
+            point_in_time_recovery = True,
             #stream=StreamViewType.NEW_IMAGE,
             encryption=TableEncryption.AWS_MANAGED,
             removal_policy=core.RemovalPolicy.DESTROY # NOT recommended for production code

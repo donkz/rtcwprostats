@@ -1,27 +1,36 @@
 import logging
 import boto3
 import json
-#pip install --target ./ sqlalchemy
-import sqlalchemy
+from rtcwprowriteddb import (
+    ddb_put_item,
+    ddb_prepare_match_item,
+    ddb_prepare_stats_items,
+    ddb_prepare_statsall_item,
+    ddb_prepare_gamelog_item,
+    ddb_prepare_wstat_items,
+    ddb_prepare_wstatsall_item,
+    ddb_prepare_player_items
+    )
+
+
+# pip install --target ./ sqlalchemy
+# import sqlalchemy
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO) #set to DEBUG for verbose boto output
-#logging.basicConfig(level = logging.INFO)
+logger.setLevel(logging.INFO)  # set to DEBUG for verbose boto output
+logging.basicConfig(level = logging.INFO)
 
+dynamodb = boto3.resource('dynamodb')
+
+table = dynamodb.Table('rtcwprostats')
+s3 = boto3.client('s3')
 
 def handler(event, context):
-    
     bucket_name = event['Records'][0]['s3']['bucket']['name']
     file_key = event['Records'][0]['s3']['object']['key']
 
     logger.info('Reading {} from {}'.format(file_key, bucket_name))
-    logger.info(sqlalchemy.__version__)
-
-    #debug = True
-
-    s3 = boto3.client('s3')
-    #bucket = s3.Bucket('rtcwprostats')
-    
+        
     try:
         obj = s3.get_object(Bucket=bucket_name, Key=file_key)
     except s3.exceptions.ClientError as err:
@@ -34,20 +43,45 @@ def handler(event, context):
         else:
             print("[x] Unexpected error: %s" % err)
         return None
-        
-    content = obj['Body'].read().decode('cp1252')
-    json_ = json.loads(content)
-    print("[ ] Number of keys in the file: " + str(len(json_.keys())))
+
+    message = "Nothing was processed"
+    try:
+        content = obj['Body'].read().decode('cp1252')
+        gamestats = json.loads(content)
+        logger.info("Number of keys in the file: " + str(len(gamestats.keys())))
+    except Exception as ex:
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        error_msg = template.format(type(ex).__name__, ex.args)
+        # Todo expand these
+        message = "Failed to read content from " + file_key + "\n" + error_msg
     
-    
-    message ="Nothing was processed"
-    if True:
-        message = "Something was processed"
-        
-    return { 
-        'message' : message
-    } 
-    
+    items = []
+    items.append(ddb_prepare_match_item(gamestats))
+    items.extend(ddb_prepare_stats_items(gamestats))
+    items.append(ddb_prepare_statsall_item(gamestats))
+    items.append(ddb_prepare_gamelog_item(gamestats))
+    items.extend(ddb_prepare_wstat_items(gamestats))
+    items.append(ddb_prepare_wstatsall_item(gamestats))
+    items.extend(ddb_prepare_player_items(gamestats))
+
+    message = "Successfully sent " + file_key + " to database" 
+    for Item in items:
+        response = None
+        try:
+            response = ddb_put_item(Item, table)
+        except Exception as ex:
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            error_msg = template.format(type(ex).__name__, ex.args)
+            message = "Failed to load all records for a match " + file_key + "\n" + error_msg
+         
+        if response["ResponseMetadata"]['HTTPStatusCode'] != 200:
+            print(response)
+            message = "Item returned non200 code " + Item["pk"] + ":" + Item["sk"]
+
+    return {
+        'message': message
+    }
+
 if __name__ == "__main__":
     event_str = """
     {
@@ -79,7 +113,7 @@ if __name__ == "__main__":
               "arn": "arn:aws:s3:::example-bucket"
             },
             "object": {
-              "key": "intake/20201127-204300-good-api-test.txt",
+              "key": "intake/gameStats_match_1609826384_round_2_te_delivery_b1.json",
               "size": 1024,
               "eTag": "0123456789abcdef0123456789abcdef",
               "sequencer": "0A1B2C3D4E5F678901"
