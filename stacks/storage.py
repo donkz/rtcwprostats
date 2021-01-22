@@ -59,4 +59,21 @@ class StorageStack(core.Stack):
                                               )
         #storage_bucket.add_event_notification(s3.EventType.OBJECT_CREATED, read_match, s3.NotificationKeyFilter(prefix="intake/")) 
         
+        lambda_start_sf_role = iam.Role(self, "S3LambdaTriggerRole",
+                role_name = 'rtcwpro-lambda-start-sf-role',
+                assumed_by= iam.ServicePrincipal("lambda.amazonaws.com")
+                )
+        lambda_start_sf_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('service-role/AWSLambdaBasicExecutionRole'))
+        
+        lambda_start_sf = _lambda.Function(
+            self, 'lambda_start_sf',
+            function_name  = 'rtcwpro-lambda-start-sf',
+            handler='rtcwpro-lambda-start-sf.handler',
+            runtime=_lambda.Runtime.PYTHON_3_8,
+            code=_lambda.Code.asset('lambdas/storage'),
+            role=lambda_start_sf_role
+         )
+        notification = s3n.LambdaDestination(lambda_start_sf)
+        storage_bucket.add_event_notification(s3.EventType.OBJECT_CREATED, notification, s3.NotificationKeyFilter(prefix="intake/"))
+        
         self.storage_bucket = storage_bucket

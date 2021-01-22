@@ -46,7 +46,7 @@ def handler(event, context):
 
     message = "Nothing was processed"
     try:
-        content = obj['Body'].read().decode('cp1252')
+        content = obj['Body'].read().decode('UTF-8')
         gamestats = json.loads(content)
         logger.info("Number of keys in the file: " + str(len(gamestats.keys())))
     except Exception as ex:

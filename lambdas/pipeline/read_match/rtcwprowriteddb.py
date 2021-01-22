@@ -1,5 +1,7 @@
 import boto3
 import logging
+import json
+
 ddb = boto3.client('dynamodb')
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)  # set to DEBUG for verbose boto output
@@ -18,10 +20,10 @@ def ddb_prepare_match_item(gamestats):
     match_item = {
         'pk'    : 'match',
         'sk'    : gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
-        'lsipk' : "na#g6" + gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
+        'lsipk' : "na#g6" + "#" + gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
         'gsi1pk': "match#" + gamestats["gameinfo"]["map"],
         'gsi1sk': gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
-        'data'  : str(gamestats["gameinfo"])
+        'data'  : json.dumps(gamestats["gameinfo"])
         }
     return match_item
 
@@ -47,7 +49,7 @@ def ddb_prepare_stats_items(gamestats):
                 'sk'    : matchid,
                 'gsi1pk': "stats#" + "na#g6",
                 'gsi1sk': matchid,
-                'data'  : str(stat)
+                'data'  : json.dumps(stat)
              }
             stats_items.append(stats_item)
     return stats_items
@@ -58,7 +60,7 @@ def ddb_prepare_statsall_item(gamestats):
         'sk'    : gamestats["gameinfo"]["match_id"],
         'gsi1pk': "statsall#" + "na#g6",
         'gsi1sk': gamestats["gameinfo"]["match_id"],
-        'data'  : str(gamestats["stats"])
+        'data'  : json.dumps(gamestats["stats"])
         }
     return statsall_item
 
@@ -66,7 +68,7 @@ def ddb_prepare_gamelog_item(gamestats):
     gamelog_item = {
         'pk'    : 'gamelog',
         'sk'    : gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
-        'data'  : str(gamestats["gamelog"])
+        'data'  : json.dumps(gamestats["gamelog"])
         }
     return gamelog_item
 
@@ -85,7 +87,7 @@ def ddb_prepare_wstat_items(gamestats):
             wstat_item = {
                 'pk'    : "wstats#" + playerguid,
                 'sk'    : wstat["weapon"] + "#" + matchid,
-                'data'  : str(wstat)
+                'data'  : json.dumps(wstat)
                 }
             wstat_items.append(wstat_item)
     return wstat_items
@@ -94,7 +96,7 @@ def ddb_prepare_wstatsall_item(gamestats):
     wstatsall_item ={
             'pk'    : "wstatsall",
             'sk'    : gamestats["gameinfo"]["match_id"],
-            'data'  : str(gamestats['wstats'])
+            'data'  : json.dumps(gamestats['wstats'])
         }
     return wstatsall_item
 

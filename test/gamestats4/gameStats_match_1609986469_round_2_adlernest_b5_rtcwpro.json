@@ -1,0 +1,1265 @@
+{
+ "serverinfo": 
+{
+ "serverName": "RTCW NA PUB RTCWPRO N.Virginia",
+ "serverIP": "",
+ "gameVersion": "RtcwPro 1.1",
+ "jsonGameStatVersion": "0.1.2",
+ "g_gameStatslog": "16",
+ "g_customConfig": "",
+ "g_gametype": "6",
+ "unixtime": "1609986835"
+},
+"gamelog": [
+{"unixtime": "1609986835", "group": "server", "label": "round_start"},
+{"unixtime": "1609986835", "group": "server", "label": "firstRespawn", "Axis": "1609986865", "Allied": "1609986849"},
+{"unixtime": "1609986844", "group": "player", "label": "kill", "agent": "44D0B08B78E9F2", "other": "FFF4EF1FD439BB", "weapon": "MP-40", "other_health": 122, "agent_pos": "-1879.597900,-151.631500,-99.000000", "agent_angle": "-39.089355", "other_pos": "-2405.873779,-335.873016,189.392426", "other_angle": "142.338867", "allies_alive": "5", "axis_alive": "6"},
+{"unixtime": "1609986846", "group": "player", "label": "kill", "agent": "E79B8A18A9DBB7", "other": "9CCFEC037808D3", "weapon": "MP-40", "other_health": 140, "agent_pos": "-1317.641602,-335.875000,54.000000", "agent_angle": "-76.074829", "other_pos": "-2139.454346,-335.873108,57.842930", "other_angle": "146.239014", "allies_alive": "4", "axis_alive": "6"},
+{"unixtime": "1609986846", "group": "player", "label": "suicide", "agent": "23A888044AAD96"},
+{"unixtime": "1609986849", "group": "player", "label": "teamkill", "agent": "C544D92BEA578A", "other": "5CB7908DEAF2FB", "weapon": "MOD_GRENADE_SPLASH", "other_health": 20},
+{"unixtime": "1609986850", "group": "player", "label": "kill", "agent": "E79B8A18A9DBB7", "other": "CBF7EA94F52F1D", "weapon": "MP-40", "other_health": 140, "agent_pos": "-1670.309326,-335.875000,103.000000", "agent_angle": "73.383179", "other_pos": "-1007.012695,-335.873749,258.015411", "other_angle": "-88.681641", "allies_alive": "5", "axis_alive": "5"},
+{"unixtime": "1609986853", "group": "player", "label": "kill", "agent": "E79B8A18A9DBB7", "other": "FDA55D6797CBBE", "weapon": "Luger", "other_health": 140, "agent_pos": "-1060.441772,-335.875000,-187.000000", "agent_angle": "61.523438", "other_pos": "-1024.316650,-293.418610,-179.775879", "other_angle": "-69.027100", "allies_alive": "4", "axis_alive": "5"},
+{"unixtime": "1609986853", "group": "player", "label": "kill", "agent": "FDE32828995C0A", "other": "A4BDC3D0FD4E07", "weapon": "MP-40", "other_health": 128, "agent_pos": "-1574.265625,-95.874710,0.000000", "agent_angle": "-9.843750", "other_pos": "-2024.962158,-301.744965,-12.214536", "other_angle": "154.835815", "allies_alive": "3", "axis_alive": "5"},
+{"unixtime": "1609986855", "group": "player", "label": "revive", "agent": "5CB7908DEAF2FB", "other": "A53B3ED2A896CB"},
+{"unixtime": "1609986857", "group": "player", "label": "revive", "agent": "A4BDC3D0FD4E07", "other": "FFF4EF1FD439BB"},
+{"unixtime": "1609986858", "group": "player", "label": "revive", "agent": "CBF7EA94F52F1D", "other": "9CCFEC037808D3"},
+{"unixtime": "1609986860", "group": "player", "label": "kill", "agent": "44D0B08B78E9F2", "other": "9CCFEC037808D3", "weapon": "MP-40", "other_health": 135, "agent_pos": "-1939.289429,-335.733948,0.000000", "agent_angle": "68.126221", "other_pos": "-1273.723511,-335.700592,-105.920944", "other_angle": "152.874756", "allies_alive": "4", "axis_alive": "6"},
+{"unixtime": "1609986862", "group": "player", "label": "kill", "agent": "CBF7EA94F52F1D", "other": "44D0B08B78E9F2", "weapon": "Thompson", "other_health": 60, "agent_pos": "-1220.713745,-335.875000,-71.000000", "agent_angle": "-120.272827", "other_pos": "-1813.629517,-335.732147,157.637375", "other_angle": "46.680908", "allies_alive": "4", "axis_alive": "5"},
+{"unixtime": "1609986863", "group": "player", "label": "kill", "agent": "A53B3ED2A896CB", "other": "A4BDC3D0FD4E07", "weapon": "Luger", "other_health": 13, "agent_pos": "-1738.324707,-335.727173,-1.000000", "agent_angle": "-119.542236", "other_pos": "-2023.176270,-335.873901,-185.373428", "other_angle": "57.771606", "allies_alive": "3", "axis_alive": "5"},
+{"unixtime": "1609986863", "group": "player", "label": "suicide", "agent": "A53B3ED2A896CB"},
+{"unixtime": "1609986863", "group": "player", "label": "teamkill", "agent": "C544D92BEA578A", "other": "E79B8A18A9DBB7", "weapon": "MOD_GRENADE_SPLASH", "other_health": 20},
+{"unixtime": "1609986864", "group": "player", "label": "suicide", "agent": "FDE32828995C0A"},
+{"unixtime": "1609986864", "group": "player", "label": "suicide", "agent": "C544D92BEA578A"},
+{"unixtime": "1609986865", "group": "player", "label": "revive", "agent": "9CCFEC037808D3", "other": "FFF4EF1FD439BB"},
+{"unixtime": "1609986865", "group": "player", "label": "class_change", "agent": "FDE32828995C0A", "other": "L"},
+{"unixtime": "1609986869", "group": "player", "label": "suicide", "agent": "23A888044AAD96"},
+{"unixtime": "1609986870", "group": "player", "label": "revive", "agent": "A4BDC3D0FD4E07", "other": "FFF4EF1FD439BB"},
+{"unixtime": "1609986873", "group": "player", "label": "kill", "agent": "A53B3ED2A896CB", "other": "FFF4EF1FD439BB", "weapon": "MP-40", "other_health": 139, "agent_pos": "-2141.191406,-335.875000,0.000000", "agent_angle": "29.564209", "other_pos": "-1573.246582,-298.066895,220.822311", "other_angle": "112.637329", "allies_alive": "3", "axis_alive": "6"},
+{"unixtime": "1609986873", "group": "player", "label": "suicide", "agent": "A4BDC3D0FD4E07"},
+{"unixtime": "1609986873", "group": "player", "label": "suicide", "agent": "9CCFEC037808D3"},
+{"unixtime": "1609986873", "group": "player", "label": "ObjDynPlanted", "agent": "CBF7EA94F52F1D"},
+{"unixtime": "1609986874", "group": "player", "label": "suicide", "agent": "CBF7EA94F52F1D"},
+{"unixtime": "1609986882", "group": "player", "label": "kill", "agent": "A53B3ED2A896CB", "other": "23A888044AAD96", "weapon": "MP-40", "other_health": 56, "agent_pos": "-1791.115479,-335.872894,42.000000", "agent_angle": "-48.317871", "other_pos": "-2585.303467,-254.993973,63.471794", "other_angle": "131.901855", "allies_alive": "4", "axis_alive": "6"},
+{"unixtime": "1609986886", "group": "player", "label": "kill", "agent": "E79B8A18A9DBB7", "other": "9CCFEC037808D3", "weapon": "MP-40", "other_health": 140, "agent_pos": "-1225.495117,-207.875000,-63.000000", "agent_angle": "19.555664", "other_pos": "-1033.875000,-162.352814,65.609543", "other_angle": "-160.927734", "allies_alive": "3", "axis_alive": "6"},
+{"unixtime": "1609986886", "group": "player", "label": "kill", "agent": "A4BDC3D0FD4E07", "other": "A53B3ED2A896CB", "weapon": "Thompson", "other_health": 69, "agent_pos": "-1147.716431,-335.873199,128.000000", "agent_angle": "-107.188110", "other_pos": "-1499.594482,-335.871552,-171.552475", "other_angle": "71.553955", "allies_alive": "3", "axis_alive": "5"},
+{"unixtime": "1609986886", "group": "player", "label": "ObjDynDefused", "agent": "C544D92BEA578A"},
+{"unixtime": "1609986888", "group": "player", "label": "kill", "agent": "FDA55D6797CBBE", "other": "5CB7908DEAF2FB", "weapon": "Thompson", "other_health": 11, "agent_pos": "-1924.409180,-278.673798,100.000000", "agent_angle": "-152.852783", "other_pos": "-2238.117188,-335.870789,-310.585449", "other_angle": "32.272339", "allies_alive": "3", "axis_alive": "4"},
+{"unixtime": "1609986888", "group": "player", "label": "revive", "agent": "A53B3ED2A896CB", "other": "44D0B08B78E9F2"},
+{"unixtime": "1609986888", "group": "player", "label": "kill", "agent": "FDE32828995C0A", "other": "FDA55D6797CBBE", "weapon": "MP-40", "other_health": 107, "agent_pos": "-2410.774170,-335.875000,270.000000", "agent_angle": "18.797607", "other_pos": "-2004.895264,-283.774506,-51.799454", "other_angle": "-164.976196", "allies_alive": "2", "axis_alive": "5"},
+{"unixtime": "1609986891", "group": "player", "label": "teamkill", "agent": "E79B8A18A9DBB7", "other": "A53B3ED2A896CB", "weapon": "MOD_GRENADE_SPLASH", "other_health": 57},
+{"unixtime": "1609986891", "group": "player", "label": "kill", "agent": "A4BDC3D0FD4E07", "other": "44D0B08B78E9F2", "weapon": "Colt", "other_health": 42, "agent_pos": "-1222.093872,-335.874847,80.000000", "agent_angle": "-100.794067", "other_pos": "-1289.370605,-335.874329,-61.817005", "other_angle": "69.219360", "allies_alive": "2", "axis_alive": "3"},
+{"unixtime": "1609986893", "group": "player", "label": "kill", "agent": "E79B8A18A9DBB7", "other": "A4BDC3D0FD4E07", "weapon": "Luger", "other_health": 63, "agent_pos": "-1426.428955,-199.875000,-151.000000", "agent_angle": "37.803955", "other_pos": "-1077.936035,-335.024567,114.572296", "other_angle": "82.534790", "allies_alive": "1", "axis_alive": "3"},
+{"unixtime": "1609986894", "group": "player", "label": "suicide", "agent": "FDE32828995C0A"},
+{"unixtime": "1609986894", "group": "player", "label": "suicide", "agent": "E79B8A18A9DBB7"},
+{"unixtime": "1609986894", "group": "player", "label": "kill", "agent": "FFF4EF1FD439BB", "other": "C544D92BEA578A", "weapon": "Thompson", "other_health": 95, "agent_pos": "-1195.784424,-335.710693,171.000000", "agent_angle": "131.923828", "other_pos": "-1061.096191,-307.875000,-73.125977", "other_angle": "-79.634399", "allies_alive": "1", "axis_alive": "0"},
+{"unixtime": "1609986898", "group": "player", "label": "suicide", "agent": "FFF4EF1FD439BB"},
+{"unixtime": "1609986908", "group": "player", "label": "kill", "agent": "E79B8A18A9DBB7", "other": "23A888044AAD96", "weapon": "MP-40", "other_health": 140, "agent_pos": "-1513.139648,-335.875000,-7.000000", "agent_angle": "-37.106323", "other_pos": "-3148.601318,-95.873383,76.573921", "other_angle": "143.701172", "allies_alive": "5", "axis_alive": "5"},
+{"unixtime": "1609986909", "group": "player", "label": "kill", "agent": "A53B3ED2A896CB", "other": "9CCFEC037808D3", "weapon": "MP-40", "other_health": 3, "agent_pos": "-1013.034546,-335.872040,70.000000", "agent_angle": "-16.885986", "other_pos": "-1088.990479,-329.935730,65.943130", "other_angle": "163.234863", "allies_alive": "4", "axis_alive": "5"},
+{"unixtime": "1609986911", "group": "player", "label": "kill", "agent": "FDE32828995C0A", "other": "CBF7EA94F52F1D", "weapon": "Artillery", "other_health": 125, "agent_pos": "-1643.647705,-295.875000,0.000000", "agent_angle": "-13.864746", "other_pos": "-2088.049805,-295.389557,-297.688995", "other_angle": "164.888306", "allies_alive": "3", "axis_alive": "5"},
+{"unixtime": "1609986912", "group": "player", "label": "kill", "agent": "FFF4EF1FD439BB", "other": "A53B3ED2A896CB", "weapon": "Thompson", "other_health": 140, "agent_pos": "-1011.948792,-127.062500,-73.000000", "agent_angle": "-21.104736", "other_pos": "-1065.541016,-335.875000,-209.551559", "other_angle": "-14.990845", "allies_alive": "3", "axis_alive": "4"},
+{"unixtime": "1609986914", "group": "player", "label": "revive", "agent": "9CCFEC037808D3", "other": "FFF4EF1FD439BB"},
+{"unixtime": "1609986917", "group": "player", "label": "kill", "agent": "44D0B08B78E9F2", "other": "FDA55D6797CBBE", "weapon": "MP-40", "other_health": 140, "agent_pos": "-1761.332153,-335.875000,156.000000", "agent_angle": "62.402344", "other_pos": "-1275.823120,-335.874634,-181.307770", "other_angle": "-153.577881", "allies_alive": "3", "axis_alive": "4"},
+{"unixtime": "1609986918", "group": "player", "label": "kill", "agent": "A4BDC3D0FD4E07", "other": "44D0B08B78E9F2", "weapon": "Thompson", "other_health": 34, "agent_pos": "-1230.178345,-335.872406,5.000000", "agent_angle": "-77.618408", "other_pos": "-1588.899902,-335.873108,216.271988", "other_angle": "66.747437", "allies_alive": "3", "axis_alive": "3"},
+{"unixtime": "1609986919", "group": "player", "label": "revive", "agent": "FDA55D6797CBBE", "other": "9CCFEC037808D3"},
+{"unixtime": "1609986924", "group": "player", "label": "kill", "agent": "FFF4EF1FD439BB", "other": "5CB7908DEAF2FB", "weapon": "Thompson", "other_health": 103, "agent_pos": "-1504.161499,-335.875000,8.000000", "agent_angle": "-35.776978", "other_pos": "-1777.634277,-335.808685,403.016357", "other_angle": "50.366821", "allies_alive": "4", "axis_alive": "2"},
+{"unixtime": "1609986924", "group": "player", "label": "suicide", "agent": "E79B8A18A9DBB7"},
+{"unixtime": "1609986927", "group": "player", "label": "kill", "agent": "FDE32828995C0A", "other": "9CCFEC037808D3", "weapon": "MP-40", "other_health": 107, "agent_pos": "-2314.021729,-335.874603,-218.000000", "agent_angle": "-46.785278", "other_pos": "-2383.865234,-335.873932,145.920654", "other_angle": "135.648193", "allies_alive": "5", "axis_alive": "5"},
+{"unixtime": "1609986931", "group": "player", "label": "ObjDynPlanted", "agent": "FDA55D6797CBBE"},
+{"unixtime": "1609986933", "group": "player", "label": "kill", "agent": "A4BDC3D0FD4E07", "other": "FDE32828995C0A", "weapon": "Thompson", "other_health": 88, "agent_pos": "-2298.166504,-335.871582,58.000000", "agent_angle": "167.805176", "other_pos": "-2256.048096,-313.242615,16.041597", "other_angle": "-135.922852", "allies_alive": "5", "axis_alive": "4"},
+{"unixtime": "1609986934", "group": "player", "label": "kill", "agent": "44D0B08B78E9F2", "other": "FDA55D6797CBBE", "weapon": "Grenade", "other_health": 125, "agent_pos": "-1334.210449,-295.874695,107.000000", "agent_angle": "-46.735840", "other_pos": "-1188.047119,-335.764374,-477.547028", "other_angle": "-164.481812", "allies_alive": "4", "axis_alive": "4"},
+{"unixtime": "1609986938", "group": "player", "label": "kill", "agent": "44D0B08B78E9F2", "other": "CBF7EA94F52F1D", "weapon": "MP-40", "other_health": 79, "agent_pos": "-1615.132324,-335.874268,-27.000000", "agent_angle": "-51.828003", "other_pos": "-1781.205444,-292.552979,-202.748459", "other_angle": "146.651001", "allies_alive": "3", "axis_alive": "4"},
+{"unixtime": "1609986940", "group": "player", "label": "kill", "agent": "23A888044AAD96", "other": "C544D92BEA578A", "weapon": "Panzer", "other_health": 125, "agent_pos": "-2655.099609,-270.893280,-74.000000", "agent_angle": "126.787720", "other_pos": "-1046.097778,-327.873047,482.212677", "other_angle": "-159.054565", "allies_alive": "3", "axis_alive": "3"},
+{"unixtime": "1609986941", "group": "player", "label": "kill", "agent": "A53B3ED2A896CB", "other": "FFF4EF1FD439BB", "weapon": "MP-40", "other_health": 119, "agent_pos": "-2366.653320,-335.853027,80.000000", "agent_angle": "30.992432", "other_pos": "-2154.783691,-335.872467,111.904556", "other_angle": "81.952515", "allies_alive": "2", "axis_alive": "3"},
+{"unixtime": "1609986941", "group": "player", "label": "kill", "agent": "A53B3ED2A896CB", "other": "A4BDC3D0FD4E07", "weapon": "MP-40", "other_health": 119, "agent_pos": "-2359.661865,-335.853027,58.000000", "agent_angle": "36.463623", "other_pos": "-2052.890625,-319.387817,88.185097", "other_angle": "89.928589", "allies_alive": "1", "axis_alive": "3"},
+{"unixtime": "1609986945", "group": "player", "label": "suicide", "agent": "23A888044AAD96"},
+{"unixtime": "1609986946", "group": "player", "label": "kill", "agent": "23A888044AAD96", "other": "44D0B08B78E9F2", "weapon": "Grenade", "other_health": 0, "agent_pos": "-1825.045654,-335.875000,0.000000", "agent_angle": "180.000000", "other_pos": "-1453.700195,-335.873047,389.373505", "other_angle": "158.862305", "allies_alive": "0", "axis_alive": "2"},
+{"unixtime": "1609986953", "group": "player", "label": "kill", "agent": "CBF7EA94F52F1D", "other": "E79B8A18A9DBB7", "weapon": "Thompson", "other_health": 125, "agent_pos": "-1783.107666,-95.626564,225.000000", "agent_angle": "171.562500", "other_pos": "-1693.322266,-151.098434,-488.421570", "other_angle": "4.625244", "allies_alive": "6", "axis_alive": "1"},
+{"unixtime": "1609986954", "group": "player", "label": "kill", "agent": "E79B8A18A9DBB7", "other": "CBF7EA94F52F1D", "weapon": "Grenade", "other_health": -27, "agent_pos": "-1910.644775,-291.326050,0.000000", "agent_angle": "7.124634", "other_pos": "-1893.621948,-95.626564,-250.951355", "other_angle": "176.868896", "allies_alive": "5", "axis_alive": "1"},
+{"unixtime": "1609986954", "group": "player", "label": "kill", "agent": "E79B8A18A9DBB7", "other": "FDA55D6797CBBE", "weapon": "Grenade", "other_health": -27, "agent_pos": "-1910.644775,-291.326050,0.000000", "agent_angle": "7.124634", "other_pos": "-1762.374878,-95.700203,510.707275", "other_angle": "-178.154297", "allies_alive": "4", "axis_alive": "1"},
+{"unixtime": "1609986954", "group": "player", "label": "suicide", "agent": "A53B3ED2A896CB"},
+{"unixtime": "1609986972", "group": "player", "label": "kill", "agent": "E79B8A18A9DBB7", "other": "FFF4EF1FD439BB", "weapon": "MP-40", "other_health": 76, "agent_pos": "-1113.523560,72.125000,150.000000", "agent_angle": "10.162354", "other_pos": "-1064.654053,78.212379,195.884781", "other_angle": "-174.830933", "allies_alive": "3", "axis_alive": "6"},
+{"unixtime": "1609986980", "group": "player", "label": "kill", "agent": "C544D92BEA578A", "other": "A4BDC3D0FD4E07", "weapon": "MP-40", "other_health": 17, "agent_pos": "268.629150,72.126968,325.000000", "agent_angle": "-133.269653", "other_pos": "69.508446,72.127663,53.067997", "other_angle": "41.506348", "allies_alive": "5", "axis_alive": "6"},
+{"unixtime": "1609986984", "group": "player", "label": "suicide", "agent": "C544D92BEA578A"},
+{"unixtime": "1609986985", "group": "player", "label": "suicide", "agent": "E79B8A18A9DBB7"},
+{"unixtime": "1609986985", "group": "player", "label": "class_change", "agent": "C544D92BEA578A", "other": "L"},
+{"unixtime": "1609986993", "group": "player", "label": "kill", "agent": "9CCFEC037808D3", "other": "C544D92BEA578A", "weapon": "Thompson", "other_health": 126, "agent_pos": "-403.031677,72.125320,52.000000", "agent_angle": "76.146240", "other_pos": "1044.218262,72.125000,-15.450758", "other_angle": "-99.563599", "allies_alive": "5", "axis_alive": "5"},
+{"unixtime": "1609986993", "group": "player", "label": "ObjDynPlanted", "agent": "FDA55D6797CBBE"},
+{"unixtime": "1609986997", "group": "player", "label": "revive", "agent": "C544D92BEA578A", "other": "44D0B08B78E9F2"},
+{"unixtime": "1609986997", "group": "player", "label": "ObjSpawnFlagCaptured", "agent": "FFF4EF1FD439BB"},
+{"unixtime": "1609986997", "group": "player", "label": "kill", "agent": "9CCFEC037808D3", "other": "44D0B08B78E9F2", "weapon": "Thompson", "other_health": 136, "agent_pos": "311.439423,72.125320,31.000000", "agent_angle": "72.383423", "other_pos": "1083.239746,72.126228,-194.765182", "other_angle": "-81.787720", "allies_alive": "5", "axis_alive": "5"},
+{"unixtime": "1609986997", "group": "player", "label": "suicide", "agent": "FFF4EF1FD439BB"},
+{"unixtime": "1609986998", "group": "player", "label": "kill", "agent": "A53B3ED2A896CB", "other": "23A888044AAD96", "weapon": "MP-40", "other_health": 140, "agent_pos": "204.791565,72.125000,-185.000000", "agent_angle": "155.538940", "other_pos": "276.821716,78.386101,184.313736", "other_angle": "-5.213013", "allies_alive": "3", "axis_alive": "5"},
+{"unixtime": "1609986999", "group": "player", "label": "kill", "agent": "5CB7908DEAF2FB", "other": "9CCFEC037808D3", "weapon": "Grenade", "other_health": 140, "agent_pos": "783.137207,88.125000,267.000000", "agent_angle": "-117.531738", "other_pos": "397.815155,72.126244,-261.976837", "other_angle": "-15.397339", "allies_alive": "2", "axis_alive": "5"},
+{"unixtime": "1609987010", "group": "player", "label": "kill", "agent": "FFF4EF1FD439BB", "other": "FDE32828995C0A", "weapon": "Thompson", "other_health": 28, "agent_pos": "-2.055289,72.125000,181.000000", "agent_angle": "70.208130", "other_pos": "574.096863,72.125648,252.471283", "other_angle": "-31.354980", "allies_alive": "4", "axis_alive": "4"},
+{"unixtime": "1609987010", "group": "player", "label": "kill", "agent": "A53B3ED2A896CB", "other": "FFF4EF1FD439BB", "weapon": "MP-40", "other_health": 140, "agent_pos": "-54.402668,-39.875000,57.000000", "agent_angle": "162.498779", "other_pos": "94.400208,72.218399,40.806767", "other_angle": "63.143921", "allies_alive": "3", "axis_alive": "4"},
+{"unixtime": "1609987014", "group": "player", "label": "suicide", "agent": "E79B8A18A9DBB7"},
+{"unixtime": "1609987014", "group": "player", "label": "kill", "agent": "E79B8A18A9DBB7", "other": "A4BDC3D0FD4E07", "weapon": "Grenade", "other_health": 0, "agent_pos": "786.431213,72.125000,207.000000", "agent_angle": "-43.912354", "other_pos": "-105.653427,72.125000,-440.904022", "other_angle": "94.526367", "allies_alive": "2", "axis_alive": "3"},
+{"unixtime": "1609987015", "group": "player", "label": "class_change", "agent": "FDE32828995C0A", "other": "M"},
+{"unixtime": "1609987015", "group": "player", "label": "kill", "agent": "C544D92BEA578A", "other": "FDA55D6797CBBE", "weapon": "MP-40", "other_health": 62, "agent_pos": "-39.580257,72.125000,7.000000", "agent_angle": "101.958618", "other_pos": "217.230469,72.127823,27.495947", "other_angle": "-112.450562", "allies_alive": "1", "axis_alive": "6"},
+{"unixtime": "1609987020", "group": "player", "label": "kill", "agent": "CBF7EA94F52F1D", "other": "C544D92BEA578A", "weapon": "Thompson", "other_health": 125, "agent_pos": "-668.605591,72.125000,31.000000", "agent_angle": "44.285889", "other_pos": "-177.442993,109.246208,163.415619", "other_angle": "89.121094", "allies_alive": "1", "axis_alive": "5"},
+{"unixtime": "1609987024", "group": "player", "label": "class_change", "agent": "FDA55D6797CBBE", "other": "M"},
+{"unixtime": "1609987028", "group": "player", "label": "kill", "agent": "CBF7EA94F52F1D", "other": "5CB7908DEAF2FB", "weapon": "Thompson", "other_health": 47, "agent_pos": "229.766815,72.126755,-153.000000", "agent_angle": "71.779175", "other_pos": "861.213318,72.128815,-57.868351", "other_angle": "-109.050293", "allies_alive": "6", "axis_alive": "4"},
+{"unixtime": "1609987030", "group": "player", "label": "kill", "agent": "9CCFEC037808D3", "other": "E79B8A18A9DBB7", "weapon": "Thompson", "other_health": 81, "agent_pos": "-1663.984497,88.126305,330.000000", "agent_angle": "75.964966", "other_pos": "-1104.063721,72.126717,-89.213943", "other_angle": "-104.644775", "allies_alive": "6", "axis_alive": "3"},
+{"unixtime": "1609987032", "group": "player", "label": "kill", "agent": "44D0B08B78E9F2", "other": "CBF7EA94F52F1D", "weapon": "MP-40", "other_health": 104, "agent_pos": "538.955017,88.125679,90.000000", "agent_angle": "128.787231", "other_pos": "1009.885254,128.125763,-50.845573", "other_angle": "-49.141846", "allies_alive": "5", "axis_alive": "3"},
+{"unixtime": "1609987037", "group": "player", "label": "kill", "agent": "FDE32828995C0A", "other": "9CCFEC037808D3", "weapon": "MP-40", "other_health": 81, "agent_pos": "402.980774,72.125313,157.000000", "agent_angle": "-100.365601", "other_pos": "-211.278183,72.126328,-214.594177", "other_angle": "75.767212", "allies_alive": "4", "axis_alive": "3"},
+{"unixtime": "1609987039", "group": "player", "label": "revive", "agent": "9CCFEC037808D3", "other": "FFF4EF1FD439BB"},
+{"unixtime": "1609987040", "group": "player", "label": "kill", "agent": "FDE32828995C0A", "other": "A4BDC3D0FD4E07", "weapon": "MP-40", "other_health": 51, "agent_pos": "439.400452,72.125977,242.000000", "agent_angle": "-112.142944", "other_pos": "-87.851830,72.126442,84.655922", "other_angle": "83.144531", "allies_alive": "4", "axis_alive": "3"},
+{"unixtime": "1609987041", "group": "server", "label": "round_end"}
+],
+"gameinfo": 
+{
+ "match_id": "1609986469",
+ "round": "2",
+ "round_start": "1609986835",
+ "round_end": "1609987041",
+ "map": "adlernest_b5_rtcwpro",
+ "time_limit": "3:25",
+ "allies_cycle": "25",
+ "axis_cycle": "30",
+ "winner": "Axis"
+},
+"stats": [
+ {
+  "44D0B08B78E9F2": {
+   "alias": "c@k(s)",
+   "team": "Axis",
+   "start_time": 175459550,
+   "num_rounds": 2,
+   "categories": {
+    "kills": 7,
+    "deaths": 10,
+    "gibs": 2,
+    "suicides": 1,
+    "teamkills": 0,
+    "headshots": 4,
+    "damagegiven": 1170,
+    "damagereceived": 1837,
+    "damageteam": 0,
+    "hits": 150,
+    "shots": 488,
+    "accuracy": 30.737704918032787,
+    "revives": 5,
+    "ammogiven": 0,
+    "healthgiven": 0,
+    "poisoned": 0,
+    "knifekills": 0,
+    "killpeak": 2,
+    "efficiency": 41.0,
+    "score": 15,
+    "dyn_planted": 3,
+    "dyn_defused": 0,
+    "obj_captured": 0,
+    "obj_destroyed": 0,
+    "obj_returned": 0,
+    "obj_taken": 0
+   }
+  },
+  "A53B3ED2A896CB": {
+   "alias": "parcher(s)",
+   "team": "Axis",
+   "start_time": 175459550,
+   "num_rounds": 2,
+   "categories": {
+    "kills": 18,
+    "deaths": 9,
+    "gibs": 2,
+    "suicides": 2,
+    "teamkills": 0,
+    "headshots": 21,
+    "damagegiven": 3040,
+    "damagereceived": 1665,
+    "damageteam": 96,
+    "hits": 234,
+    "shots": 611,
+    "accuracy": 38.297872340425535,
+    "revives": 1,
+    "ammogiven": 0,
+    "healthgiven": 0,
+    "poisoned": 0,
+    "knifekills": 0,
+    "killpeak": 2,
+    "efficiency": 66.0,
+    "score": 9,
+    "dyn_planted": 1,
+    "dyn_defused": 0,
+    "obj_captured": 0,
+    "obj_destroyed": 0,
+    "obj_returned": 0,
+    "obj_taken": 0
+   }
+  },
+  "5CB7908DEAF2FB": {
+   "alias": "ca$hh(s)",
+   "team": "Axis",
+   "start_time": 175459550,
+   "num_rounds": 2,
+   "categories": {
+    "kills": 2,
+    "deaths": 8,
+    "gibs": 1,
+    "suicides": 1,
+    "teamkills": 0,
+    "headshots": 5,
+    "damagegiven": 550,
+    "damagereceived": 1423,
+    "damageteam": 140,
+    "hits": 20,
+    "shots": 211,
+    "accuracy": 9.4786729857819907,
+    "revives": 1,
+    "ammogiven": 0,
+    "healthgiven": 0,
+    "poisoned": 0,
+    "knifekills": 0,
+    "killpeak": 1,
+    "efficiency": 20.0,
+    "score": 6,
+    "dyn_planted": 0,
+    "dyn_defused": 0,
+    "obj_captured": 0,
+    "obj_destroyed": 0,
+    "obj_returned": 0,
+    "obj_taken": 0
+   }
+  },
+  "FDE32828995C0A": {
+   "alias": "fonze(s)",
+   "team": "Axis",
+   "start_time": 175459550,
+   "num_rounds": 2,
+   "categories": {
+    "kills": 12,
+    "deaths": 5,
+    "gibs": 2,
+    "suicides": 2,
+    "teamkills": 0,
+    "headshots": 7,
+    "damagegiven": 1481,
+    "damagereceived": 1036,
+    "damageteam": 201,
+    "hits": 119,
+    "shots": 640,
+    "accuracy": 18.59375,
+    "revives": 2,
+    "ammogiven": 4,
+    "healthgiven": 0,
+    "poisoned": 0,
+    "knifekills": 0,
+    "killpeak": 2,
+    "efficiency": 70.0,
+    "score": 2,
+    "dyn_planted": 0,
+    "dyn_defused": 0,
+    "obj_captured": 0,
+    "obj_destroyed": 0,
+    "obj_returned": 0,
+    "obj_taken": 0
+   }
+  },
+  "C544D92BEA578A": {
+   "alias": "prwlr(s)",
+   "team": "Axis",
+   "start_time": 175459550,
+   "num_rounds": 2,
+   "categories": {
+    "kills": 4,
+    "deaths": 10,
+    "gibs": 0,
+    "suicides": 3,
+    "teamkills": 2,
+    "headshots": 0,
+    "damagegiven": 982,
+    "damagereceived": 1684,
+    "damageteam": 529,
+    "hits": 227,
+    "shots": 698,
+    "accuracy": 32.521489971346703,
+    "revives": 0,
+    "ammogiven": 11,
+    "healthgiven": 0,
+    "poisoned": 0,
+    "knifekills": 0,
+    "killpeak": 1,
+    "efficiency": 28.0,
+    "score": 1,
+    "dyn_planted": 2,
+    "dyn_defused": 1,
+    "obj_captured": 0,
+    "obj_destroyed": 0,
+    "obj_returned": 0,
+    "obj_taken": 0
+   }
+  },
+  "E79B8A18A9DBB7": {
+   "alias": "john_mullins",
+   "team": "Axis",
+   "start_time": 175459550,
+   "num_rounds": 2,
+   "categories": {
+    "kills": 14,
+    "deaths": 7,
+    "gibs": 0,
+    "suicides": 8,
+    "teamkills": 1,
+    "headshots": 8,
+    "damagegiven": 3153,
+    "damagereceived": 1746,
+    "damageteam": 224,
+    "hits": 245,
+    "shots": 839,
+    "accuracy": 29.201430274135877,
+    "revives": 1,
+    "ammogiven": 0,
+    "healthgiven": 1,
+    "poisoned": 0,
+    "knifekills": 0,
+    "killpeak": 3,
+    "efficiency": 66.0,
+    "score": -8,
+    "dyn_planted": 0,
+    "dyn_defused": 0,
+    "obj_captured": 0,
+    "obj_destroyed": 0,
+    "obj_returned": 0,
+    "obj_taken": 1
+   }
+  }
+ },
+ {
+  "CBF7EA94F52F1D": {
+   "alias": "festus!",
+   "team": "Allied",
+   "start_time": 175459550,
+   "num_rounds": 2,
+   "categories": {
+    "kills": 7,
+    "deaths": 10,
+    "gibs": 1,
+    "suicides": 2,
+    "teamkills": 0,
+    "headshots": 6,
+    "damagegiven": 1036,
+    "damagereceived": 1217,
+    "damageteam": 10,
+    "hits": 128,
+    "shots": 689,
+    "accuracy": 18.577648766328011,
+    "revives": 0,
+    "ammogiven": 18,
+    "healthgiven": 0,
+    "poisoned": 0,
+    "knifekills": 0,
+    "killpeak": 2,
+    "efficiency": 41.0,
+    "score": 11,
+    "dyn_planted": 1,
+    "dyn_defused": 0,
+    "obj_captured": 0,
+    "obj_destroyed": 0,
+    "obj_returned": 0,
+    "obj_taken": 0
+   }
+  },
+  "FFF4EF1FD439BB": {
+   "alias": "source",
+   "team": "Allied",
+   "start_time": 175459550,
+   "num_rounds": 2,
+   "categories": {
+    "kills": 13,
+    "deaths": 8,
+    "gibs": 1,
+    "suicides": 5,
+    "teamkills": 1,
+    "headshots": 17,
+    "damagegiven": 2528,
+    "damagereceived": 2067,
+    "damageteam": 134,
+    "hits": 361,
+    "shots": 1216,
+    "accuracy": 29.6875,
+    "revives": 8,
+    "ammogiven": 0,
+    "healthgiven": 3,
+    "poisoned": 0,
+    "knifekills": 0,
+    "killpeak": 2,
+    "efficiency": 61.0,
+    "score": 9,
+    "dyn_planted": 0,
+    "dyn_defused": 0,
+    "obj_captured": 0,
+    "obj_destroyed": 0,
+    "obj_returned": 0,
+    "obj_taken": 0
+   }
+  },
+  "FDA55D6797CBBE": {
+   "alias": "reker!",
+   "team": "Allied",
+   "start_time": 175459550,
+   "num_rounds": 2,
+   "categories": {
+    "kills": 5,
+    "deaths": 12,
+    "gibs": 2,
+    "suicides": 0,
+    "teamkills": 0,
+    "headshots": 3,
+    "damagegiven": 1045,
+    "damagereceived": 1967,
+    "damageteam": 118,
+    "hits": 164,
+    "shots": 591,
+    "accuracy": 27.749576988155667,
+    "revives": 3,
+    "ammogiven": 0,
+    "healthgiven": 2,
+    "poisoned": 0,
+    "knifekills": 0,
+    "killpeak": 1,
+    "efficiency": 29.0,
+    "score": 6,
+    "dyn_planted": 2,
+    "dyn_defused": 0,
+    "obj_captured": 0,
+    "obj_destroyed": 0,
+    "obj_returned": 0,
+    "obj_taken": 0
+   }
+  },
+  "9CCFEC037808D3": {
+   "alias": "eternal!",
+   "team": "Allied",
+   "start_time": 175459550,
+   "num_rounds": 2,
+   "categories": {
+    "kills": 4,
+    "deaths": 12,
+    "gibs": 0,
+    "suicides": 2,
+    "teamkills": 0,
+    "headshots": 6,
+    "damagegiven": 1526,
+    "damagereceived": 1883,
+    "damageteam": 14,
+    "hits": 293,
+    "shots": 1205,
+    "accuracy": 24.315352697095435,
+    "revives": 3,
+    "ammogiven": 0,
+    "healthgiven": 2,
+    "poisoned": 0,
+    "knifekills": 0,
+    "killpeak": 2,
+    "efficiency": 25.0,
+    "score": 4,
+    "dyn_planted": 0,
+    "dyn_defused": 0,
+    "obj_captured": 0,
+    "obj_destroyed": 0,
+    "obj_returned": 0,
+    "obj_taken": 0
+   }
+  },
+  "A4BDC3D0FD4E07": {
+   "alias": "yeni!",
+   "team": "Allied",
+   "start_time": 175459550,
+   "num_rounds": 2,
+   "categories": {
+    "kills": 7,
+    "deaths": 10,
+    "gibs": 0,
+    "suicides": 2,
+    "teamkills": 0,
+    "headshots": 5,
+    "damagegiven": 1410,
+    "damagereceived": 1988,
+    "damageteam": 0,
+    "hits": 121,
+    "shots": 417,
+    "accuracy": 29.016786570743406,
+    "revives": 0,
+    "ammogiven": 0,
+    "healthgiven": 2,
+    "poisoned": 0,
+    "knifekills": 0,
+    "killpeak": 2,
+    "efficiency": 41.0,
+    "score": 1,
+    "dyn_planted": 0,
+    "dyn_defused": 0,
+    "obj_captured": 0,
+    "obj_destroyed": 0,
+    "obj_returned": 0,
+    "obj_taken": 0
+   }
+  },
+  "23A888044AAD96": {
+   "alias": "spaztik!",
+   "team": "Allied",
+   "start_time": 175459550,
+   "num_rounds": 2,
+   "categories": {
+    "kills": 10,
+    "deaths": 9,
+    "gibs": 7,
+    "suicides": 5,
+    "teamkills": 3,
+    "headshots": 0,
+    "damagegiven": 1846,
+    "damagereceived": 1254,
+    "damageteam": 514,
+    "hits": 18,
+    "shots": 43,
+    "accuracy": 41.860465116279073,
+    "revives": 0,
+    "ammogiven": 0,
+    "healthgiven": 0,
+    "poisoned": 0,
+    "knifekills": 0,
+    "killpeak": 2,
+    "efficiency": 52.0,
+    "score": -8,
+    "dyn_planted": 0,
+    "dyn_defused": 0,
+    "obj_captured": 0,
+    "obj_destroyed": 0,
+    "obj_returned": 0,
+    "obj_taken": 0
+   }
+  }
+ }
+],
+"wstats": [
+ {
+  "44D0B08B78E9F2": [
+   {
+    "weapon": "Luger",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 2,
+    "shots": 18
+   },
+   {
+    "weapon": "Colt",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "MP-40",
+    "kills": 5,
+    "deaths": 3,
+    "headshots": 0,
+    "hits": 43,
+    "shots": 148
+   },
+   {
+    "weapon": "Thompson",
+    "kills": 1,
+    "deaths": 3,
+    "headshots": 4,
+    "hits": 19,
+    "shots": 88
+   },
+   {
+    "weapon": "Panzer",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Grenade",
+    "kills": 1,
+    "deaths": 2,
+    "headshots": 0,
+    "hits": 1,
+    "shots": 4
+   },
+   {
+    "weapon": "Dynamite",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 2
+   },
+   {
+    "weapon": "Syringe",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 5,
+    "shots": 6
+   }
+  ]
+ },
+ {
+  "CBF7EA94F52F1D": [
+   {
+    "weapon": "Knife",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 3
+   },
+   {
+    "weapon": "Colt",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "MP-40",
+    "kills": 3,
+    "deaths": 3,
+    "headshots": 4,
+    "hits": 27,
+    "shots": 136
+   },
+   {
+    "weapon": "Thompson",
+    "kills": 4,
+    "deaths": 2,
+    "headshots": 2,
+    "hits": 25,
+    "shots": 90
+   },
+   {
+    "weapon": "Grenade",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 6
+   },
+   {
+    "weapon": "Dynamite",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 2
+   },
+   {
+    "weapon": "Artillery",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 1
+   }
+  ]
+ },
+ {
+  "FFF4EF1FD439BB": [
+   {
+    "weapon": "Knife",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 2
+   },
+   {
+    "weapon": "Luger",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 1,
+    "hits": 7,
+    "shots": 16
+   },
+   {
+    "weapon": "Colt",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 11,
+    "shots": 19
+   },
+   {
+    "weapon": "MP-40",
+    "kills": 8,
+    "deaths": 5,
+    "headshots": 13,
+    "hits": 62,
+    "shots": 205
+   },
+   {
+    "weapon": "Thompson",
+    "kills": 4,
+    "deaths": 3,
+    "headshots": 3,
+    "hits": 37,
+    "shots": 130
+   },
+   {
+    "weapon": "Grenade",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 1,
+    "shots": 7
+   },
+   {
+    "weapon": "Syringe",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 8,
+    "shots": 10
+   }
+  ]
+ },
+ {
+  "A53B3ED2A896CB": [
+   {
+    "weapon": "Luger",
+    "kills": 1,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 5,
+    "shots": 11
+   },
+   {
+    "weapon": "Colt",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 1,
+    "hits": 3,
+    "shots": 6
+   },
+   {
+    "weapon": "MP-40",
+    "kills": 7,
+    "deaths": 3,
+    "headshots": 9,
+    "hits": 69,
+    "shots": 164
+   },
+   {
+    "weapon": "Thompson",
+    "kills": 9,
+    "deaths": 2,
+    "headshots": 11,
+    "hits": 53,
+    "shots": 176
+   },
+   {
+    "weapon": "Panzer",
+    "kills": 0,
+    "deaths": 2,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Grenade",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 2,
+    "shots": 5
+   },
+   {
+    "weapon": "Dynamite",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 1
+   },
+   {
+    "weapon": "Syringe",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 1,
+    "shots": 2
+   }
+  ]
+ },
+ {
+  "FDA55D6797CBBE": [
+   {
+    "weapon": "Knife",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 35
+   },
+   {
+    "weapon": "Luger",
+    "kills": 1,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 4,
+    "shots": 14
+   },
+   {
+    "weapon": "Colt",
+    "kills": 0,
+    "deaths": 2,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "MP-40",
+    "kills": 2,
+    "deaths": 3,
+    "headshots": 3,
+    "hits": 34,
+    "shots": 141
+   },
+   {
+    "weapon": "Thompson",
+    "kills": 1,
+    "deaths": 2,
+    "headshots": 0,
+    "hits": 15,
+    "shots": 57
+   },
+   {
+    "weapon": "Grenade",
+    "kills": 1,
+    "deaths": 4,
+    "headshots": 0,
+    "hits": 2,
+    "shots": 9
+   },
+   {
+    "weapon": "Dynamite",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 1
+   },
+   {
+    "weapon": "Syringe",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 3,
+    "shots": 3
+   }
+  ]
+ },
+ {
+  "5CB7908DEAF2FB": [
+   {
+    "weapon": "Luger",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 1,
+    "hits": 4,
+    "shots": 16
+   },
+   {
+    "weapon": "Colt",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 3,
+    "shots": 17
+   },
+   {
+    "weapon": "MP-40",
+    "kills": 0,
+    "deaths": 2,
+    "headshots": 3,
+    "hits": 9,
+    "shots": 96
+   },
+   {
+    "weapon": "Thompson",
+    "kills": 0,
+    "deaths": 3,
+    "headshots": 1,
+    "hits": 4,
+    "shots": 93
+   },
+   {
+    "weapon": "Panzer",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Grenade",
+    "kills": 1,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 1,
+    "shots": 6
+   },
+   {
+    "weapon": "Syringe",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 1,
+    "shots": 2
+   }
+  ]
+ },
+ {
+  "9CCFEC037808D3": [
+   {
+    "weapon": "Knife",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 3
+   },
+   {
+    "weapon": "Luger",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 4,
+    "shots": 7
+   },
+   {
+    "weapon": "Colt",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 1,
+    "shots": 9
+   },
+   {
+    "weapon": "MP-40",
+    "kills": 1,
+    "deaths": 6,
+    "headshots": 3,
+    "hits": 41,
+    "shots": 144
+   },
+   {
+    "weapon": "Thompson",
+    "kills": 3,
+    "deaths": 3,
+    "headshots": 3,
+    "hits": 27,
+    "shots": 97
+   },
+   {
+    "weapon": "Grenade",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 2,
+    "shots": 12
+   },
+   {
+    "weapon": "Syringe",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 3,
+    "shots": 3
+   }
+  ]
+ },
+ {
+  "FDE32828995C0A": [
+   {
+    "weapon": "Knife",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 4
+   },
+   {
+    "weapon": "Luger",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 2
+   },
+   {
+    "weapon": "Colt",
+    "kills": 3,
+    "deaths": 0,
+    "headshots": 2,
+    "hits": 19,
+    "shots": 53
+   },
+   {
+    "weapon": "MP-40",
+    "kills": 5,
+    "deaths": 3,
+    "headshots": 4,
+    "hits": 35,
+    "shots": 158
+   },
+   {
+    "weapon": "Thompson",
+    "kills": 3,
+    "deaths": 2,
+    "headshots": 1,
+    "hits": 18,
+    "shots": 95
+   },
+   {
+    "weapon": "Grenade",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 1,
+    "shots": 7
+   },
+   {
+    "weapon": "Artillery",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 2,
+    "shots": 2
+   },
+   {
+    "weapon": "Syringe",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 2,
+    "shots": 3
+   }
+  ]
+ },
+ {
+  "A4BDC3D0FD4E07": [
+   {
+    "weapon": "Luger",
+    "kills": 0,
+    "deaths": 2,
+    "headshots": 0,
+    "hits": 1,
+    "shots": 7
+   },
+   {
+    "weapon": "Colt",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 5,
+    "shots": 16
+   },
+   {
+    "weapon": "MP-40",
+    "kills": 3,
+    "deaths": 4,
+    "headshots": 3,
+    "hits": 37,
+    "shots": 151
+   },
+   {
+    "weapon": "Thompson",
+    "kills": 3,
+    "deaths": 2,
+    "headshots": 2,
+    "hits": 34,
+    "shots": 130
+   },
+   {
+    "weapon": "Grenade",
+    "kills": 0,
+    "deaths": 2,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 4
+   }
+  ]
+ },
+ {
+  "C544D92BEA578A": [
+   {
+    "weapon": "MP-40",
+    "kills": 2,
+    "deaths": 3,
+    "headshots": 0,
+    "hits": 47,
+    "shots": 177
+   },
+   {
+    "weapon": "Thompson",
+    "kills": 0,
+    "deaths": 3,
+    "headshots": 0,
+    "hits": 2,
+    "shots": 18
+   },
+   {
+    "weapon": "Panzer",
+    "kills": 0,
+    "deaths": 3,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Grenade",
+    "kills": 2,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 5,
+    "shots": 25
+   },
+   {
+    "weapon": "Dynamite",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 1
+   }
+  ]
+ },
+ {
+  "E79B8A18A9DBB7": [
+   {
+    "weapon": "Knife",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 4
+   },
+   {
+    "weapon": "Luger",
+    "kills": 2,
+    "deaths": 0,
+    "headshots": 1,
+    "hits": 16,
+    "shots": 34
+   },
+   {
+    "weapon": "Colt",
+    "kills": 1,
+    "deaths": 0,
+    "headshots": 1,
+    "hits": 10,
+    "shots": 24
+   },
+   {
+    "weapon": "MP-40",
+    "kills": 5,
+    "deaths": 3,
+    "headshots": 5,
+    "hits": 61,
+    "shots": 184
+   },
+   {
+    "weapon": "Thompson",
+    "kills": 2,
+    "deaths": 2,
+    "headshots": 1,
+    "hits": 46,
+    "shots": 171
+   },
+   {
+    "weapon": "Panzer",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Grenade",
+    "kills": 4,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 6,
+    "shots": 10
+   },
+   {
+    "weapon": "Syringe",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 1,
+    "shots": 2
+   }
+  ]
+ },
+ {
+  "23A888044AAD96": [
+   {
+    "weapon": "Knife",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 3
+   },
+   {
+    "weapon": "Luger",
+    "kills": 0,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 1
+   },
+   {
+    "weapon": "Colt",
+    "kills": 0,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 1,
+    "shots": 19
+   },
+   {
+    "weapon": "MP-40",
+    "kills": 0,
+    "deaths": 3,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Thompson",
+    "kills": 0,
+    "deaths": 3,
+    "headshots": 0,
+    "hits": 0,
+    "shots": 0
+   },
+   {
+    "weapon": "Panzer",
+    "kills": 8,
+    "deaths": 0,
+    "headshots": 0,
+    "hits": 10,
+    "shots": 10
+   },
+   {
+    "weapon": "Grenade",
+    "kills": 2,
+    "deaths": 1,
+    "headshots": 0,
+    "hits": 3,
+    "shots": 6
+   }
+  ]
+ }
+]
+}
