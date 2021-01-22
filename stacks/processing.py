@@ -31,8 +31,8 @@ class ProcessingStack(core.Stack):
             rule_name = "hourly_cleanser",
             schedule=events.Schedule.cron(
                 minute='0',
-                hour='*/1',
-                month='*',
+                hour='0', #change this to */1 for hourly
+                month='*/1', #tmp
                 week_day='*',
                 year='*'),
         )

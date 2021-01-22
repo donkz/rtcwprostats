@@ -16,8 +16,8 @@ try:
 except ddb.exceptions.ClientError as e:
     print(e.response['Error']['Message'])
 else:
-    stats = json.loads(response['Item']["data"].replace("\'", "\""))
-    
+    stats = json.loads(response['Item']["data"])
+        
     for team in stats:
         for playerguid, stat in team.items():
             print(playerguid)

@@ -7,7 +7,7 @@ from aws_cdk import (
 )
 
 
-class PipelineStack(core.Stack):
+class IntakeStack(core.Stack):
 
     @property
     def handler(self):
@@ -23,12 +23,7 @@ class PipelineStack(core.Stack):
         save_payload_role.add_managed_policy(
             iam.ManagedPolicy.from_aws_managed_policy_name('service-role/AWSLambdaBasicExecutionRole'))
 
-        read_match_role = iam.Role(self, "IntakeRole",
-                                   role_name='rtcwpro-lambda-read-match-role',
-                                   assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
-                                   )
-        read_match_role.add_managed_policy(
-            iam.ManagedPolicy.from_aws_managed_policy_name('service-role/AWSLambdaBasicExecutionRole'))
+
 
         save_payload = _lambda.Function(
             self, 'save_payload',
@@ -37,15 +32,6 @@ class PipelineStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset('lambdas/pipeline/save_payload'),
             role=save_payload_role
-        )
-
-        read_match = _lambda.Function(
-            self, 'read_match',
-            function_name='rtcwpro-read-match',
-            handler='rtcwpro-read-match.handler',
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset('lambdas/pipeline/read_match'),
-            role=read_match_role
         )
 
         #        cert = acm.Certificate(self, "Certificate",
@@ -92,5 +78,4 @@ class PipelineStack(core.Stack):
         match.add_method("GET")  # GET /matches/{id}
 
         self.save_payload = save_payload
-        self.read_match = read_match
         self.api = api
