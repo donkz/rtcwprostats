@@ -29,7 +29,7 @@ class APIStack(core.Stack):
         save_payload = _lambda.Function(
             self, 'save_payload',
             function_name='rtcwpro-save-payload',
-            handler='rtcwpro-save-payload.handler',
+            handler='save_payload.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset('lambdas/pipeline/save_payload'),
             role=save_payload_role

@@ -1,7 +1,7 @@
 import logging
 import boto3
 import json
-from rtcwprowriteddb import (
+from reader_writeddb import (
     ddb_put_item,
     ddb_prepare_match_item,
     ddb_prepare_stats_items,
@@ -40,6 +40,8 @@ def handler(event, context):
             print("[x] Credentials for AWS S3 are not valid. " + str(err))
         elif err.response['Error']['Code'] == 'AccessDenied':
             print("[x] Current credentials to not provide access to read the file. " + str(err))
+        elif err.response['Error']['Code'] == 'NoSuchKey':
+            print("[x] File was not found: " + file_key)
         else:
             print("[x] Unexpected error: %s" % err)
         return None
@@ -113,7 +115,7 @@ if __name__ == "__main__":
               "arn": "arn:aws:s3:::example-bucket"
             },
             "object": {
-              "key": "intake/gameStats_match_1609826384_round_2_te_delivery_b1.json",
+              "key": "intake/gameStats_match_1610684722_round_2_mp_base.json",
               "size": 1024,
               "eTag": "0123456789abcdef0123456789abcdef",
               "sequencer": "0A1B2C3D4E5F678901"

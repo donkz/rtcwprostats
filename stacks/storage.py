@@ -64,7 +64,7 @@ class StorageStack(core.Stack):
         read_match = _lambda.Function(
             self, 'read_match',
             function_name='rtcwpro-read-match',
-            handler='rtcwpro-read-match.handler',
+            handler='read_match.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset('lambdas/storage/read_match'),
             role=read_match_role
@@ -82,9 +82,9 @@ class StorageStack(core.Stack):
 #        lambda_start_sf = _lambda.Function(
 #            self, 'lambda_start_sf',
 #            function_name  = 'rtcwpro-lambda-start-sf',
-#            handler='rtcwpro-lambda-start-sf.handler',
+#            handler='start_sf.handler',
 #            runtime=_lambda.Runtime.PYTHON_3_8,
-#            code=_lambda.Code.asset('lambdas/storage'),
+#            code=_lambda.Code.asset('lambdas/storage/start_sf'),
 #            role=lambda_start_sf_role
 #         )
         

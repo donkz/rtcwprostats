@@ -19,7 +19,7 @@ class ProcessingStack(core.Stack):
             self, 'read_match',
             function_name = 'rtcwpro-classifier',
             code=_lambda.Code.asset('lambdas/processing/classifier'),
-            handler='rtcwpro-classifier.handler',
+            handler='classifier.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
             role = cleanser_role
          )

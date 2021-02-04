@@ -33,9 +33,9 @@ class DeliveryStack(core.Stack):
         retriever = _lambda.Function(
             self, 'retriever',
             function_name='rtcwpro-retriever',
-            handler='rtcwpro-retriever.handler',
+            handler='retriever.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset('lambdas/delivery'),
+            code=_lambda.Code.asset('lambdas/delivery/retriever'),
             role=retriever_role
         )
         
@@ -50,27 +50,37 @@ class DeliveryStack(core.Stack):
 # =============================================================================
 #         API
 #         ---submit (defined in api stack)
-#         ---matches
+#1        ---matches
+#2        |------{proxy+}
 #         |
-#         ---stats
-#         |------player
-#         |------type
+#3        ---stats
+#4        |------player/{guid}
+#5        |------type/{type}
 # =============================================================================
         
+        #1
         matches = api.root.add_resource("matches")
         matches.add_method("GET", retriever_integration)
-        
+        #2        
         matches_proxy = matches.add_proxy(default_integration=retriever_integration,any_method=False)
         matches_proxy.add_method("GET")
-        
+        #3
         statsall = api.root.add_resource("stats")
-        statsall.add_method("GET", retriever_integration)
-        
+        #statsall.add_method("GET", retriever_integration)
+        stats_match_id = statsall.add_resource("{match_id}")
+        stats_match_id.add_method("GET", retriever_integration)
+        #4
         stats_player = statsall.add_resource("player")
-        stats_player.add_method("GET", retriever_integration)
+        #stats_player.add_method("GET", retriever_integration)
         
+        stats_player_guid = stats_player.add_resource("{player_guid}")
+        stats_player_guid.add_method("GET", retriever_integration)
+        #5
         stats_type = statsall.add_resource("type")
-        stats_type.add_method("GET", retriever_integration)
+        #stats_type.add_method("GET", retriever_integration)
+        
+        stats_type_type = stats_type.add_resource("{type}")
+        stats_type_type.add_method("GET", retriever_integration)
         
         
 
