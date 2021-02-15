@@ -58,7 +58,9 @@ def handler(event, context):
         message = "Failed to read content from " + file_key + "\n" + error_msg
     
     items = []
-    items.append(ddb_prepare_match_item(gamestats))
+    match_item = ddb_prepare_match_item(gamestats)
+    match_id = str(match_item["sk"])
+    items.append(match_item)
     items.extend(ddb_prepare_stats_items(gamestats))
     items.append(ddb_prepare_statsall_item(gamestats))
     items.append(ddb_prepare_gamelog_item(gamestats))
@@ -66,7 +68,8 @@ def handler(event, context):
     items.append(ddb_prepare_wstatsall_item(gamestats))
     items.extend(ddb_prepare_player_items(gamestats))
 
-    message = "Successfully sent " + file_key + " to database" 
+    total_items = str(len(items))
+    message = f"Sent {file_key} to database with {total_items} items. pk = match, sk = {match_id}" 
     for Item in items:
         response = None
         try:
@@ -77,12 +80,9 @@ def handler(event, context):
             message = "Failed to load all records for a match " + file_key + "\n" + error_msg
          
         if response["ResponseMetadata"]['HTTPStatusCode'] != 200:
-            print(response)
-            message = "Item returned non200 code " + Item["pk"] + ":" + Item["sk"]
+            message += "\nItem returned non 200 code " + Item["pk"] + ":" + Item["sk"]
 
-    return {
-        'message': message
-    }
+    logger.info(message)
 
 if __name__ == "__main__":
     event_str = """

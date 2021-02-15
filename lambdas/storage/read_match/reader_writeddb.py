@@ -14,6 +14,19 @@ def ddb_put_item(Item, table):
         logger.error(err.response['Error']['Message'])
         logger.error("Item was: " + Item["pk"] + ":" + Item["sk"])
         raise
+    else:
+        pk = Item["pk"]
+        sk = Item["sk"]
+        http_code = "No http code"
+        
+        try: 
+            http_code = response['ResponseMetadata']['HTTPStatusCode']
+        except: 
+            http_code = "Could not retrieve http code"
+            print("Could not retrieve http code from response\n", response)
+        
+        if http_code != 200:
+            print(f"Erroneous HTTP Code ({http_code}) while submitting item {pk}:{sk}\n", response)
     return response
 
 def ddb_prepare_match_item(gamestats):

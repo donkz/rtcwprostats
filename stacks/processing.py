@@ -7,7 +7,7 @@ from aws_cdk import (
 )
 
 class ProcessingStack(core.Stack):
-    def __init__(self, scope: core.Construct, construct_id: str, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, construct_id: str,lambda_tracing, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         cleanser_role = iam.Role(self, "ClassifierRole",
@@ -21,7 +21,8 @@ class ProcessingStack(core.Stack):
             code=_lambda.Code.asset('lambdas/processing/classifier'),
             handler='classifier.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
-            role = cleanser_role
+            role = cleanser_role,
+            tracing = lambda_tracing
          )
 
         # Run every hour

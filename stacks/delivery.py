@@ -17,7 +17,7 @@ from aws_cdk.aws_dynamodb import (
 
 class DeliveryStack(core.Stack):
     
-    def __init__(self, scope: core.Construct, id: str, ddb_table: Table, api : apigw.RestApi, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, id: str, ddb_table: Table, api : apigw.RestApi,lambda_tracing, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
         
         ####################################
@@ -36,7 +36,8 @@ class DeliveryStack(core.Stack):
             handler='retriever.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset('lambdas/delivery/retriever'),
-            role=retriever_role
+            role=retriever_role,
+            tracing = lambda_tracing
         )
         
         retriever_integration = apigw.LambdaIntegration(retriever)

@@ -10,7 +10,7 @@ from aws_cdk import (
 
 class StorageStack(core.Stack):
     
-    def __init__(self, scope: core.Construct, id: str, save_payload: _lambda.IFunction, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, id: str, save_payload: _lambda.IFunction,lambda_tracing, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
         
         storage_bucket = s3.Bucket(self, "MainStorage",
@@ -67,7 +67,8 @@ class StorageStack(core.Stack):
             handler='read_match.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset('lambdas/storage/read_match'),
-            role=read_match_role
+            role=read_match_role,
+            tracing = lambda_tracing
         )
         
         storage_bucket.grant_read(read_match, "intake/*")

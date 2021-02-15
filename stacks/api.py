@@ -13,7 +13,7 @@ class APIStack(core.Stack):
     def handler(self):
         return self.save_payload
 
-    def __init__(self, scope: core.Construct, construct_id: str, cert_arn : str,**kwargs) -> None:
+    def __init__(self, scope: core.Construct, construct_id: str, lambda_tracing, cert_arn : str,**kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         ####################################
@@ -32,7 +32,8 @@ class APIStack(core.Stack):
             handler='save_payload.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset('lambdas/pipeline/save_payload'),
-            role=save_payload_role
+            role=save_payload_role,
+            tracing = lambda_tracing
         )
         
         save_payload_integration = apigw.LambdaIntegration(save_payload)
