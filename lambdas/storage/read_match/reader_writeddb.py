@@ -1,16 +1,108 @@
 import boto3
 import logging
 import json
+import time
+from datetime import datetime
+import botocore
+from botocore.exceptions import ClientError
+from collections import Counter
 
-ddb = boto3.client('dynamodb')
+ddb_client = boto3.client('dynamodb')
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)  # set to DEBUG for verbose boto output
 logging.basicConfig(level = logging.INFO)
 
+def ddb_get_item(pk, sk, table):
+    result = None
+    try:
+        response = table.get_item(Key={'pk': pk, 'sk': sk})
+    except ClientError as e:
+        logger.warning("Exception occurred: " + e.response['Error']['Message'])
+        raise
+    else:
+        if "Item" in response:    
+            result = response['Item']
+    return result
+
+def ddb_get_server(sk, table):
+    """
+    Parameters
+    ----------
+    sk : string
+        server identifier (name).
+    table : ddb table
+
+    Returns
+    -------
+    result : Will return server json or None
+
+    """
+    result = None
+    try:
+        response = table.get_item(Key={'pk': "server", 'sk': sk})
+    except ClientError as e:
+        logger.warning("Exception occurred: " + e.response['Error']['Message'])
+        raise
+    else:
+        if "Item" in response:    
+            result = response['Item']
+    return result
+
+def ddb_update_item(key, expression, values, table):
+    try: 
+        response = table.update_item(Key=key, UpdateExpression=expression,ExpressionAttributeValues=values)
+    except botocore.exceptions.ClientError as err:
+        logger.error(err.response['Error']['Message'])
+        logger.error("Item was: " + str(key))
+        #raise
+    else:
+        pk = key["pk"]
+        sk = key["sk"]
+        http_code = "No http code"
+        
+        try: 
+            http_code = response['ResponseMetadata']['HTTPStatusCode']
+        except: 
+            http_code = "Could not retrieve http code"
+            logger.error("Could not retrieve http code from response\n" + str(response))
+        
+        if http_code != 200:
+            logger.error(f"Erroneous HTTP Code ({http_code}) while updating an item \n" + str(key) + "\n" + str(response))
+
+def ddb_update_server_record(gamestats, table):
+    key = {
+        'pk'    : "server",
+        'sk'    : gamestats['serverinfo']['serverName']
+        }
+    expression = 'SET submissions = submissions + :val1'
+    values = {':val1': 1}
+    ddb_update_item(key, expression, values, table)
+
+def ddb_prepare_server_item(gamestats):
+    region = ''
+    server_name = gamestats['serverinfo']['serverName']
+    
+    if " na "       in server_name.lower(): region = 'na'
+    if " virginia " in server_name.lower(): region = 'na'
+    if " donkz "    in server_name.lower(): region = 'na'
+    if " eu "       in server_name.lower(): region = 'eu'
+    if " sa "       in server_name.lower(): region = 'sa'
+    
+    
+    server_item = {
+        'pk'    : 'server',
+        'sk'    : server_name,
+        'lsipk' : region + '#' + gamestats['serverinfo']['serverName'],
+        'data'  : gamestats["serverinfo"],
+        'submissions' : 1,
+        'region' : region
+        }
+    return server_item
+
 def ddb_put_item(Item, table):
     try: 
         response = table.put_item(Item=Item)
-    except ddb.exceptions.ClientError as err:
+    except botocore.exceptions.ClientError as err:
         logger.error(err.response['Error']['Message'])
         logger.error("Item was: " + Item["pk"] + ":" + Item["sk"])
         raise
@@ -30,10 +122,11 @@ def ddb_put_item(Item, table):
     return response
 
 def ddb_prepare_match_item(gamestats):
+    inject_json_version(gamestats["gameinfo"], gamestats)
     match_item = {
         'pk'    : 'match',
         'sk'    : gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
-        'lsipk' : "na#g6" + "#" + gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
+        'lsipk' : gamestats["match_type"] + "#" + gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
         'gsi1pk': "match#" + gamestats["gameinfo"]["map"],
         'gsi1sk': gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
         'data'  : json.dumps(gamestats["gameinfo"])
@@ -55,23 +148,44 @@ def ddb_prepare_stats_items(gamestats):
     
     stats_items = []
     matchid = gamestats["gameinfo"]["match_id"]
-    for team in gamestats["stats"]:
-        for playerguid, stat in team.items():
-            stats_item = {
-                'pk'    : 'stats#' + playerguid,
-                'sk'    : matchid,
-                'gsi1pk': "stats#" + "na#g6",
-                'gsi1sk': matchid,
-                'data'  : json.dumps(stat)
-             }
-            stats_items.append(stats_item)
+    
+    #tmp_stats_unnested = fix_stats_nesting(gamestats)
+    if len(gamestats["stats"]) == 2: # TODO undo this if statement to always unnest    
+        logger.info("Number of items in stats: 2")
+        for team in gamestats["stats"]:
+            for playerguid, stat in team.items():
+                inject_json_version(stat, gamestats)
+                stats_item = {
+                    'pk'    : 'stats#' + playerguid,
+                    'sk'    : matchid,
+                    'gsi1pk': "stats#" + gamestats["match_type"],
+                    'gsi1sk': matchid,
+                    'data'  : json.dumps(stat)
+                 }
+                stats_items.append(stats_item)
+    else:   
+        logger.info("Number of items in stats: " + str(len(gamestats["stats"])))
+        for player_item in gamestats["stats"]:
+            for playerguid, stat in player_item.items():
+                #print(playerguid)
+                inject_json_version(stat, gamestats)
+                stats_item = {
+                    'pk'    : 'stats#' + playerguid,
+                    'sk'    : matchid,
+                    'gsi1pk': "stats#" + gamestats["match_type"],
+                    'gsi1sk': matchid,
+                    'data'  : json.dumps(stat)
+                 }
+                stats_items.append(stats_item)
+    logger.info("Number of players in stats_items: " + str(len(stats_items)))
     return stats_items
 
 def ddb_prepare_statsall_item(gamestats):
+    inject_json_version(gamestats["stats"], gamestats)
     statsall_item = {
         'pk'    : 'statsall',
         'sk'    : gamestats["gameinfo"]["match_id"],
-        'gsi1pk': "statsall#" + "na#g6",
+        'gsi1pk': "statsall#" + gamestats["match_type"],
         'gsi1sk': gamestats["gameinfo"]["match_id"],
         'data'  : json.dumps(gamestats["stats"])
         }
@@ -79,24 +193,23 @@ def ddb_prepare_statsall_item(gamestats):
 
 def ddb_prepare_gamelog_item(gamestats):
     gamelog_item = {
-        'pk'    : 'gamelog',
+        'pk'    : 'gamelogs',
         'sk'    : gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
         'data'  : json.dumps(gamestats["gamelog"])
         }
     return gamelog_item
 
-def ddb_prepare_wstat_items(gamestats):
-
-    #debug
-    #playerguid = list(gamestats['wstats'][0].keys())[0] #loop
-    #wstat = gamestats['wstats'][0][playerguid][0] #loop
-    #weapon = wstat["weapon"]
-    
+def ddb_prepare_wstat_items_obsolete(gamestats):
+    player_guids = Counter()
     wstat_items = []
     matchid = gamestats["gameinfo"]["match_id"]
     for player in gamestats['wstats']:
         playerguid = list(player.keys())[0] #this could be fixed 
+        if player_guids[playerguid] > 0:
+            continue
+        player_guids[playerguid] +=1
         for wstat in player[playerguid]:
+            inject_json_version(wstat, gamestats)
             wstat_item = {
                 'pk'    : "wstats#" + playerguid,
                 'sk'    : wstat["weapon"] + "#" + matchid,
@@ -105,7 +218,26 @@ def ddb_prepare_wstat_items(gamestats):
             wstat_items.append(wstat_item)
     return wstat_items
 
-def ddb_prepare_wstatsall_item(gamestats):    
+def ddb_prepare_wstat_items(gamestats):
+    player_guids = Counter()
+    wstat_items = []
+    matchid = gamestats["gameinfo"]["match_id"]
+    for player in gamestats['wstats']:
+        playerguid = list(player.keys())[0] #this could be fixed 
+        if player_guids[playerguid] > 0: #in January 2021 some players were repeating
+            continue
+        player_guids[playerguid] +=1
+        #inject_json_version(wstat, gamestats)
+        wstat_item = {
+            'pk'    : "wstats#" + playerguid,
+            'sk'    : matchid,
+            'data'  : json.dumps(player[playerguid])
+            }
+        wstat_items.append(wstat_item)
+    return wstat_items
+
+def ddb_prepare_wstatsall_item(gamestats):   
+    inject_json_version(gamestats['wstats'], gamestats)
     wstatsall_item ={
             'pk'    : "wstatsall",
             'sk'    : gamestats["gameinfo"]["match_id"],
@@ -114,21 +246,133 @@ def ddb_prepare_wstatsall_item(gamestats):
     return wstatsall_item
 
 def ddb_prepare_player_items(gamestats):
-    
     player_items = []
     matchid = gamestats["gameinfo"]["match_id"]
     for playerguid, stat in gamestats["stats"][0].items():
         player_item = {
             'pk'    : 'player',
             'sk'    : playerguid + "#" + stat["alias"],
-            'data'  : matchid
+            'data'  : stat["alias"]
             }
         player_items.append(player_item)
     return player_items
 
+def ddb_prepare_log_item(match_id_rnd,file_key,
+                         match_item_size, 
+                         num_stats_items, 
+                         statsall_item_size,
+                         gamelog_item_size,
+                         num_wstats_items,
+                         wstatsall_item_size,
+                         num_player_items,
+                         #timestamp,
+                         submitter_ip):    
+    log_item ={
+            'pk'            : "match",
+            'sk'            : "log#" + match_id_rnd + "#" + file_key,
+            'lsipk'         : "log#" + file_key + "#" + match_id_rnd,
+            'match_size'    : match_item_size, 
+            'stats_num'     : num_stats_items, 
+            'statsall_size' : statsall_item_size,
+            'gamelog_size'  : gamelog_item_size,
+            'num_wstats'    : num_wstats_items,
+            'wstatsall_size': wstatsall_item_size,
+            'players_num'   : num_player_items,
+            'timestamp'     : datetime.now().isoformat(),
+            'submitter_ip'  : submitter_ip
+        }
+    return log_item
 
 
+def create_batch_write_structure(table_name, items, start_num, batch_size):
+    """
+    Create item structure for passing to batch_write_item
+    :param table_name: DynamoDB table name
+    :param items: large collection of items
+    :param start_num: Start index
+    :param num_items: Number of items
+    :return: dictionary of tables to write to
+    """
+    
+    serializer = boto3.dynamodb.types.TypeSerializer()
+    item_batch = { table_name: []}
+    item_batch_list = items[start_num : start_num + batch_size]
+    if len(item_batch_list) < 1:
+        return None
+    for item in item_batch_list:
+        item_serialized = {k: serializer.serialize(v) for k,v in item.items()}
+        item_batch[table_name].append({'PutRequest': {'Item': item_serialized}})
+                
+    return item_batch
 
+def ddb_batch_write(client, table_name, items):
+        messages = ""
+        num_items = len(items)
+        logger.info(f'Performing ddb_batch_write to dynamo with {num_items} items.')
+        start = 0
+        batch_size = 25
+        while True:
+            # Loop adding 25 items to dynamo at a time
+            request_items = create_batch_write_structure(table_name,items, start, batch_size)
+            if not request_items:
+                break
+            try: 
+                response = client.batch_write_item(RequestItems=request_items)
+            except botocore.exceptions.ClientError as err:
+                logger.error(err.response['Error']['Message'])
+                logger.error("Failed to run full batch_write_item")
+                raise
+            if len(response['UnprocessedItems']) == 0:
+                logger.info(f'Wrote a batch of about {batch_size} items to dynamo')
+            else:
+                # Hit the provisioned write limit
+                logger.warning('Hit write limit, backing off then retrying')
+                sleep_time = 5 #seconds
+                logger.warning(f"Sleeping for {sleep_time} seconds")
+                time.sleep(sleep_time)
+
+                # Items left over that haven't been inserted
+                unprocessed_items = response['UnprocessedItems']
+                logger.warning('Resubmitting items')
+                # Loop until unprocessed items are written
+                while len(unprocessed_items) > 0:
+                    response = client.batch_write_item(RequestItems=unprocessed_items)
+                    # If any items are still left over, add them to the
+                    # list to be written
+                    unprocessed_items = response['UnprocessedItems']
+
+                    # If there are items left over, we could do with
+                    # sleeping some more
+                    if len(unprocessed_items) > 0:
+                        sleep_time = 5 #seconds
+                        logger.warning(f"Sleeping for {sleep_time} seconds")
+                        time.sleep(sleep_time)
+
+                # Inserted all the unprocessed items, exit loop
+                logger.warning('Unprocessed items successfully inserted')
+                break
+            if response["ResponseMetadata"]['HTTPStatusCode'] != 200:
+                message += f"\nBatch {start} returned non 200 code"
+            start += 25
+
+def inject_json_version(obj, gamestats):
+    if isinstance(obj, list):
+        print("Skipping list while inserting the versions")# TODO
+    elif isinstance(obj, dict):  
+        obj['jsonGameStatVersion'] = gamestats["serverinfo"]["jsonGameStatVersion"]
+    else:
+        logger.warning("Unidentified stats object!")
+
+def fix_stats_nesting(gamestats):
+    stats_new_object = []
+    if len(gamestats["stats"]) == 2:
+            for k,v in gamestats["stats"][0].items():
+                stats_new_object.append({k:v})
+            for k,v in gamestats["stats"][1].items():
+                stats_new_object.append({k:v})   
+    else: 
+        stats_new_object = gamestats["stats"]
+    return stats_new_object
 
 '''
 CLI Tests
@@ -230,4 +474,3 @@ gamelog  retrieval      #
 $ aws dynamodb get-item --table-name rtcwprostats --key '{"pk": {"S": "gamelog"},"sk": {"S": "16098263842"}}' --return-consumed-capacity TOTAL
 "CapacityUnits": 1.5
 '''
-

@@ -1,9 +1,8 @@
 
-# Welcome to your CDK Python project!
+# CDK Python project rtcwprostats
 
-This is a blank project for Python development with CDK.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+The `cdk.json` file tells the CDK Toolkit how to execute the app.
 
 This project is set up like a standard Python project.  The initialization
 process also creates a virtualenv within this project, stored under the `.venv`
@@ -12,7 +11,7 @@ directory.  To create the virtualenv it assumes that there is a `python3`
 package. If for any reason the automatic creation of the virtualenv fails,
 you can create the virtualenv manually.
 
-To manually create a virtualenv on MacOS and Linux:
+**First time** : To manually create a virtualenv on **MacOS and Linux**:
 
 ```
 $ python -m venv .venv
@@ -25,7 +24,7 @@ step to activate your virtualenv.
 $ source .venv/bin/activate
 ```
 
-If you are a Windows platform, you would activate the virtualenv like this:
+If you are a **Windows** platform, you would activate the virtualenv like this:
 
 ```
 % .venv\Scripts\activate.bat
@@ -54,5 +53,27 @@ command.
  * `cdk deploy`      deploy this stack to your default AWS account/region
  * `cdk diff`        compare deployed stack with current state
  * `cdk docs`        open CDK documentation
+
+### Helpful setup hints
+Python, npm, cdk may not add to your PATH automatically
+next time you start CMD you can either run these commands or script them into a file:
+
+If needed add python to windows PATH
+```
+	set PATH=%PATH%;C:\Users\\<USERNAME>\AppData\Local\Programs\Python\Python38_this_may_be different
+	set PATH=%PATH%;C:\Users\\<USERNAME>\AppData\Roaming\npm
+	cdk --version
+	cd \\<PATH TO GITHUB>\Github\rtcwprostats
+	.venv\Scripts\activate.bat
+```
+	
+later you will use these
+	
+```
+	cdk  synth
+	cdk deploy -v --profile user2 --all --require-approval never
+    cdk deploy --profile user2 -e rtcwpro-api
+```
+
 
 Enjoy!

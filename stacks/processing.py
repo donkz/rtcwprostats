@@ -1,3 +1,4 @@
+"""Import aws cdk modules."""
 from aws_cdk import (
     aws_lambda as _lambda,
     aws_events as events,
@@ -6,36 +7,38 @@ from aws_cdk import (
     core
 )
 
+
 class ProcessingStack(core.Stack):
-    def __init__(self, scope: core.Construct, construct_id: str,lambda_tracing, **kwargs) -> None:
+    """Processes that take place after the match had been saved."""
+
+    def __init__(self, scope: core.Construct, construct_id: str, lambda_tracing, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        cleanser_role = iam.Role(self, "ClassifierRole",
-                role_name = 'rtcwpro-lambda-classifier-role',
-                assumed_by= iam.ServicePrincipal("lambda.amazonaws.com")
-                )
-        
-        cleanser_lambda = _lambda.Function(
-            self, 'read_match',
-            function_name = 'rtcwpro-classifier',
+        classifier_role = iam.Role(self, "ClassifierRole",
+                                   role_name='rtcwpro-lambda-classifier-role',
+                                   assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+                                   )
+
+        classifier_lambda = _lambda.Function(
+            self, 'classifier',
+            function_name='rtcwpro-classifier',
             code=_lambda.Code.asset('lambdas/processing/classifier'),
             handler='classifier.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
-            role = cleanser_role,
-            tracing = lambda_tracing
-         )
+            role=classifier_role,
+            tracing=lambda_tracing
+        )
 
         # Run every hour
         # See https://docs.aws.amazon.com/lambda/latest/dg/tutorial-scheduled-events-schedule-expressions.html
         rule = events.Rule(
             self, "Rule",
-            rule_name = "hourly_cleanser",
+            rule_name="hourly_cleanser",
             schedule=events.Schedule.cron(
                 minute='0',
-                hour='0', #change this to */1 for hourly
-                month='*/1', #tmp
+                hour='0',  # change this to */1 for hourly
+                month='*/1',  # tmp
                 week_day='*',
                 year='*'),
         )
-        rule.add_target(targets.LambdaFunction(cleanser_lambda))
-
+        rule.add_target(targets.LambdaFunction(classifier_lambda))

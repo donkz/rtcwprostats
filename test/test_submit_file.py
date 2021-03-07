@@ -8,25 +8,16 @@ import sys
 
 url_api = 'https://rtcwproapi.donkanator.com/'
 url_path_submit = 'submit'
+test_dir = r".\gamestats5"
+test_dir = r"C:\c\.wolf\rtcwpro\stats\\"
 
-ran_today = True
-try:
-    len(test_files)
-    print("Running subsequently")
-except NameError:
-    print("Running for the first time")
-    ran_today = False
-    
-sys.exit()
-
-if not ran_today: 
-    test_files = [] 
-    for subdir, dirs, files in os.walk(r".\gamestats5"):
-            for file in files:
-                #print os.path.join(subdir, file)
-                filepath = subdir + os.sep + file
-                if filepath.endswith(".json"):
-                    test_files.append(filepath)
+test_files = [] 
+for subdir, dirs, files in os.walk(test_dir):
+        for file in files:
+            #print os.path.join(subdir, file)
+            filepath = subdir + os.sep + file
+            if filepath.endswith(".json"):
+                test_files.append(filepath)
                 
                 
 #file_name = r".\gamestats5\gameStats_match_1610684722_round_2_mp_base.json"
@@ -39,21 +30,22 @@ with open(file_name) as file:
     content = file.read()
 
 match = json.loads(content)
-match_id_round = match["gameinfo"]["match_id"] + match["gameinfo"]["round"]
-
-content_string_bytes = content.encode("ascii") 
-base64_bytes = base64.b64encode(content_string_bytes) 
-base64_string = base64_bytes.decode("ascii") 
-str_len = str(int(len(base64_string)/1024))
-print(f"Submitting string of {str_len} KB")
-
-
-# =============================================================================
-# TEST SUBMISSION OF STATS TO WEB API
-# =============================================================================
-url = url_api+url_path_submit
-response = requests.post(url, data=base64_string, headers={'matchid': match_id_round[0:-1], 'x-api-key':'rtcwproapikeythatisjustforbasicauthorization'})
-print(response.text)
+if '"label": "map_restart"' not in content:
+    match_id_round = match["gameinfo"]["match_id"] + match["gameinfo"]["round"]
+    
+    content_string_bytes = content.encode("ascii") 
+    base64_bytes = base64.b64encode(content_string_bytes) 
+    base64_string = base64_bytes.decode("ascii") 
+    str_len = str(int(len(base64_string)/1024))
+    print(f"Submitting string of {str_len} KB")
+    
+    
+    # =============================================================================
+    # TEST SUBMISSION OF STATS TO WEB API
+    # =============================================================================
+    url = url_api+url_path_submit
+    response = requests.post(url, data=base64_string, headers={'matchid': match_id_round[0:-1], 'x-api-key':'rtcwproapikeythatisjustforbasicauthorization'})
+    print(response.text)
 
 #curl --location --request POST 'https://rtcwproapi.donkanator.com/submit' 
 #--header 'matchid: 123455678' 

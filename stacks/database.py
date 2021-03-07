@@ -29,7 +29,7 @@ class DatabaseStack(core.Stack):
             point_in_time_recovery = True,
             #stream=StreamViewType.NEW_IMAGE,
             encryption=TableEncryption.AWS_MANAGED,
-            removal_policy=core.RemovalPolicy.DESTROY # NOT recommended for production code
+            removal_policy=core.RemovalPolicy.RETAIN # NOT recommended for production code
         )
 
         ddb_table.add_global_secondary_index(

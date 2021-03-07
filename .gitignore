@@ -22,3 +22,12 @@ venv/
 #db connection
 installdb/dbconnection.py
 
+#test files
+*.csv
+
+#settings
+stacks/settings.py
+
+
+
+

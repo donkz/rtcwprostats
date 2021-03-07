@@ -8,16 +8,13 @@ from aws_cdk import (
 
 
 class APIStack(core.Stack):
+    """Begin API and start with a submit method."""
 
-    @property
-    def handler(self):
-        return self.save_payload
-
-    def __init__(self, scope: core.Construct, construct_id: str, lambda_tracing, cert_arn : str,**kwargs) -> None:
+    def __init__(self, scope: core.Construct, construct_id: str, lambda_tracing, api_key: str, cert_arn: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         ####################################
-        #Lambda role and function
+        # Lambda role and function
         ####################################
         save_payload_role = iam.Role(self, "SavePayloadRole",
                                      role_name='rtcwpro-lambda-intake-role',
@@ -33,39 +30,39 @@ class APIStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset('lambdas/pipeline/save_payload'),
             role=save_payload_role,
-            tracing = lambda_tracing
+            tracing=lambda_tracing
         )
-        
+
         save_payload_integration = apigw.LambdaIntegration(save_payload)
-        
+
         ####################################
-        #End of Lambda role and function
+        # End of Lambda role and function
         ####################################
-        
+
         cert = acm.Certificate.from_certificate_arn(self, "Certificate", cert_arn)
-        
-        api = apigw.RestApi(self, "rtcwpro", 
+
+        api = apigw.RestApi(self, "rtcwpro",
                             domain_name={
                                 "domain_name": "rtcwproapi.donkanator.com",
                                 "certificate": cert
-                                })
-        
+                            })
+
         submit = api.root.add_resource("submit")
         submit.add_method("POST", save_payload_integration, request_parameters={"method.request.header.matchid": True}, api_key_required=True)
-        
-        api_key = api.add_api_key(
+
+        api_key_obj = api.add_api_key(
             id="ApiKey",
             api_key_name="rtcwpro-api-key",
-            value="rtcwproapikeythatisjustforbasicauthorization"
+            value=api_key
         )
 
         plan = api.add_usage_plan("UsagePlan",
                                   name="Easy",
-                                  api_key=api_key,
+                                  api_key=api_key_obj,
                                   throttle={
                                       "rate_limit": 1,  # 1 request per second
                                       "burst_limit": 2
-                                      }
+                                  }
                                   )
         plan.add_api_stage(
             stage=api.deployment_stage

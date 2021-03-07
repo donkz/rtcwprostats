@@ -3,11 +3,12 @@ import pandas as pd
 import os
 
 directory = r".\gamestats3\\"
+directory = r"C:\c\.wolf\rtcwpro\stats\\"
 
 jsons = []
 for filename in os.listdir(directory):
     if filename.endswith(".json"): 
-         print("Processing " + filename)
+         #print("Processing " + filename)
          with open(directory + filename) as f:
             try:
                 value = json.load(f)
@@ -20,7 +21,8 @@ def dict_differences(cols, json, section):
     ab = [x for x in list(json.keys()) if x not in cols]
 #    ba = [x for x in cols if x not in list(json.keys())]
     if len(ab) > 0:
-        print("[x] new columns in json " + section + " " + str(ab))
+        if str(ab) != "['categories']":
+            print("[x] new columns in json " + section + " " + str(ab))
 #    if len(ba) > 0:
 #        print("[x] columns missing in json" + str(ab))
 
@@ -107,7 +109,7 @@ weaponcols = []
 weaponcols.append('match_id') #fk
 weaponcols.append('round') #fk
 weaponcols.append('GUID') #fk
-weaponcols.append('alias') #fk
+#weaponcols.append('alias') #fk
 weaponcols.append('weapon')
 weaponcols.append('kills') 
 weaponcols.append('deaths') 
@@ -122,6 +124,22 @@ stats = []
 weapons = []
 logs = []
 for j in jsons:
+    if "gameinfo" not in j:
+        if "map_restart" in json.dumps(j):
+            print("No gameinfo. Map was restarted")
+        else:
+            print("No gameinfo in " + str(j))
+            
+    elif "stats" not in j:
+        print("No stats in " + j["gameinfo"].get('match_id','na'))
+    elif isinstance(j["stats"], list):
+        print(j["gameinfo"].get('match_id','na') + " is a list of " + str(len(j["stats"])))
+        if "" == j["gameinfo"].get('match_id','na'):
+            print(j)
+    elif isinstance(j["stats"], dict):
+        print(j["gameinfo"].get('match_id','na') + " is a dict of " + str(len(j["stats"].keys())))
+    else: 
+        print(j["gameinfo"].get('match_id','na') + " is a " + type(j["stats"]))
     dict_differences(jsoncols_root_cols, j, "root")
     
     dict_differences(servercols, j["serverinfo"], "serverinfo")
@@ -133,20 +151,24 @@ for j in jsons:
     server.append(j["serverinfo"].get('serverIP','na'))
     server.append(j["serverinfo"].get('serverName','na'))
     server.append(j["serverinfo"].get('unixtime','na'))
+    server.append(j["serverinfo"].get('g_customConfig','na'))
     servers.append(server)
     
-    dict_differences(gamecols, j["gameinfo"], "gameinfo")
-    game = []
-    game.append(j["gameinfo"].get('match_id','na')) #pk
-    game.append(j["gameinfo"].get('round','na')) #pk
-    game.append(j["gameinfo"].get('round_start','na'))
-    game.append(j["gameinfo"].get('round_end','na'))
-    game.append(j["gameinfo"].get('map','na'))
-    game.append(j["gameinfo"].get('time_limit','na'))
-    game.append(j["gameinfo"].get('allies_cycle','na'))
-    game.append(j["gameinfo"].get('axis_cycle','na'))
-    game.append(j["gameinfo"].get('winner','na'))
-    games.append(game)
+    if "gameinfo" in j:
+        dict_differences(gamecols, j["gameinfo"], "gameinfo")
+        game = []
+        game.append(j["gameinfo"].get('match_id','na')) #pk
+        game.append(j["gameinfo"].get('round','na')) #pk
+        game.append(j["gameinfo"].get('round_start','na'))
+        game.append(j["gameinfo"].get('round_end','na'))
+        game.append(j["gameinfo"].get('map','na'))
+        game.append(j["gameinfo"].get('time_limit','na'))
+        game.append(j["gameinfo"].get('allies_cycle','na'))
+        game.append(j["gameinfo"].get('axis_cycle','na'))
+        game.append(j["gameinfo"].get('winner','na'))
+        games.append(game)
+    else:
+        continue
 
     
     for line in j["gamelog"]:
@@ -164,71 +186,101 @@ for j in jsons:
         log.append(line.get('killer_health','na'))
         log.append(line.get('Axis','na'))
         log.append(line.get('Allied','na'))
+        log.append(line.get('other_health','na'))
+        log.append(line.get('agent_pos','na'))
+        log.append(line.get('agent_angle','na'))
+        log.append(line.get('other_pos','na'))
+        log.append(line.get('other_angle','na'))
+        log.append(line.get('allies_alive','na'))
+        log.append(line.get('axis_alive','na'))
         logs.append(log)
         
+
+
         
+    stats_new_object = []
+    if len(j["stats"]) == 2:
+        for k,v in j["stats"][0].items():
+            stats_new_object.append({k:v})
+        for k,v in j["stats"][1].items():
+            stats_new_object.append({k:v})   
+    else: 
+        stats_new_object = j["stats"]
         
-    for team, teaminfo  in j["stats"].items():
-        stat = []
-        
+    #for team, teaminfo  in j["stats"].items():
+    for player_item  in stats_new_object:
+        stat = [] 
         stat.append(j["gameinfo"].get('match_id')) #fk
         stat.append(j["gameinfo"].get('round')) #fk
         
-        for playerguid, playerstat in teaminfo.items():
+        for playerguid, playerstat in player_item.items():
             dict_differences(statcols, playerstat, "playerstat")
-            stat.append(team)
+            stat.append(playerstat.get('team','na'))
             stat.append(playerguid)
             stat.append(playerstat.get('alias','na'))
             stat.append(playerstat.get('start_time','na'))
             stat.append(playerstat.get('num_rounds','na'))
-            stat.append(playerstat.get('kills','na'))
-            stat.append(playerstat.get('deaths','na'))
-            stat.append(playerstat.get('gibs','na'))
-            stat.append(playerstat.get('suicides','na'))
-            stat.append(playerstat.get('teamkills','na'))
-            stat.append(playerstat.get('headshots','na'))
-            stat.append(playerstat.get('damagegiven','na'))
-            stat.append(playerstat.get('damagereceived','na'))
-            stat.append(playerstat.get('damageteam','na'))
-            stat.append(playerstat.get('hits','na'))
-            stat.append(playerstat.get('shots','na'))
-            stat.append(playerstat.get('accuracy','na'))
-            stat.append(playerstat.get('revives','na'))
-            stat.append(playerstat.get('ammogiven','na'))
-            stat.append(playerstat.get('healthgiven','na'))
-            stat.append(playerstat.get('poisoned','na'))
-            stat.append(playerstat.get('knifekills','na'))
-            stat.append(playerstat.get('killpeak','na'))
-            stat.append(playerstat.get('efficiency','na'))
-            stat.append(playerstat.get('score','na'))
-            stat.append(playerstat.get('dyn_planted','na'))
-            stat.append(playerstat.get('dyn_defused','na'))
-            stat.append(playerstat.get('obj_captured','na'))
-            stat.append(playerstat.get('obj_destroyed','na'))
-            stat.append(playerstat.get('obj_returned','na'))
-            stat.append(playerstat.get('obj_taken','na'))
+            if 'categories' in playerstat: 
+                stat_values_dict = playerstat['categories']
+            else:
+                stat_values_dict = playerstat
+            stat.append(stat_values_dict.get('kills','na'))
+            stat.append(stat_values_dict.get('deaths','na'))
+            stat.append(stat_values_dict.get('gibs','na'))
+            stat.append(stat_values_dict.get('suicides','na'))
+            stat.append(stat_values_dict.get('teamkills','na'))
+            stat.append(stat_values_dict.get('headshots','na'))
+            stat.append(stat_values_dict.get('damagegiven','na'))
+            stat.append(stat_values_dict.get('damagereceived','na'))
+            stat.append(stat_values_dict.get('damageteam','na'))
+            stat.append(stat_values_dict.get('hits','na'))
+            stat.append(stat_values_dict.get('shots','na'))
+            stat.append(stat_values_dict.get('accuracy','na'))
+            stat.append(stat_values_dict.get('revives','na'))
+            stat.append(stat_values_dict.get('ammogiven','na'))
+            stat.append(stat_values_dict.get('healthgiven','na'))
+            stat.append(stat_values_dict.get('poisoned','na'))
+            stat.append(stat_values_dict.get('knifekills','na'))
+            stat.append(stat_values_dict.get('killpeak','na'))
+            stat.append(stat_values_dict.get('efficiency','na'))
+            stat.append(stat_values_dict.get('score','na'))
+            stat.append(stat_values_dict.get('dyn_planted','na'))
+            stat.append(stat_values_dict.get('dyn_defused','na'))
+            stat.append(stat_values_dict.get('obj_captured','na'))
+            stat.append(stat_values_dict.get('obj_destroyed','na'))
+            stat.append(stat_values_dict.get('obj_returned','na'))
+            stat.append(stat_values_dict.get('obj_taken','na'))
             stats.append(stat)
         
-        for weapon in playerstat["wstats"]:
-            wstat = []
-            dict_differences(weaponcols, weapon, "weapon")
-            wstat.append(j["gameinfo"].get('match_id'))
-            wstat.append(j["gameinfo"].get('round'))
-            wstat.append(playerguid)
-            wstat.append(playerstat.get('alias','na'))
-            wstat.append(weapon.get('weapon','na'))
-            wstat.append(weapon.get('kills','na')) 
-            wstat.append(weapon.get('deaths','na')) 
-            wstat.append(weapon.get('headshots','na'))
-            wstat.append(weapon.get('hits','na')) 
-            wstat.append(weapon.get('shots','na'))
-            weapons.append(wstat)
+    for player_item in j["wstats"]:
+        for playerguid, weapon_items in player_item.items():
+            for weapon in weapon_items:
+                #print(playerguid, weapon)
+                wstat = []
+                dict_differences(weaponcols, weapon, "weapon")
+                wstat.append(j["gameinfo"].get('match_id'))
+                wstat.append(j["gameinfo"].get('round'))
+                wstat.append(playerguid)
+                #wstat.append(playerstat.get('alias','na'))
+                wstat.append(weapon.get('weapon','na'))
+                wstat.append(weapon.get('kills','na')) 
+                wstat.append(weapon.get('deaths','na')) 
+                wstat.append(weapon.get('headshots','na'))
+                wstat.append(weapon.get('hits','na')) 
+                wstat.append(weapon.get('shots','na'))
+                weapons.append(wstat)
 
 serversdf =  pd.DataFrame(servers, columns=servercols)             
 gamesdf =  pd.DataFrame(games, columns=gamecols) 
 logsdf = pd.DataFrame(logs, columns=logcols)
 statsdf = pd.DataFrame(stats, columns=statcols)    
 weapondf = pd.DataFrame(weapons, columns=weaponcols) 
+
+serversdf.to_csv("serversdf.csv")
+gamesdf.to_csv("games.csv")
+logsdf.to_csv("logs.csv")
+statsdf.to_csv("stats.csv")
+weapondf.to_csv("weapon.csv")
 
 
 def json_extract(obj, skeleton):
