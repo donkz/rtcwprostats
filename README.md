@@ -65,11 +65,14 @@ x is done , / is work in progress, blank is planned
 | |Players |/player/{guid}/eloprogress/{type} |Filter by guid sort by time to get elo progress |
 | |Players |/player/recent |Filter by last 30 days to get primary aliases |
 
-Example: 
-https://rtcwproapi.donkanator.com/matches/recent/92
-will (maybe) give match 16098173561, therefore stats and wstats will follow:
+Example:
+
+https://rtcwproapi.donkanator.com/matches/recent/92 will (maybe) give match 16098173561, therefore stats and wstats will follow:
+
 https://rtcwproapi.donkanator.com/stats/1609817356
+
 https://rtcwproapi.donkanator.com/wstats/1609817356
+
 https://rtcwproapi.donkanator.com/wstats/player/A53B3ED2A896CB/match/1609817356
 
 ## Usage 
