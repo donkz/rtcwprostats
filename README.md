@@ -12,7 +12,7 @@ This project is build to collect RTCWPro stats submitted by servers after the en
 ![alt text](./readme-img-concept.png "Conceptual Flow")
 
 **Technical architecture**
-![alt text](./readme-img-concept.png "AWS Components Flow")
+![alt text](./readme-img-architecture.png "AWS Components Flow")
 
 The project relies on AWS CDK framework that allows deploying infrastructure as code(IaC).
 This way all deployed resources (storgaes, databases, jobs) are robustly controlled, versioned, and easily replicated. 
