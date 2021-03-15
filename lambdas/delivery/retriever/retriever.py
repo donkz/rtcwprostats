@@ -4,9 +4,9 @@ from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 import time
 import logging
+import os
 
-TABLE_NAME = "rtcwprostats"
-# dynamodb_client = boto3.client('dynamodb')
+TABLE_NAME = os.environ['RTCWPROSTATS_TABLE_NAME']
 dynamodb = boto3.resource('dynamodb')
 ddb_table = dynamodb.Table(TABLE_NAME)
 

@@ -5,38 +5,16 @@ from aws_cdk import (
     core
 )
 
+
 class DNSStack(core.Stack):
-    
-    def __init__(self, scope: core.Construct, construct_id: str, api : apigw.LambdaRestApi, **kwargs) -> None:
+    """Make a A Alias record in my zone to API Gateway domain."""
+
+    def __init__(self, scope: core.Construct, construct_id: str, api: apigw.LambdaRestApi, dns_resource_name: str,hosted_zone_id: str, zone_name: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        zone = route53.HostedZone.from_hosted_zone_attributes(self, "donkanator.com", hosted_zone_id = "Z13WGYL3NAVHE8", zone_name="donkanator.com",)
-        
+        zone = route53.HostedZone.from_hosted_zone_attributes(self, dns_resource_name, hosted_zone_id=hosted_zone_id, zone_name=zone_name)
+
         route53.ARecord(self, 'AliasRecord',
-            record_name = "rtcwproapi",
-            target = route53.RecordTarget.from_alias(targets.ApiGateway(api)), 
-            zone = zone)
-        
-#        my_alias = route53.IAliasRecordTarget.bind(
-#            self,
-#            record=route53.AliasRecordTargetConfig(
-#                hosted_zone_id='Z1UJRXOUMOOFQ8',
-#                dns_name="fuck.me.com"
-#            )  
-#        )
-#        
-#        route53.ARecord(
-#            self,
-#            'rtcwpro-api',
-#            comment = "managed through CDK",
-#            record_name = "rtcwproapi",
-#            target = route53.RecordTarget(alias_target=my_alias),
-#            zone = zone
-#            )
-        
-#        route53.ARecord(self, "AliasRecord",
-#                        zone=zone,
-#                        target=route53.RecordTarget.from_alias(alias.ApiGateway(rest_api))
-#                        )
-#        
-#        self.alias = my_alias
+                        record_name="rtcwproapi",
+                        target=route53.RecordTarget.from_alias(targets.ApiGateway(api)),
+                        zone=zone)

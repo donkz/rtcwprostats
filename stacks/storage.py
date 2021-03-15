@@ -7,11 +7,18 @@ from aws_cdk import (
     core
 )
 
+from aws_cdk.aws_dynamodb import (
+    Table
+)
+
 
 class StorageStack(core.Stack):
     """S3 bucket for incoming files and reader lambda."""
 
-    def __init__(self, scope: core.Construct, id: str, save_payload: _lambda.IFunction, lambda_tracing, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, id: str,
+                 lambda_tracing,
+                 ddb_table: Table,
+                 **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         storage_bucket = s3.Bucket(self, "MainStorage",
@@ -36,9 +43,6 @@ class StorageStack(core.Stack):
 
         user = iam.User(self, "rtcwproadmin")
         storage_bucket.grant_read(user, "*")
-
-        storage_bucket.grant_put(save_payload, ["intake/*"])
-        storage_bucket.grant_put(save_payload, ["intake_dlq/*"])
 
 #        storage_bucket.add_to_resource_policy(
 #                iam.PolicyStatement(
@@ -69,9 +73,13 @@ class StorageStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset('lambdas/storage/read_match'),
             role=read_match_role,
-            tracing=lambda_tracing
+            tracing=lambda_tracing,
+            environment={
+                'RTCWPROSTATS_TABLE_NAME': ddb_table.table_name,
+            }
         )
 
+        ddb_table.grant_read_write_data(read_match)
         storage_bucket.grant_read(read_match, "intake/*")
         storage_bucket.grant_put(read_match, "read_dlq/*")  # TODO actually put stuff there
 

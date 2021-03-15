@@ -1,7 +1,9 @@
 import json
 import elo_read_ddb
 
+
 def handler(event, context):
+    """Under construction."""
     print('request: {}'.format(json.dumps(event)))
     return {
         'statusCode': 200,

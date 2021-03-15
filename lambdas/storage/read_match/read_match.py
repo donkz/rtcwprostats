@@ -2,6 +2,8 @@ import logging
 import boto3
 import json
 import time as _time
+import os
+
 from reader_writeddb import (
     # ddb_put_item,
     ddb_prepare_match_item,
@@ -30,7 +32,8 @@ logger.setLevel(log_level)
 dynamodb = boto3.resource('dynamodb')
 client = boto3.client('dynamodb')
 
-table = dynamodb.Table('rtcwprostats')
+TABLE_NAME = os.environ['RTCWPROSTATS_TABLE_NAME']
+table = dynamodb.Table(TABLE_NAME)
 s3 = boto3.client('s3')
 
 

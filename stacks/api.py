@@ -3,6 +3,7 @@ from aws_cdk import (
     aws_apigateway as apigw,
     aws_iam as iam,
     aws_certificatemanager as acm,
+    aws_s3 as s3,
     core
 )
 
@@ -10,7 +11,7 @@ from aws_cdk import (
 class APIStack(core.Stack):
     """Begin API and start with a submit method."""
 
-    def __init__(self, scope: core.Construct, construct_id: str, lambda_tracing, api_key: str, cert_arn: str, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, construct_id: str, lambda_tracing, api_key: str, cert_arn: str, storage_bucket: s3.Bucket, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         ####################################
@@ -30,8 +31,12 @@ class APIStack(core.Stack):
             runtime=_lambda.Runtime.PYTHON_3_8,
             code=_lambda.Code.asset('lambdas/pipeline/save_payload'),
             role=save_payload_role,
-            tracing=lambda_tracing
+            tracing=lambda_tracing,
+            timeout=core.Duration.seconds(10)
         )
+
+        storage_bucket.grant_put(save_payload, ["intake/*"])
+        storage_bucket.grant_put(save_payload, ["intake_dlq/*"])
 
         save_payload_integration = apigw.LambdaIntegration(save_payload)
 
@@ -45,7 +50,12 @@ class APIStack(core.Stack):
                             domain_name={
                                 "domain_name": "rtcwproapi.donkanator.com",
                                 "certificate": cert
-                            })
+                            },
+                            default_cors_preflight_options={
+                                "allow_origins": apigw.Cors.ALL_ORIGINS,
+                                "allow_methods": apigw.Cors.ALL_METHODS
+                            }
+                            )
 
         submit = api.root.add_resource("submit")
         submit.add_method("POST", save_payload_integration, request_parameters={"method.request.header.matchid": True}, api_key_required=True)

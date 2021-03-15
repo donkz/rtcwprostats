@@ -1,15 +1,9 @@
 
 # CDK Python project rtcwprostats
 
+It's best if you know some CDK before trying your luck here.
 
-The `cdk.json` file tells the CDK Toolkit how to execute the app.
-
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+### General CDK instructions
 
 **First time** : To manually create a virtualenv on **MacOS and Linux**:
 
@@ -17,20 +11,15 @@ you can create the virtualenv manually.
 $ python -m venv .venv
 ```
 
-After the init process completes and the virtualenv is created, you can use the following
+**First and all subsequent times**: After the init process completes and the virtualenv is created, you can use the following
 step to activate your virtualenv.
 
 ```
-$ source .venv/bin/activate
+linux: $ source .venv/bin/activate
+windows: % .venv\Scripts\activate.bat
 ```
 
-If you are a **Windows** platform, you would activate the virtualenv like this:
-
-```
-% .venv\Scripts\activate.bat
-```
-
-Once the virtualenv is activated, you can install the required dependencies.
+**First time:** Once the virtualenv is activated, you can install the required dependencies.
 
 ```
 $ pip install -r requirements.txt
@@ -63,7 +52,7 @@ If needed add python to windows PATH
 	set PATH=%PATH%;C:\Users\\<USERNAME>\AppData\Local\Programs\Python\Python38_this_may_be different
 	set PATH=%PATH%;C:\Users\\<USERNAME>\AppData\Roaming\npm
 	cdk --version
-	cd \\<PATH TO GITHUB>\Github\rtcwprostats
+	cd \\<PATH TO GITHUB FOLDER>\Github\rtcwprostats
 	.venv\Scripts\activate.bat
 ```
 	
@@ -71,9 +60,15 @@ later you will use these
 	
 ```
 	cdk  synth
+	cdk deploy -e StackName
 	cdk deploy -v --profile user2 --all --require-approval never
-    cdk deploy --profile user2 -e rtcwpro-api
+    cdk destroy --all
 ```
+### CDK instructions specific to this project
+At the time of writing the infrastructure if broken down into these logical areas:
+![alt text](./readme-img-stacks.png "CDK/CloudFormation stacks")
+
+More logical view of the stacks is this
+![alt text](./readme-img-stacks-dep.png "CDK/CloudFormation stacks")
 
 
-Enjoy!

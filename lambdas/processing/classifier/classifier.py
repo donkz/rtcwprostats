@@ -2,6 +2,7 @@ import json
 
 
 def handler(event, context):
+    """Todo."""
     print('request: {}'.format(json.dumps(event)))
     return {
         'statusCode': 200,
@@ -9,5 +10,5 @@ def handler(event, context):
             'Content-Type': 'text/plain'
         },
         'body': 'Developer this'
-    }# -*- coding: utf-8 -*-
+    }
 

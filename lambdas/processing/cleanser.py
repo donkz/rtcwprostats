@@ -2,6 +2,7 @@ import json
 
 
 def handler(event, context):
+    """Under construction."""
     print('request: {}'.format(json.dumps(event)))
     return {
         'statusCode': 200,
@@ -9,4 +10,4 @@ def handler(event, context):
             'Content-Type': 'text/plain'
         },
         'body': 'Save this shit'
-    }
+    }  

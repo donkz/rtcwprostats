@@ -1,0 +1,106 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>RTCW Pro Matches</title>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+
+</head>
+
+<body>
+
+<table id="matches" border='1'>
+    <tr>
+        <th>match</th>
+		<th>round</th>
+        <th>map</th>
+    </tr>
+</table>
+
+<table id="stats" border='1'>
+    <tr>
+		<th>team</th>
+        <th>guid</th>
+		<th>alias</th>
+        <th>kills</th>
+    </tr>
+</table>
+
+<script>
+
+$(document).ready(function(){
+
+    jQuery.support.cors = true;
+     
+    $.ajax(
+    {
+		type: "GET",
+        url: 'https://rtcwproapi.donkanator.com/matches/recent/92',
+        //data: "{}",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        cache: false,
+		crossDomain: true,
+        success: function (data) {
+			displayStats(data);
+			globalData = data;
+            var trHTML = '';
+            $.each(data, function (i, item) {	
+				trHTML += '<tr><td>' + data[i].match_id + '</td><td>' + data[i].round + '</td><td>' + data[i].map + '</td></tr>';
+			});
+        
+        $('#matches').append(trHTML);
+        
+        },
+        
+        error: function (msg) {    
+            console.log(msg);
+        }
+    });
+
+	function displayStats(matches) {
+		stats_url = 'https://rtcwproapi.donkanator.com/stats/' + matches[0].match_id;
+		$.ajax(
+		{
+			type: "GET",
+			url: stats_url,
+			contentType: "application/json; charset=utf-8",
+			dataType: "json",
+			cache: false,
+			crossDomain: true,
+			success: function (stats) {
+				var trHTML = '';
+				for (var team in stats["statsall"]){ //CAREFUL HERE, THERE MAY NOT BE TEAM SPLIT IN THE FUTURE AND ALL PLAYERS WILL BE IN stats["statsall"]. This was initial RTCW PRO bug
+					for (var player_guid in stats["statsall"][team]) {
+						player_stat = stats["statsall"][team][player_guid]
+						trHTML += '<tr><td>' + player_stat.team + '</td><td>' + player_stat.alias + '</td><td>' + player_stat.alias + '</td><td>' + player_stat["categories"]["kills"] + '</td></tr>';
+					}
+				}
+			$('#stats').append(trHTML);
+			
+			},
+			
+			error: function (msg) {    
+				console.log(msg);
+			}
+		});
+	}
+	/* test area
+	stats = {"statsall": [{"A53B3ED2A896CB": {"alias": "parcher", "team": "Axis", "start_time": 6788350, "num_rounds": 1, "categories": {"kills": 24, "deaths": 6, "gibs": 5, "suicides": 6, "teamkills": 2, "headshots": 24, "damagegiven": 3564, "damagereceived": 1683, "damageteam": 251, "hits": 170, "shots": 358, "accuracy": 47.486033519553075, "revives": 3, "ammogiven": 0, "healthgiven": 1, "poisoned": 0, "knifekills": 0, "killpeak": 6, "efficiency": 80.0, "score": 29, "dyn_planted": 1, "dyn_defused": 0, "obj_captured": 0, "obj_destroyed": 0, "obj_returned": 1, "obj_taken": 1}, "jsonGameStatVersion": "0.1.2"}, "66A2121F6337E8": {"alias": "blazk", "team": "Axis", "start_time": 6788350, "num_rounds": 1, "categories": {"kills": 7, "deaths": 12, "gibs": 0, "suicides": 2, "teamkills": 0, "headshots": 3, "damagegiven": 1183, "damagereceived": 1789, "damageteam": 0, "hits": 72, "shots": 210, "accuracy": 34.285714285714285, "revives": 0, "ammogiven": 1, "healthgiven": 0, "poisoned": 0, "knifekills": 0, "killpeak": 2, "efficiency": 36.0, "score": 17, "dyn_planted": 3, "dyn_defused": 0, "obj_captured": 0, "obj_destroyed": 0, "obj_returned": 0, "obj_taken": 1}, "jsonGameStatVersion": "0.1.2"}, "980A27C4F9E48F": {"alias": "pipe", "team": "Axis", "start_time": 6788350, "num_rounds": 1, "categories": {"kills": 10, "deaths": 10, "gibs": 5, "suicides": 5, "teamkills": 0, "headshots": 4, "damagegiven": 1957, "damagereceived": 2247, "damageteam": 120, "hits": 84, "shots": 251, "accuracy": 33.46613545816733, "revives": 3, "ammogiven": 0, "healthgiven": 1, "poisoned": 0, "knifekills": 0, "killpeak": 2, "efficiency": 50.0, "score": 12, "dyn_planted": 0, "dyn_defused": 0, "obj_captured": 0, "obj_destroyed": 0, "obj_returned": 0, "obj_taken": 0}, "jsonGameStatVersion": "0.1.2"}, "5CB7908DEAF2FB": {"alias": "ca$hh", "team": "Axis", "start_time": 6788350, "num_rounds": 1, "categories": {"kills": 2, "deaths": 7, "gibs": 1, "suicides": 1, "teamkills": 0, "headshots": 0, "damagegiven": 280, "damagereceived": 1104, "damageteam": 0, "hits": 20, "shots": 98, "accuracy": 20.408163265306122, "revives": 1, "ammogiven": 0, "healthgiven": 6, "poisoned": 0, "knifekills": 0, "killpeak": 1, "efficiency": 22.0, "score": 4, "dyn_planted": 0, "dyn_defused": 0, "obj_captured": 0, "obj_destroyed": 0, "obj_returned": 0, "obj_taken": 0}, "jsonGameStatVersion": "0.1.2"}, "E79B8A18A9DBB7": {"alias": "john_mullins", "team": "Axis", "start_time": 6788350, "num_rounds": 1, "categories": {"kills": 21, "deaths": 10, "gibs": 6, "suicides": 7, "teamkills": 2, "headshots": 10, "damagegiven": 3834, "damagereceived": 1661, "damageteam": 350, "hits": 177, "shots": 516, "accuracy": 34.30232558139535, "revives": 0, "ammogiven": 6, "healthgiven": 0, "poisoned": 0, "knifekills": 0, "killpeak": 4, "efficiency": 67.0, "score": 2, "dyn_planted": 0, "dyn_defused": 0, "obj_captured": 0, "obj_destroyed": 0, "obj_returned": 0, "obj_taken": 0}, "jsonGameStatVersion": "0.1.2"}}, {"23A888044AAD96": {"alias": "spaztik:)", "team": "Allied", "start_time": 6788350, "num_rounds": 1, "categories": {"kills": 16, "deaths": 13, "gibs": 1, "suicides": 3, "teamkills": 0, "headshots": 9, "damagegiven": 2132, "damagereceived": 1986, "damageteam": 28, "hits": 97, "shots": 251, "accuracy": 38.645418326693225, "revives": 0, "ammogiven": 17, "healthgiven": 0, "poisoned": 0, "knifekills": 0, "killpeak": 3, "efficiency": 55.0, "score": 47, "dyn_planted": 0, "dyn_defused": 0, "obj_captured": 0, "obj_destroyed": 0, "obj_returned": 0, "obj_taken": 1}, "jsonGameStatVersion": "0.1.2"}, "44D0B08B78E9F2": {"alias": "c@k-el", "team": "Allied", "start_time": 6788350, "num_rounds": 1, "categories": {"kills": 7, "deaths": 11, "gibs": 1, "suicides": 1, "teamkills": 0, "headshots": 2, "damagegiven": 1126, "damagereceived": 1943, "damageteam": 18, "hits": 59, "shots": 177, "accuracy": 33.333333333333336, "revives": 3, "ammogiven": 0, "healthgiven": 0, "poisoned": 0, "knifekills": 0, "killpeak": 2, "efficiency": 38.0, "score": 30, "dyn_planted": 0, "dyn_defused": 0, "obj_captured": 0, "obj_destroyed": 0, "obj_returned": 0, "obj_taken": 2}, "jsonGameStatVersion": "0.1.2"}, "934D5F55971F99": {"alias": "prwlr", "team": "Allied", "start_time": 6788350, "num_rounds": 1, "categories": {"kills": 4, "deaths": 6, "gibs": 0, "suicides": 3, "teamkills": 0, "headshots": 2, "damagegiven": 944, "damagereceived": 1326, "damageteam": 36, "hits": 46, "shots": 234, "accuracy": 19.65811965811966, "revives": 2, "ammogiven": 2, "healthgiven": 1, "poisoned": 0, "knifekills": 2, "killpeak": 2, "efficiency": 40.0, "score": 22, "dyn_planted": 8, "dyn_defused": 1, "obj_captured": 0, "obj_destroyed": 0, "obj_returned": 0, "obj_taken": 7}, "jsonGameStatVersion": "0.1.2"}, "FDE32828995C0A": {"alias": "fonze(s)", "team": "Allied", "start_time": 6788350, "num_rounds": 1, "categories": {"kills": 6, "deaths": 11, "gibs": 4, "suicides": 0, "teamkills": 0, "headshots": 12, "damagegiven": 1777, "damagereceived": 2013, "damageteam": 68, "hits": 66, "shots": 253, "accuracy": 26.08695652173913, "revives": 3, "ammogiven": 0, "healthgiven": 3, "poisoned": 0, "knifekills": 1, "killpeak": 2, "efficiency": 35.0, "score": 14, "dyn_planted": 0, "dyn_defused": 0, "obj_captured": 0, "obj_destroyed": 0, "obj_returned": 0, "obj_taken": 0}, "jsonGameStatVersion": "0.1.2"}, "EB967561E5518C": {"alias": "krazykaze", "team": "Allied", "start_time": 6788350, "num_rounds": 1, "categories": {"kills": 13, "deaths": 14, "gibs": 12, "suicides": 1, "teamkills": 0, "headshots": 3, "damagegiven": 2405, "damagereceived": 2042, "damageteam": 63, "hits": 34, "shots": 69, "accuracy": 49.27536231884058, "revives": 0, "ammogiven": 5, "healthgiven": 0, "poisoned": 0, "knifekills": 0, "killpeak": 3, "efficiency": 48.0, "score": 13, "dyn_planted": 0, "dyn_defused": 0, "obj_captured": 0, "obj_destroyed": 0, "obj_returned": 0, "obj_taken": 0}, "jsonGameStatVersion": "0.1.2"}, "CB7BC75B081B0E": {"alias": "rob", "team": "Allied", "start_time": 6788350, "num_rounds": 1, "categories": {"kills": 6, "deaths": 14, "gibs": 2, "suicides": 1, "teamkills": 0, "headshots": 6, "damagegiven": 1740, "damagereceived": 2394, "damageteam": 0, "hits": 86, "shots": 255, "accuracy": 33.72549019607843, "revives": 2, "ammogiven": 0, "healthgiven": 3, "poisoned": 0, "knifekills": 0, "killpeak": 2, "efficiency": 30.0, "score": 10, "dyn_planted": 0, "dyn_defused": 0, "obj_captured": 0, "obj_destroyed": 0, "obj_returned": 0, "obj_taken": 0}, "jsonGameStatVersion": "0.1.2"}}], "match_id": "1609817356", "type": "statsall#na#6"};
+	var trHTML = '';
+    for (var team in stats["statsall"]){ //CAREFUL HERE, THERE MAY NOT BE TEAM SPLIT IN THE FUTURE. This was initial RTCW PRO bug
+		for (var player_guid in stats["statsall"][team]) {
+			player_stat = stats["statsall"][team][player_guid]
+			trHTML += '<tr><td>' + player_stat.team + '</td><td>' + player_stat.alias + '</td><td>' + player_stat.alias + '</td><td>' + player_stat["categories"]["kills"] + '</td></tr>';
+		}
+	}
+	
+	$('#stats').append(trHTML);
+	*/
+})
+
+</script>
+
+</body>
+</html>
