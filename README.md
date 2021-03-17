@@ -77,10 +77,58 @@ https://rtcwproapi.donkanator.com/wstats/player/A53B3ED2A896CB/match/1609817356
 
 ## Usage 
 * Familiarize yourself with what's available in the API section
-* Talk to donkz about your plan to consume the API
+* API is open to anyone
 * Work from /matches down to /stats by match_id or player_guid
 * Assume jsonGameStatVersion may change and new fields may appear
-* Assume {error: "error message can be returned"}
+* Assume {error: "error message"} can be returned
+
+## Example
+Let's say matches/recent API returns the following JSON
+```
+[
+    {
+        match_id: "1609817356",
+        round: "1",
+        round_start: "1609817356",
+        round_end: "1609818109",
+        map: "te_nordic_b2",
+        time_limit: "10:00",
+        allies_cycle: "21",
+        axis_cycle: "30",
+        winner: " ",
+        jsonGameStatVersion: "0.1.2",
+        type: "na#6",
+        match_round_id: "16098173561"
+    }
+.....
+]
+```
+From here you can make a link to stats or wstats. Just make sure you don't use round# at the end
+https://rtcwproapi.donkanator.com/stats/1609817356
+```
+{
+statsall: [
+    {
+        A53B3ED2A896CB: {
+            alias: "parcher",
+            team: "Axis",
+            start_time: 6788350,
+            num_rounds: 1,
+            categories: {
+                kills: 24,
+                deaths: 6,
+                gibs: 5,
+                suicides: 6,
+                teamkills: 2,
+                ....
+```
+
+Example javascript can be found here. See source:
+https://s3.amazonaws.com/donkanator.com/forever/get_matches.html
+![Website beginning](./readme-img-web-example.png "Example of API usage")
+
+The rest depends on web implementation. Keep track of available APIs or make suggestions as you see fit.
+
 
 ## Contribution to the pipeline
 There's plentry of potential to contribute. Currently looking for post-processing calculations for:

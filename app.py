@@ -39,15 +39,6 @@ DNSStack(app, "rtcwprostats-DNS", api=apistack.api, env=env, dns_resource_name=d
 ProcessingStack(app, "rtcwprostats-processing", env=env, lambda_tracing=lambda_tracing)
 DeliveryStack(app, "rtcwprostats-delivery", api=apistack.api, retriever=retriever.retriever_lambda, env=env)
 
+core.Tags.of(app).add("purpose", "rtcwpro")
 
 app.synth()
-
-# print(storage.storage_bucket.url_for_object("objectname"))# Path-Style URL
-
-'''
-        in cdk for lambda
-            environment={
-                'RTCWPROSTATS_TABLE_NAME': table.table_name,
-            }
-
-'''
