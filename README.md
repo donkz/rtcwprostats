@@ -46,24 +46,24 @@ x is done , / is work in progress, blank is planned
 |Status  |Domain  |API Path  |Query  |
 |-------- |-------- |-------- |--------|
 |[x] |Matches |/matches/{match_round_id} |Filter matches |
-| |Matches |/matches/map/{map} |Filter matches by map to get map counts, wins, times |
-| |Matches |/matches/type/{type} |Filter type of matches and process their individual lines |
+|    |Matches |/matches/map/{map} |Filter matches by map to get map counts, wins, times |
+|    |Matches |/matches/type/{type} |Filter type of matches and process their individual lines |
 |[x] |Matches |/matches/recent |Filter by last 30 days to get matches |
 |[x] |Matches |/matches/recent/{days} |Filter by last x days to get recent matches |
 |[x] |Gamelog |/gamelogs/{match_round_id} |Retrieve game log for a match |
-|[x] |Stats |/stats/player/{guid} |Filter stats for a player guid from many matches |
-|[x] |Stats |/stats/{matchid} |Filter stats for a match or range of matches |
-| |Stats |/stats/type/{type} |Filter stats for a match type on range of matches |
+|[x] |Stats   |/stats/player/{guid} |Filter stats for a player guid from many matches |
+|[x] |Stats   |/stats/{matchid} |Filter stats for a match or range of matches |
+|    |Stats   |/stats/type/{type} |Filter stats for a match type on range of matches |
 |[x] |Weapons |/wstats/{matchid} |By match retrieve all wstats |
 |[x] |Weapons |/wstats/player/{player_guid}/match/{matchid} |By player by match |
 |[x] |Weapons |/wstats/player/{player_guid} |By player by several matches |
-| |Players |/player/{guid}/aliases |Filter by guid to get aliases range and dates |
-| |Players |/player/{guid}/primaryalias |Filter by given guid to get primary name |
-| |Players |/player/{guid}/elo/{type} |Filter by given guid to get current elo |
-| |Players |/player/{guid}/primaryregion |Filter by given guid to get primary region |
-| |Players |/player/{guid}/weaponaccuracy/{weapon} |Filter by given guid to get weapon stats |
-| |Players |/player/{guid}/eloprogress/{type} |Filter by guid sort by time to get elo progress |
-| |Players |/player/recent |Filter by last 30 days to get primary aliases |
+|    |Players |/player/{guid}/aliases |Filter by guid to get aliases range and dates |
+|    |Players |/player/{guid}/primaryalias |Filter by given guid to get primary name |
+|    |Players |/player/{guid}/elo/{type} |Filter by given guid to get current elo |
+|    |Players |/player/{guid}/primaryregion |Filter by given guid to get primary region |
+|    |Players |/player/{guid}/weaponaccuracy/{weapon} |Filter by given guid to get weapon stats |
+|    |Players |/player/{guid}/eloprogress/{type} |Filter by guid sort by time to get elo progress |
+|    |Players |/player/recent |Filter by last 30 days to get primary aliases |
 
 Example:
 
