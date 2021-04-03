@@ -50,11 +50,11 @@ class APIStack(core.Stack):
                             domain_name={
                                 "domain_name": "rtcwproapi.donkanator.com",
                                 "certificate": cert
-                            },
+                                },
                             default_cors_preflight_options={
                                 "allow_origins": apigw.Cors.ALL_ORIGINS,
                                 "allow_methods": apigw.Cors.ALL_METHODS
-                            }
+                                }
                             )
 
         submit = api.root.add_resource("submit")
@@ -75,7 +75,11 @@ class APIStack(core.Stack):
                                   }
                                   )
         plan.add_api_stage(
-            stage=api.deployment_stage
+            stage=api.deployment_stage,
+            cache_cluster_size=0.5,
+            caching_enabled = True,
+            cache_ttl = core.Duration.minutes(20),
+            cache_data_encrypted=False
         )
 
         self.save_payload = save_payload
