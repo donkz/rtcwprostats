@@ -57,13 +57,12 @@ x is done , / is work in progress, blank is planned
 |[x] |Weapons |/wstats/{matchid} |By match retrieve all wstats |
 |[x] |Weapons |/wstats/player/{player_guid}/match/{matchid} |By player by match |
 |[x] |Weapons |/wstats/player/{player_guid} |By player by several matches |
-|    |Players |/player/{guid}/aliases |Filter by guid to get aliases range and dates |
-|    |Players |/player/{guid}/primaryalias |Filter by given guid to get primary name |
-|    |Players |/player/{guid}/elo/{type} |Filter by given guid to get current elo |
-|    |Players |/player/{guid}/primaryregion |Filter by given guid to get primary region |
-|    |Players |/player/{guid}/weaponaccuracy/{weapon} |Filter by given guid to get weapon stats |
-|    |Players |/player/{guid}/eloprogress/{type} |Filter by guid sort by time to get elo progress |
+|[x] |Players |/player/{player_guid} |Filter by given guid to get player info |
+|    |Players |/player/{player_guid}/aliases |Filter by guid to get aliases range and dates |
+|    |Players |/player/{player_guid}/weaponaccuracy/{weapon} |Filter by given guid to get weapon stats |
+|    |Players |/player/{player_guid}/eloprogress/{type} |Filter by guid sort by time to get elo progress |
 |    |Players |/player/recent |Filter by last 30 days to get primary aliases |
+|[x] |Players |/player/search/{begins_with} |Search for real names that start with a string |
 
 Example:
 

@@ -55,6 +55,15 @@ class APIStack(core.Stack):
                                 "allow_origins": apigw.Cors.ALL_ORIGINS,
                                 "allow_methods": apigw.Cors.ALL_METHODS
                                 }
+# =============================================================================
+#                             ,
+#                             deploy_options = {
+#                                     "cache_cluster_size": "0.5",
+#                                     "caching_enabled": True,
+#                                     "cache_ttl": core.Duration.minutes(1),
+#                                     "cache_data_encrypted": False
+#                                     }
+# =============================================================================
                             )
 
         submit = api.root.add_resource("submit")
@@ -75,11 +84,7 @@ class APIStack(core.Stack):
                                   }
                                   )
         plan.add_api_stage(
-            stage=api.deployment_stage,
-            cache_cluster_size=0.5,
-            caching_enabled = True,
-            cache_ttl = core.Duration.minutes(20),
-            cache_data_encrypted=False
+            stage=api.deployment_stage
         )
 
         self.save_payload = save_payload

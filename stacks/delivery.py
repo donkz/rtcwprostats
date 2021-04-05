@@ -25,6 +25,10 @@ class DeliveryStack(core.Stack):
 # 7       |-------/player/{player_guid}
 # 8       |-------/player/{player_guid}/match/{match_id}
 # 9       ---gamelogs/{match_round_id}
+#10       ---/player/{player_guid}
+#20       |---------/search/{begins_with}
+        
+          
 
 # =============================================================================
 
@@ -68,3 +72,16 @@ class DeliveryStack(core.Stack):
         gamelogs = api.root.add_resource("gamelogs")
         gamelog_match_id = gamelogs.add_resource("{match_round_id}")
         gamelog_match_id.add_method("GET", retriever_integration)
+        
+        #10
+        player = api.root.add_resource("player")
+        
+        player_info = player.add_resource("{player_guid}")
+        player_info.add_method("GET", retriever_integration)
+        
+        #20
+        player_search = player.add_resource("search")
+        player_search_guid = player_search.add_resource("{begins_with}")
+        player_search_guid.add_method("GET", retriever_integration)
+        
+        

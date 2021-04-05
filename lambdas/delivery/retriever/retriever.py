@@ -25,10 +25,9 @@ def handler(event, context):
 
     # print('request: {}'.format(json.dumps(event)))
     api_path = event["resource"]
-    # print(api_path)
+    logger.info("incoming request " + api_path)
 
     if api_path == "/matches/{proxy+}":
-        logger.info("Processing " + api_path)
         if "proxy" in event["pathParameters"]:
             path = event["pathParameters"]["proxy"]
             logger.info("Proxy path " + path)
@@ -186,6 +185,48 @@ def handler(event, context):
             else:
                 data = response
 
+    if api_path == "/player/{player_guid}":
+        logger.info("Processing " + api_path)
+        if "player_guid" in event["pathParameters"]:
+            player_guid = event["pathParameters"]["player_guid"]
+            logger.info("Parameter: " + player_guid)
+            pk = "player"
+            sk = "playerinfo" + "#" + player_guid
+            response = get_item(pk, sk, ddb_table, log_stream_name)
+
+            # logic specific to /player/{player_guid}
+            data = {}
+            if "error" not in response:
+                for key in response:
+                    if key not in ["lsipk","pk","sk","gsi1pk","gsi1sk"]:
+                        data[key]=response[key]
+                data["player_guid"]=response["sk"].split("#")[1]
+            else:
+                data = response
+                
+    if api_path == "/player/search/{begins_with}":
+        logger.info("Processing " + api_path)
+        if "begins_with" in event["pathParameters"]:
+            begins_with = event["pathParameters"]["begins_with"]
+            logger.info("Parameter: " + begins_with)
+            pk = "player"
+            index_name = "lsi"
+            skname="lsipk"
+            responses = get_begins(pk, begins_with, ddb_table, index_name, skname,  log_stream_name)
+
+            if "error" not in responses:
+                # logic specific to /player/search/{begins_with}
+                data = []
+                for player in responses:
+                    data_line = {}
+                    
+                    data_line["real_name"] = player.get("real_name","na")
+                    data_line["guid"] = player["lsipk"].split("#")[1]
+                    data_line["frequent_region"] = player.get("frequent_region","na")
+                    data.append(data_line)
+            else:
+                data = responses
+
     return {
         'statusCode': 200,
         'headers': {
@@ -217,6 +258,21 @@ def get_range(pk, sklow, skhigh, table, log_stream_name):
     item_info = pk + ":" + sklow + " to " + skhigh + ". Logstream: " + log_stream_name
     try:
         response = table.query(KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sklow, skhigh))
+    except ClientError as e:
+        logger.warning("Exception occurred: " + e.response['Error']['Message'])
+        result = make_error_dict("[x] Client error calling database: ", item_info)
+    else:
+        if response['Count'] > 0:
+            result = response['Items']
+        else:
+            result = make_error_dict("[x] Items do not exist: ", item_info)
+    return result
+
+def get_begins(pk, begins_with, ddb_table, index_name, skname,  log_stream_name):
+    """Get several items by pk and range of sk."""
+    item_info = pk + ": begins with " + begins_with + ". Logstream: " + log_stream_name
+    try:
+        response = ddb_table.query(IndexName=index_name,KeyConditionExpression=Key('pk').eq(pk) & Key(skname).begins_with(begins_with))
     except ClientError as e:
         logger.warning("Exception occurred: " + e.response['Error']['Message'])
         result = make_error_dict("[x] Client error calling database: ", item_info)
@@ -264,5 +320,39 @@ if __name__ == "__main__":
         }
     }
     '''
+    
+    event_str = '''
+    {
+    "resource": "/player/search/{begins_with}",
+    "path": "/player/search/caka",
+    "httpMethod": "GET",
+    "headers": null,
+    "multiValueHeaders": null,
+    "queryStringParameters": null,
+    "multiValueQueryStringParameters": null,
+    "pathParameters": {
+        "begins_with": "caka"
+    },
+    "stageVariables": null
+    }
+    '''
+    
+    event_str = '''
+    {
+    "resource": "/player/{player_guid}",
+    "path": "/player/12345678",
+    "httpMethod": "GET",
+    "headers": null,
+    "multiValueHeaders": null,
+    "queryStringParameters": null,
+    "multiValueQueryStringParameters": null,
+    "pathParameters": {
+        "player_guid": "123456787"
+    },
+    "stageVariables": null
+    }
+    '''
+    
     event = json.loads(event_str)
+    os.environ['RTCWPROSTATS_TABLE_NAME'] = 'rtcwprostats-database-DDBTable2F2A2F95-1BCIOU7IE3DSE'
     logger.info(handler(event, None))
