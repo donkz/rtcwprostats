@@ -55,7 +55,7 @@ class APIStack(core.Stack):
                                 "allow_origins": apigw.Cors.ALL_ORIGINS,
                                 "allow_methods": apigw.Cors.ALL_METHODS
                                 }
-# =============================================================================
+# ==============cache infra costs money $0.4 a day=============================
 #                             ,
 #                             deploy_options = {
 #                                     "cache_cluster_size": "0.5",

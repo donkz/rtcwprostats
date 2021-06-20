@@ -110,7 +110,7 @@ def handler(event, context):
             if "error" not in response:
                 data = {"statsall": json.loads(response["data"])}
                 data["match_id"] = response["sk"]
-                data["type"] = response["gsi1pk"].replace("stats#", "")
+                data["type"] = response["gsi1pk"].replace("statsall#", "")
             else:
                 data = response
 

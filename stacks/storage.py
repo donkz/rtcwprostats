@@ -3,6 +3,7 @@ from aws_cdk import (
     aws_iam as iam,
     aws_lambda as _lambda,
     aws_sns as sns,
+    aws_sqs as sqs,
     aws_s3_notifications as s3n,
     core
 )
@@ -17,7 +18,6 @@ class StorageStack(core.Stack):
 
     def __init__(self, scope: core.Construct, id: str,
                  lambda_tracing,
-                 ddb_table: Table,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
@@ -44,62 +44,24 @@ class StorageStack(core.Stack):
         user = iam.User(self, "rtcwproadmin")
         storage_bucket.grant_read(user, "*")
 
-#        storage_bucket.add_to_resource_policy(
-#                iam.PolicyStatement(
-#                        actions=["s3:GetObject"],
-#                        resources=[
-#                                storage_bucket.arn_for_objects("intake/*")
-#                                ],
-#                        principals=[iam.AccountRootPrincipal()]
-#                ))
-
         ops_topic = sns.Topic(self, "RTCWPro-notifications")
         storage_bucket.add_event_notification(s3.EventType.OBJECT_CREATED, s3n.SnsDestination(ops_topic),
-                                              s3.NotificationKeyFilter(
-                                              prefix="intake_dlq/",
-                                              suffix="*.json")
+                                              s3.NotificationKeyFilter(prefix="intake_dlq/")
                                               )
-#       storage_bucket.add_event_notification(s3.EventType.OBJECT_CREATED, read_match, s3.NotificationKeyFilter(prefix="intake/"))
-        read_match_role = iam.Role(self, "ReadMatchRole",
-                                   role_name='rtcwpro-lambda-read-match-role',
-                                   assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
-                                   )
-        read_match_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('service-role/AWSLambdaBasicExecutionRole'))
-
-        read_match = _lambda.Function(
-            self, 'read_match',
-            function_name='rtcwpro-read-match',
-            handler='read_match.handler',
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset('lambdas/storage/read_match'),
-            role=read_match_role,
-            tracing=lambda_tracing,
-            environment={
-                'RTCWPROSTATS_TABLE_NAME': ddb_table.table_name,
-            }
-        )
-
-        ddb_table.grant_read_write_data(read_match)
-        storage_bucket.grant_read(read_match, "intake/*")
-        storage_bucket.grant_put(read_match, "read_dlq/*")  # TODO actually put stuff there
-
-#        lambda_start_sf_role = iam.Role(self, "S3LambdaTriggerRole",
-#                role_name = 'rtcwpro-lambda-start-sf-role',
-#                assumed_by= iam.ServicePrincipal("lambda.amazonaws.com")
-#                )
-#        lambda_start_sf_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('service-role/AWSLambdaBasicExecutionRole'))
-#
-#        lambda_start_sf = _lambda.Function(
-#            self, 'lambda_start_sf',
-#            function_name  = 'rtcwpro-lambda-start-sf',
-#            handler='start_sf.handler',
-#            runtime=_lambda.Runtime.PYTHON_3_8,
-#            code=_lambda.Code.asset('lambdas/storage/start_sf'),
-#            role=lambda_start_sf_role
-#         )
-
-        notification = s3n.LambdaDestination(read_match)
-        storage_bucket.add_event_notification(s3.EventType.OBJECT_CREATED, notification, s3.NotificationKeyFilter(prefix="intake/"))
+        storage_bucket.add_event_notification(s3.EventType.OBJECT_CREATED, s3n.SnsDestination(ops_topic),
+                                              s3.NotificationKeyFilter(prefix="reader_dlq/")
+                                              )
+        
+        read_dlq = sqs.Queue(self, id="ReadMatchDLQ")
+        read_queue = sqs.Queue(self, "ReadMatchQueue",
+                               visibility_timeout=core.Duration.seconds(60),
+                               dead_letter_queue = sqs.DeadLetterQueue(max_receive_count=1, queue=read_dlq))
+        sqs_notification = s3n.SqsDestination(read_queue)
+        storage_bucket.add_event_notification(s3.EventType.OBJECT_CREATED, sqs_notification, s3.NotificationKeyFilter(prefix="intake/"))
+        
+#        notification = s3n.LambdaDestination(read_match)
+#        storage_bucket.add_event_notification(s3.EventType.OBJECT_CREATED, notification, s3.NotificationKeyFilter(prefix="intake/"))
 
         self.storage_bucket = storage_bucket
-        self.read_match = read_match
+        self.read_queue = read_queue
+        self.read_dlq = read_dlq

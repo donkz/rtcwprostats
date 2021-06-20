@@ -31,6 +31,10 @@ setuptools.setup(
         "aws-cdk.aws_route53_targets",
         "aws-cdk.aws_events_targets",
         "aws-cdk.aws_dynamodb",
+        "aws-cdk.aws_stepfunctions",
+        "aws-cdk.aws_stepfunctions_tasks",
+        "aws-cdk.aws-sqs",
+        "aws-cdk.aws-lambda-event-sources"
     ],
 
     python_requires=">=3.6",

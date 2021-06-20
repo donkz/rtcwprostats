@@ -147,36 +147,27 @@ def ddb_prepare_stats_items(gamestats):
     #stat["categories"]["efficiency"] = Decimal(str(stat["categories"]["efficiency"]))
     
     stats_items = []
+    duplicates_check = {}
     matchid = gamestats["gameinfo"]["match_id"]
     
-    #tmp_stats_unnested = fix_stats_nesting(gamestats)
-    if len(gamestats["stats"]) == 2: # TODO undo this if statement to always unnest    
-        logger.info("Number of items in stats: 2")
-        for team in gamestats["stats"]:
-            for playerguid, stat in team.items():
-                inject_json_version(stat, gamestats)
-                stats_item = {
-                    'pk'    : 'stats#' + playerguid,
-                    'sk'    : matchid,
-                    'gsi1pk': "stats#" + gamestats["match_type"],
-                    'gsi1sk': matchid,
-                    'data'  : json.dumps(stat)
-                 }
+    tmp_stats_unnested = fix_stats_nesting(gamestats)
+    for player_item in tmp_stats_unnested:
+        for playerguid, stat in player_item.items():
+            #print(playerguid)
+            inject_json_version(stat, gamestats)
+            stats_item = {
+                'pk'    : 'stats#' + playerguid,
+                'sk'    : matchid,
+                'gsi1pk': "stats#" + gamestats["match_type"],
+                'gsi1sk': matchid,
+                'data'  : json.dumps(stat)
+             }
+            if playerguid in duplicates_check:
+                logger.warning("Skipping duplicate player in stats " + playerguid)
+            else:
                 stats_items.append(stats_item)
-    else:   
-        logger.info("Number of items in stats: " + str(len(gamestats["stats"])))
-        for player_item in gamestats["stats"]:
-            for playerguid, stat in player_item.items():
-                #print(playerguid)
-                inject_json_version(stat, gamestats)
-                stats_item = {
-                    'pk'    : 'stats#' + playerguid,
-                    'sk'    : matchid,
-                    'gsi1pk': "stats#" + gamestats["match_type"],
-                    'gsi1sk': matchid,
-                    'data'  : json.dumps(stat)
-                 }
-                stats_items.append(stats_item)
+                duplicates_check[playerguid]=1
+                   
     logger.info("Number of players in stats_items: " + str(len(stats_items)))
     return stats_items
 
@@ -251,7 +242,8 @@ def ddb_prepare_player_items(gamestats):
     for playerguid, stat in gamestats["stats"][0].items():
         player_item = {
             'pk'    : 'player',
-            'sk'    : playerguid + "#" + stat["alias"],
+            'sk'    : "aliases" + "#" + playerguid + "#" + matchid,
+            'lsipk' : "recentaliases" + "#" + matchid + "#" + playerguid,
             'data'  : stat["alias"]
             }
         player_items.append(player_item)
@@ -357,7 +349,7 @@ def ddb_batch_write(client, table_name, items):
 
 def inject_json_version(obj, gamestats):
     if isinstance(obj, list):
-        print("Skipping list while inserting the versions")# TODO
+        print("Skipping list while inserting the versions")  # TODO
     elif isinstance(obj, dict):  
         obj['jsonGameStatVersion'] = gamestats["serverinfo"]["jsonGameStatVersion"]
     else:
@@ -366,11 +358,13 @@ def inject_json_version(obj, gamestats):
 def fix_stats_nesting(gamestats):
     stats_new_object = []
     if len(gamestats["stats"]) == 2:
+            logger.info("Number of items in stats: 2")
             for k,v in gamestats["stats"][0].items():
                 stats_new_object.append({k:v})
             for k,v in gamestats["stats"][1].items():
                 stats_new_object.append({k:v})   
-    else: 
+            logger.info("New statsall has " + str(len(stats_new_object)) + " players")
+    else:
         stats_new_object = gamestats["stats"]
     return stats_new_object
 

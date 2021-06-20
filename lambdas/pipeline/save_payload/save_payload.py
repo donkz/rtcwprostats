@@ -57,7 +57,7 @@ def handler(event, context):
     body = event['body']
     try:
         body = str(base64.b64decode(event['body']), "utf-8")
-        print("Body first and last", body[1], body[-1])
+        # print("Body first and last", body[1], body[-1])
         if body[0] == "{" and body[-1] == "}":
             ip_insertion = f',"submitter_ip":"{submitter_ip}"'
             body = body[:-1] + ip_insertion + body[-1:]

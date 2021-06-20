@@ -4,7 +4,11 @@ import base64
 import time
 import json
 import sys
+import boto3
+import json
 
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table("rtcwprostats-database-DDBTable2F2A2F95-1BCIOU7IE3DSE")
 
 url_api = 'https://rtcwproapi.donkanator.com/'
 url_path_submit = 'submit'
@@ -46,6 +50,8 @@ if '"label": "map_restart"' not in content:
     url = url_api+url_path_submit
     response = requests.post(url, data=base64_string, headers={'matchid': match_id_round[0:-1], 'x-api-key':'rtcwproapikeythatisjustforbasicauthorization'})
     print(response.text)
+else:
+    print("map_restart detected, no submitting")
 
 #curl --location --request POST 'https://rtcwproapi.donkanator.com/submit' 
 #--header 'matchid: 123455678' 
@@ -59,11 +65,7 @@ time.sleep(sleep_time)
 # =============================================================================
 # CONFIRM DATA EXISTS IN THE DATABASE
 # =============================================================================
-import boto3
-import json
 
-dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('rtcwprostats')
 
 # ===========
 # match record
