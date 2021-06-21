@@ -6,13 +6,17 @@ import time
 import logging
 import os
 
-TABLE_NAME = os.environ['RTCWPROSTATS_TABLE_NAME']
+if __name__ == "__main__":
+    TABLE_NAME = "rtcwprostats-database-DDBTable2F2A2F95-1BCIOU7IE3DSE"
+else:
+    TABLE_NAME = os.environ['RTCWPROSTATS_TABLE_NAME']
+    
 dynamodb = boto3.resource('dynamodb')
 ddb_table = dynamodb.Table(TABLE_NAME)
 
 log_level = logging.INFO
-logging.basicConfig(format='%(levelname)s:%(message)s')
-logger = logging.getLogger()
+logging.basicConfig(format='%(name)s:%(levelname)s:%(message)s')
+logger = logging.getLogger("retriever")
 logger.setLevel(log_level)
 
 
@@ -32,20 +36,30 @@ def handler(event, context):
             path = event["pathParameters"]["proxy"]
             logger.info("Proxy path " + path)
             path_tokens = path.split("/")
-            if path_tokens[0].isnumeric():
-                if int(path_tokens[0]) > 1006210516:  # rtcw release
-                    pk = "match"
-                    sk = path_tokens[0]
-                    response = get_item(pk, sk, ddb_table, log_stream_name)
-
-                    # logic specific to /matches/{match_id}
-                    if "error" not in response:
-                        data = json.loads(response["data"])
+            if path_tokens[0].isnumeric() or len(path_tokens[0].split(','))>1:
+                matches = path_tokens[0].split(",")
+                item_list = []
+                match_dups = []
+                for match in matches:
+                    if match.isnumeric() and int(match) > 1006210516:  # rtcw release
+                        if match in match_dups:
+                            logger.warning("Matches query string contains duplicate values. Dropping duplicates.")
+                            continue
+                        item_list.append({"pk": "match", "sk": match})
+                        match_dups.append(match)
+                        
+                responses = get_batch_items(item_list, ddb_table, log_stream_name)
+                # logic specific to /matches/{[match_id]}
+                if "error" not in responses:
+                    data = []
+                    for response in responses:
+                        match_data = json.loads(response["data"])
                         match_type_tokens = response['lsipk'].split("#")
-                        data["type"] = "#".join(match_type_tokens[0:2])
-                        data["match_round_id"] = response["sk"]
-                    else:
-                        data = response
+                        match_data["type"] = "#".join(match_type_tokens[0:2])
+                        match_data["match_round_id"] = response["sk"]
+                        data.append(match_data)
+                else:
+                    data = response
             elif path_tokens[0] == "map":
                 raise
             elif path_tokens[0] == "type":
@@ -283,6 +297,21 @@ def get_begins(pk, begins_with, ddb_table, index_name, skname,  log_stream_name)
             result = make_error_dict("[x] Items do not exist: ", item_info)
     return result
 
+def get_batch_items(item_list, ddb_table, log_stream_name):
+    """Get items in a batch."""
+    dynamodb = boto3.resource('dynamodb')
+    item_info = "get_batch_items. Logstream: " + log_stream_name
+    try:
+        response = dynamodb.batch_get_item(RequestItems={ddb_table.name: {'Keys': item_list}})
+    except ClientError as e:
+        logger.warning("Exception occurred: " + e.response['Error']['Message'])
+        result = make_error_dict("[x] Client error calling database: ", item_info)
+    else:
+        if len(response["Responses"][ddb_table.name]) > 0:
+            result = response["Responses"][ddb_table.name]
+        else:
+            result = make_error_dict("[x] Item does not exist: ", item_info)
+    return result
 
 def make_error_dict(message, item_info):
     """Make an error message for API gateway."""
@@ -353,6 +382,12 @@ if __name__ == "__main__":
     }
     '''
     
+    event_str = '''
+    {
+     "resource":"/matches/{proxy+}",
+     "pathParameters":{"proxy":"16098173561,16242774991,16103355022,16103355022x"}
+    }
+    '''
+    
     event = json.loads(event_str)
-    os.environ['RTCWPROSTATS_TABLE_NAME'] = 'rtcwprostats-database-DDBTable2F2A2F95-1BCIOU7IE3DSE'
-    logger.info(handler(event, None))
+    print(handler(event, None))
