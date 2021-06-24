@@ -93,7 +93,7 @@ class PostProcessStack(core.Stack):
                                    )
 
         Round1Processing = tasks.LambdaInvoke(self, "Process gamelog", input_path="$.matchid", lambda_function=gamelog_lambda)
-        Round1Processing.next(success)
+        #Round1Processing.next(success)
         ELO = tasks.LambdaInvoke(self, "Calculate Elo", input_path="$.matchid", lambda_function=elo_lambda)
         Summary = tasks.LambdaInvoke(self, "Summarize stats", input_path="$.matchid", lambda_function=summary_lambda)
         # wSummary = tasks.LambdaInvoke(self, "Summarize wstats", input_path="$.matchid", lambda_function=wsummary_lambda)
@@ -103,7 +103,7 @@ class PostProcessStack(core.Stack):
         Round2Processing.branch(Summary)
         # Round2Processing.branch(wSummary)
         Round2Processing.add_catch(send_failure_notification)
-        Round2Processing.next(success)
+        #Round2Processing.next(success)
 
         choice = sfn.Choice(self, "Round 1 or 2")
 
