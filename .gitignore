@@ -28,6 +28,9 @@ installdb/dbconnection.py
 #settings
 stacks/settings.py
 
+#test files
+test/submitted_files.txt
+
 
 
 

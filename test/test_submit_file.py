@@ -158,7 +158,12 @@ def submit_batch(test_files, size):
                 # print("Skipping submitted file.")
                 #test_files.remove(file_name)
                 continue
-            submit_file(file_name)
+            try:
+                submit_file(file_name)
+            except Exception as ex:
+                template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+                error_msg = template.format(type(ex).__name__, ex.args)
+                print(error_msg)
             submitted +=1
             #test_files.remove(file_name)
             logger.info("Submitted " + str(submitted) + " files out of " + str(size))
@@ -166,7 +171,7 @@ def submit_batch(test_files, size):
                 print("Finished " +str(submitted) + "//" + str(size) + " iterations.")
                 break
             submitted_files.write(file_name.split('\\')[-1]+"\n")
-            time.sleep(2)
+            time.sleep(1)
         print("Out of cycle.")
     except Exception as ex:
         template = "An exception of type {0} occurred. Arguments:\n{1!r}"

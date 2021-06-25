@@ -4,7 +4,7 @@ import os
 import shutil
 
 directory = r".\gamestats3\\"
-directory = r"C:\Temp\.wolf\rtcwpro\stats"
+directory = r"C:\c\.wolf\rtcwpro\stats"
 directory_rejects_twofers = r"C:\Temp\.wolf-rejects\twofers"
 directory_rejects_blankmatchid = r"C:\Temp\.wolf-rejects\blank_match"
 directory_rejects_notjson = r"C:\Temp\.wolf-rejects\notjson"
@@ -304,6 +304,27 @@ gamesdf.to_csv("games.csv")
 logsdf.to_csv("logs.csv")
 statsdf.to_csv("stats.csv")
 weapondf.to_csv("weapon.csv")
+
+pd.options.display.max_rows = 999
+pd.options.display.max_columns = 20
+pd.options.display.width = 300
+pd.set_option("expand_frame_repr", True)
+pd.set_option("max_colwidth", 20)
+pd.set_option("precision", 2)
+
+print("Servers--------")
+print(serversdf.describe())
+print("Matches--------")
+print(gamesdf.describe())
+print("Logs--------")
+print(logsdf.describe())
+print("Stats1--------")
+print(statsdf.iloc[:,0:20].describe())
+print("Stats1--------")
+print(statsdf.iloc[:,20:40].describe())
+print("Weapons--------")
+print(weapondf.describe())
+
 
 
 def json_extract(obj, skeleton):
