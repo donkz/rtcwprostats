@@ -96,12 +96,7 @@ def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
     if "error" not in response:
         stats = json.loads(response["data"])
         logger.info("Retrieved statsall for " + str(len(stats)) + " players")
-        if len(stats) == 2 and len(stats[0]) > 1: #stats grouped in teams in a list of 2 teams , each team over 1 player
-            logger.info("Number of stats entries is erroneous, trying to merge teams")
-            stats_tmp = stats[0].copy()
-            stats_tmp.update(stats[1])
-            stats = stats_tmp
-            logger.info("New statsall has " + str(len(stats)) + " players")
+        stats = convert_stats_to_dict(stats)
     else:
         logger.error("Failed to retrieve statsall.")
         logger.error(json.dumps(response))
@@ -139,6 +134,7 @@ def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
     elo_dict = {}
     elo_games = {}
     old_elos_ddb_maps = {}
+    real_names = {}
     if "error" not in response:
         for result in response:
             if "elos" in result:
@@ -147,14 +143,17 @@ def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
                     elo_dict[guid] = result["elos"][match_region_type + "#elo"]
                     elo_games[guid] = int(result["elos"].get(match_region_type + "#games",20)) # if elo is there, default to 20
                     old_elos_ddb_maps[guid] = result["elos"]
-            try:
-                if "real_name" in result:
-                    name = result["real_name"]
-                else:
-                    name = "no_real_name"
-                logger.info(result["sk"].split("#")[1] + " " + name.ljust(20) + " elo:" + str(elo_dict[guid]) + " games " + str(elo_games[guid]))
-            except:
-                logger.warning("Failed to display an elo.")
+                    try:
+                        if "real_name" in result:
+                            name = result["real_name"]
+                        else:
+                            name = "no_real_name"
+                        real_names[guid] = name
+                        logger.info("Retrieved " + result["sk"].split("#")[1] + " " + name.ljust(20) + " elo:" + str(elo_dict[guid]) + " games " + str(elo_games[guid]))
+                    except Exception as ex:
+                        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+                        error_msg = template.format(type(ex).__name__, ex.args)
+                        logger.warning("Failed to display an elo.\n" + error_msg)
     else:
         logger.error("Failed to retrieve any player elos.")
         logger.error(json.dumps(response))
@@ -184,7 +183,7 @@ def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
         
         player_scores[guid] = Player(score_step_3, duration, elo_games.get(guid,0)) # if elo is not there, default will be 0 anyway
         if debug:
-            print(player_stats.get("alias", "missing_alias").ljust(20) + str(player_stats["categories"].get("kills", 0)).ljust(5) + str(win_multiplier).ljust(5) + str(score_step_3).ljust(5) + str(player_scores[guid].games).ljust(5))
+            logger.info(player_stats.get("alias", "missing_alias").ljust(20) + str(player_stats["categories"].get("kills", 0)).ljust(5) + str(win_multiplier).ljust(5) + str(score_step_3).ljust(5) + str(player_scores[guid].games).ljust(5))
 
     (elo_deltas, elos) = process_elos(player_scores, elo_dict)
     
@@ -200,12 +199,26 @@ def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
     else:
         message = "Elo progress records inserted.\n"
 
-    update_player_info(ddb_table, elos, match_region_type, old_elos_ddb_maps)
+    update_player_info(ddb_table, elos, match_region_type, old_elos_ddb_maps, real_names)
     
     time_to_write = str(round((_time.time() - t1), 3))
     logger.info(f"Time to process ELOs is {time_to_write} s")
     return message
  
+
+def convert_stats_to_dict(stats):
+    if len(stats) == 2 and len(stats[0]) > 1: #stats grouped in teams in a list of 2 teams , each team over 1 player
+        logger.info("Number of stats entries 2, trying to merge teams")
+        stats_tmp = stats[0].copy()
+        stats_tmp.update(stats[1])
+    else:
+        logger.info("Merging list into dict.")
+        stats_tmp = {}
+        for player in stats:
+            stats_tmp.update(player)
+    logger.info("New statsall has " + str(len(stats_tmp)) + " players in a " + str(type(stats_tmp)))
+    return stats_tmp
+
         
 def wstat(new_wstats, guid, weapon, metric):
     """Safely get a number from a deeply nested dict."""
@@ -417,26 +430,31 @@ def get_batch_items(item_list, ddb_table, log_stream_name):
     return result
 
 
-def update_player_info(ddb_table, elos, match_region_type, old_elos_ddb_maps):
+def update_player_info(ddb_table, elos, match_region_type, old_elos_ddb_maps, real_names):
     """Update existing players with new elo map."""
     # Example: ddb_table.update_item(Key=Key, UpdateExpression="set elos.#eloname = :elo, elos.#gamesname = :games", ExpressionAttributeNames={"#eloname": "na#6#elo", "#gamesname": "na#6#games"}, ExpressionAttributeValues={':elo': 134, ':games' : 135})
     update_expression="set elos = :elos"
     for guid, player_elo in elos.items():
-        logger.info("Updating player: " + guid)
         key = { "pk": "player" , "sk": "playerinfo#" + guid }
         if guid in old_elos_ddb_maps:
             new_elos_map = old_elos_ddb_maps[guid]
         else:
             new_elos_map = {}
-            
-        new_elos_map[match_region_type + "#elo"] = int(round(player_elo.elo, 0))
-        new_elos_map[match_region_type + "#games"] = player_elo.games
+        
+        new_elo = int(round(player_elo.elo, 0))
+        new_games = player_elo.games
+        new_elos_map[match_region_type + "#elo"] = new_elo
+        new_elos_map[match_region_type + "#games"] = new_games
         expression_values = {':elos': new_elos_map}
         response = ddb_table.update_item(Key=key, 
                                          UpdateExpression=update_expression, 
                                          ExpressionAttributeValues=expression_values)
-
-    
+        if response["ResponseMetadata"]['HTTPStatusCode'] == 200:
+            logger.info("Updated   " + guid + " " + real_names.get(guid,"no_real_name") + " elo:" + str(new_elo) + " games " + str(new_games))
+        else:
+            logger.warning("Unexpected HTTP code" + str(response["ResponseMetadata"]['HTTPStatusCode']) + ". Did not update " + guid + " " + real_names.get(guid,"no_real_name"))           
+            
+            
 def create_batch_write_structure(table_name, items, start_num, batch_size):
     """
     Create item structure for passing to batch_write_item

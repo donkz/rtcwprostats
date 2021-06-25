@@ -27,13 +27,7 @@ def process_rtcwpro_summary(ddb_table, ddb_client, match_id, log_stream_name):
     if "error" not in response:
         stats = json.loads(response["data"])
         logger.info("Retrieved statsall for " + str(len(stats)) + " players")
-        if len(stats) == 2 and len(stats[0]) > 1: #stats grouped in teams in a list of 2 teams , each team over 1 player
-            logger.info("Number of stats entries is erroneous, trying to merge teams")
-            stats_tmp = stats[0].copy()
-            stats_tmp.update(stats[1])
-            stats = stats_tmp
-            logger.info("New statsall has " + str(len(stats)) + " players")
-            
+        stats = convert_stats_to_dict(stats)
     else:
         logger.error("Failed to retrieve statsall: " + sk)
         logger.error(json.dumps(response))
@@ -96,6 +90,19 @@ def process_rtcwpro_summary(ddb_table, ddb_client, match_id, log_stream_name):
     logger.info(f"Time to process summaries is {time_to_write} s")
     message += "Records were summarized"
     return message
+
+def convert_stats_to_dict(stats):
+    if len(stats) == 2 and len(stats[0]) > 1: #stats grouped in teams in a list of 2 teams , each team over 1 player
+        logger.info("Number of stats entries 2, trying to merge teams")
+        stats_tmp = stats[0].copy()
+        stats_tmp.update(stats[1])
+    else:
+        logger.info("Merging list into dict.")
+        stats_tmp = {}
+        for player in stats:
+            stats_tmp.update(player)
+    logger.info("New statsall has " + str(len(stats_tmp)) + " players in a " + str(type(stats_tmp)))
+    return stats_tmp
 
 def build_new_stats_summary(stats, stats_old):
     """Add up new and old stats."""

@@ -24,8 +24,8 @@ from reader_writeddb import (
 # import sqlalchemy
 
 log_level = logging.INFO
-logging.basicConfig(format='%(levelname)s:%(message)s')
-logger = logging.getLogger()
+logging.basicConfig(format='%(name)s:%(levelname)s:%(message)s')
+logger = logging.getLogger("read_match")
 logger.setLevel(log_level)
 
 if __name__ == "__main__":
@@ -61,13 +61,13 @@ def handler(event, context):
         obj = s3.get_object(Bucket=bucket_name, Key=file_key)
     except s3.exceptions.ClientError as err:
         if err.response['Error']['Code'] == 'EndpointConnectionError':
-            print("[x] Connection could not be established to AWS. Possible firewall or proxy issue. " + str(err))
+           logger.error("Connection could not be established to AWS. Possible firewall or proxy issue. " + str(err))
         elif err.response['Error']['Code'] == 'ExpiredToken':
-            print("[x] Credentials for AWS S3 are not valid. " + str(err))
+            logger.error("Credentials for AWS S3 are not valid. " + str(err))
         elif err.response['Error']['Code'] == 'AccessDenied':
-            print("[x] Current credentials to not provide access to read the file. " + str(err))
+            logger.error("Current credentials to not provide access to read the file. " + str(err))
         elif err.response['Error']['Code'] == 'NoSuchKey':
-            print("[x] File was not found: " + file_key)
+            logger.error("File was not found: " + file_key)
         else:
             print("[x] Unexpected error: %s" % err)
         return None
@@ -86,6 +86,7 @@ def handler(event, context):
 
     integrity, message = integrity_checks(gamestats)
     if not integrity:
+        logger.error("Failed integrity check:" + message)
         return message
 
     server = ddb_get_server(gamestats['serverinfo']['serverName'], table)
@@ -211,14 +212,17 @@ def integrity_checks(gamestats):
             message = "No gameinfo. Map was restarted. Aborting."
         else:
             message = "No gameinfo found."
+        return integrity, message
 
     if "stats" not in gamestats:
         integrity = False
         message = "No stats in " + gamestats["gameinfo"].get('match_id', 'na')
+        return integrity, message
 
     if isinstance(gamestats["stats"], dict):
         integrity = False
         message = gamestats["gameinfo"].get('match_id', 'na') + " stats is a dict. Expecting a list."
+        return integrity, message
 
     return integrity, message
 

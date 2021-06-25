@@ -8,8 +8,8 @@ import sys
 import traceback
 
 log_level = logging.INFO
-logging.basicConfig(format='%(levelname)s:%(message)s')
-logger = logging.getLogger()
+logging.basicConfig(format='%(name)s:%(levelname)s:%(message)s')
+logger = logging.getLogger("submit")
 logger.setLevel(log_level)
 
 

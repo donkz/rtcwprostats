@@ -115,10 +115,10 @@ def ddb_put_item(Item, table):
             http_code = response['ResponseMetadata']['HTTPStatusCode']
         except: 
             http_code = "Could not retrieve http code"
-            print("Could not retrieve http code from response\n", response)
+            logger.error("Could not retrieve http code from response\n" + str(response))
         
         if http_code != 200:
-            print(f"Erroneous HTTP Code ({http_code}) while submitting item {pk}:{sk}\n", response)
+            logger.error("Unhandled HTTP Code " + str(http_code) + " while submitting item " + pk + ":" + sk + "\n" + str(response))
     return response
 
 def ddb_prepare_match_item(gamestats):
@@ -153,7 +153,6 @@ def ddb_prepare_stats_items(gamestats):
     tmp_stats_unnested = fix_stats_nesting(gamestats)
     for player_item in tmp_stats_unnested:
         for playerguid, stat in player_item.items():
-            #print(playerguid)
             inject_json_version(stat, gamestats)
             stats_item = {
                 'pk'    : 'stats#' + playerguid,
@@ -349,7 +348,7 @@ def ddb_batch_write(client, table_name, items):
 
 def inject_json_version(obj, gamestats):
     if isinstance(obj, list):
-        print("Skipping list while inserting the versions")  # TODO
+        logger.info("Skipping list while inserting the versions")  # TODO
     elif isinstance(obj, dict):  
         obj['jsonGameStatVersion'] = gamestats["serverinfo"]["jsonGameStatVersion"]
     else:
