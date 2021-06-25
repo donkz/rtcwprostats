@@ -45,7 +45,7 @@ x is done , / is work in progress, blank is planned
 
 |Status  |Domain  |API Path  |Query  |
 |-------- |-------- |-------- |--------|
-|[x] |Matches |/matches/{match_round_id} |Filter matches |
+|[x] |Matches |/matches/{match_round_id_1},{match_round_id_N} |Get match info(s) |
 |    |Matches |/matches/map/{map} |Filter matches by map to get map counts, wins, times |
 |    |Matches |/matches/type/{type} |Filter type of matches and process their individual lines |
 |[x] |Matches |/matches/recent |Filter by last 30 days to get matches |
