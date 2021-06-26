@@ -19,8 +19,8 @@ def get_files(test_dir):
     return test_files
 
 def submit_file(file_name):
-    logger.info("Reading from " + os.path.abspath(file_name))
-    logger.info("Test files left " + str(len(test_files)))
+    logger.debug("Reading from " + os.path.abspath(file_name))
+    #logger.info("Test files left " + str(len(test_files)))
     with open(file_name) as file:
         content = file.read()
     
@@ -33,7 +33,7 @@ def submit_file(file_name):
         base64_bytes = base64.b64encode(content_string_bytes) 
         base64_string = base64_bytes.decode("ascii") 
         str_len = str(int(len(base64_string)/1024))
-        logger.info(f"Submitting string of {str_len} KB")
+        logger.debug(f"Submitting string of {str_len} KB")
         
         
         # =============================================================================
@@ -43,7 +43,7 @@ def submit_file(file_name):
         response = requests.post(url, data=base64_string, headers={'matchid': match_id_round[0:-1], 'x-api-key':'rtcwproapikeythatisjustforbasicauthorization'})
         logger.info(response.text)
     else:
-        logger.info("map_restart detected, not submitting")
+        logger.debug("map_restart detected, not submitting")
     return match_id_round
 
 boto3.set_stream_logger('boto3.resources', logging.INFO)
@@ -74,7 +74,7 @@ match_id_round = submit_file(file_name)
 #--data-raw 'ewogICAgImdsb3NzYXJ5IjogewogICAgICAgICJ0aXRsZSI6ICJleGFtcGxlIGdsb3NzYXJ5IiwKCQkiR2xvc3NEaXYiOiB7CiAgICAgICAgICAgICJ0aXRsZSI6ICJTIiwKCQkJIkdsb3NzTGlzdCI6IHsKICAgICAgICAgICAgICAgICJHbG9zc0VudHJ5IjogewogICAgICAgICAgICAgICAgICAgICJJRCI6ICJTR01MIiwKCQkJCQkiU29ydEFzIjogIlNHTUwiLAoJCQkJCSJHbG9zc1Rlcm0iOiAiU3RhbmRhcmQgR2VuZXJhbGl6ZWQgTWFya3VwIExhbmd1YWdlIiwKCQkJCQkiQWNyb255bSI6ICJTR01MIiwKCQkJCQkiQWJicmV2IjogIklTTyA4ODc5OjE5ODYiLAoJCQkJCSJHbG9zc0RlZiI6IHsKICAgICAgICAgICAgICAgICAgICAgICAgInBhcmEiOiAiQSBtZXRhLW1hcmt1cCBsYW5ndWFnZSwgdXNlZCB0byBjcmVhdGUgbWFya3VwIGxhbmd1YWdlcyBzdWNoIGFzIERvY0Jvb2suIiwKCQkJCQkJIkdsb3NzU2VlQWxzbyI6IFsiR01MIiwgIlhNTCJdCiAgICAgICAgICAgICAgICAgICAgfSwKCQkJCQkiR2xvc3NTZWUiOiAibWFya3VwIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfQp9'
 
 sleep_time = 10 #seconds
-logger.info(f"Sleeping for {sleep_time} seconds")
+logger.debug(f"Sleeping for {sleep_time} seconds")
 time.sleep(sleep_time)
 
 # =============================================================================
@@ -160,18 +160,22 @@ def submit_batch(test_files, size):
                 continue
             try:
                 submit_file(file_name)
+                submitted +=1
+                logger.info("Submitted " + str(submitted) + " files out of " + str(size))
+                submitted_files.write(file_name.split('\\')[-1]+"\n")
+                time.sleep(1)
+            except ConnectionError as ex:
+                print(ex.args)
+                raise
             except Exception as ex:
                 template = "An exception of type {0} occurred. Arguments:\n{1!r}"
                 error_msg = template.format(type(ex).__name__, ex.args)
                 print(error_msg)
-            submitted +=1
-            #test_files.remove(file_name)
-            logger.info("Submitted " + str(submitted) + " files out of " + str(size))
+            
             if submitted >= size:
                 print("Finished " +str(submitted) + "//" + str(size) + " iterations.")
                 break
-            submitted_files.write(file_name.split('\\')[-1]+"\n")
-            time.sleep(1)
+            
         print("Out of cycle.")
     except Exception as ex:
         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
