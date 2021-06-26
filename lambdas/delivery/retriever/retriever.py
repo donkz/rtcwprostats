@@ -5,6 +5,7 @@ from botocore.exceptions import ClientError
 import time
 import logging
 import os
+import decimal
 
 if __name__ == "__main__":
     TABLE_NAME = "rtcwprostats-database-DDBTable2F2A2F95-1BCIOU7IE3DSE"
@@ -108,6 +109,8 @@ def handler(event, context):
                     data_line["match_id"] = line["sk"]
                     data_line["type"] = line["gsi1pk"].replace("stats#", "")
                     data.append(data_line)
+            elif "Items do not exist" in responses["error"]:
+                data = [] #taking a risk assuming the player simply did not play for 30 days
             else:
                 data = responses
 
@@ -135,17 +138,20 @@ def handler(event, context):
             logger.info("Parameter: " + guid)
             pk = "wstats" + "#" + guid
             skhigh = int(time.time())
-            sklow = skhigh - 60 * 60 * 24 * 30
+            sklow = skhigh - 60 * 60 * 24 * 30  # last 30 days only
             responses = get_range(pk, str(sklow), str(skhigh), ddb_table, log_stream_name)
 
             if "error" not in responses:
                 # logic specific to /stats/player/{player_guid}
                 data = []
                 for line in responses:
-                    data_line = json.loads(line["data"])
+                    data_line = {}
+                    data_line["wstats"] = json.loads(line["data"])
                     data_line["match_id"] = line["sk"]
                     # data_line["type"] = line["gsi1pk"].replace("wstats#","")
                     data.append(data_line)
+            elif "Items do not exist" in responses["error"]:
+                data = [] #taking a risk assuming the player simply did not play for 30 days
             else:
                 data = responses
 
@@ -221,7 +227,7 @@ def handler(event, context):
     if api_path == "/player/search/{begins_with}":
         logger.info("Processing " + api_path)
         if "begins_with" in event["pathParameters"]:
-            begins_with = event["pathParameters"]["begins_with"]
+            begins_with = "playerinfo#" + event["pathParameters"]["begins_with"]
             logger.info("Parameter: " + begins_with)
             pk = "player"
             index_name = "lsi"
@@ -235,7 +241,7 @@ def handler(event, context):
                     data_line = {}
                     
                     data_line["real_name"] = player.get("real_name","na")
-                    data_line["guid"] = player["lsipk"].split("#")[1]
+                    data_line["guid"] = player["lsipk"].split("#")[2]
                     data_line["frequent_region"] = player.get("frequent_region","na")
                     data.append(data_line)
             else:
@@ -246,9 +252,15 @@ def handler(event, context):
         'headers': {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
-        },
-        'body': json.dumps(data)
-    }
+            },
+        'body': json.dumps(data, default=default_type_error_handler)
+        }
+
+# https://stackoverflow.com/questions/63278737/object-of-type-decimal-is-not-json-serializable
+def default_type_error_handler(obj):
+    if isinstance(obj, decimal.Decimal):
+        return int(obj)
+    raise TypeError
 
 
 def get_item(pk, sk, table, log_stream_name):
