@@ -1,22 +1,20 @@
-from aws_cdk import (
-    aws_s3 as s3,
-    aws_iam as iam,
-    aws_lambda as _lambda,
-    aws_sns as sns,
-    aws_sqs as sqs,
-    aws_s3_notifications as s3n,
-    core
-)
+from aws_cdk import Stack, Duration, RemovalPolicy
+from constructs import Construct
 
-from aws_cdk.aws_dynamodb import (
-    Table
-)
+import aws_cdk.aws_s3 as s3
+import aws_cdk.aws_iam as iam
+import aws_cdk.aws_lambda as _lambda
+import aws_cdk.aws_sns as sns
+import aws_cdk.aws_sqs as sqs
+import aws_cdk.aws_s3_notifications as s3n
+
+from aws_cdk.aws_dynamodb import Table
 
 
-class StorageStack(core.Stack):
+class StorageStack(Stack):
     """S3 bucket for incoming files and reader lambda."""
 
-    def __init__(self, scope: core.Construct, id: str,
+    def __init__(self, scope: Construct, id: str,
                  lambda_tracing,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
@@ -27,19 +25,17 @@ class StorageStack(core.Stack):
                                    encryption=s3.BucketEncryption.S3_MANAGED,
                                    # block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
                                    public_read_access=True,
-                                   removal_policy=core.RemovalPolicy.RETAIN,
+                                   removal_policy=RemovalPolicy.RETAIN,
                                    lifecycle_rules=[
-                                       s3.LifecycleRule(id="ExpireDebugFiles", expiration=core.Duration.days(30), prefix="debug/"),
-                                       s3.LifecycleRule(id="ExpireOldVersions", noncurrent_version_expiration=core.Duration.days(30)),
+                                       s3.LifecycleRule(id="ExpireDebugFiles", expiration=Duration.days(30), prefix="debug/"),
+                                       s3.LifecycleRule(id="ExpireOldVersions", noncurrent_version_expiration=Duration.days(30)),
                                        s3.LifecycleRule(id="Transitions",
                                                         transitions=[
-                                                           s3.Transition(storage_class=s3.StorageClass.ONE_ZONE_INFREQUENT_ACCESS, transition_after=core.Duration.days(30))
+                                                           s3.Transition(storage_class=s3.StorageClass.ONE_ZONE_INFREQUENT_ACCESS, transition_after=Duration.days(30))
                                                         ]
                                                         )
                                    ]
                                    )
-
-        core.Tags.of(storage_bucket).add("purpose", "rtcwpro")
 
         user = iam.User(self, "rtcwproadmin")
         storage_bucket.grant_read(user, "*")
@@ -54,7 +50,7 @@ class StorageStack(core.Stack):
         
         read_dlq = sqs.Queue(self, id="ReadMatchDLQ")
         read_queue = sqs.Queue(self, "ReadMatchQueue",
-                               visibility_timeout=core.Duration.seconds(60),
+                               visibility_timeout=Duration.seconds(60),
                                dead_letter_queue = sqs.DeadLetterQueue(max_receive_count=1, queue=read_dlq))
         sqs_notification = s3n.SqsDestination(read_queue)
         storage_bucket.add_event_notification(s3.EventType.OBJECT_CREATED, sqs_notification, s3.NotificationKeyFilter(prefix="intake/"))

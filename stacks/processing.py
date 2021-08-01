@@ -1,17 +1,16 @@
-"""Import aws cdk modules."""
-from aws_cdk import (
-    aws_lambda as _lambda,
-    aws_events as events,
-    aws_events_targets as targets,
-    aws_iam as iam,
-    core
-)
+from aws_cdk import Stack, Duration
+from constructs import Construct
+
+import aws_cdk.aws_lambda as _lambda
+import aws_cdk.aws_events as events
+import aws_cdk.aws_events_targets as targets
+import aws_cdk.aws_iam as iam
 
 
-class ProcessingStack(core.Stack):
+class ProcessingStack(Stack):
     """Processes that take place after the match had been saved."""
 
-    def __init__(self, scope: core.Construct, construct_id: str, lambda_tracing, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, lambda_tracing, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         classifier_role = iam.Role(self, "ClassifierRole",
@@ -22,7 +21,7 @@ class ProcessingStack(core.Stack):
         classifier_lambda = _lambda.Function(
             self, 'classifier',
             function_name='rtcwpro-classifier',
-            code=_lambda.Code.asset('lambdas/processing/classifier'),
+            code=_lambda.Code.from_asset('lambdas/processing/classifier'),
             handler='classifier.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
             role=classifier_role,

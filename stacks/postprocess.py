@@ -1,20 +1,18 @@
-from aws_cdk import (
-    core,
-    aws_stepfunctions as sfn,
-    aws_stepfunctions_tasks as tasks,
-    aws_lambda as _lambda,
-    aws_sns as sns,
-    aws_iam as iam
-)
+from aws_cdk import Stack, Duration
+from constructs import Construct
 
-from aws_cdk.aws_dynamodb import (
-    Table
-)
+import aws_cdk.aws_lambda as _lambda
+import aws_cdk.aws_iam as iam
+import aws_cdk.aws_stepfunctions_tasks as tasks
+import aws_cdk.aws_stepfunctions as sfn
+import aws_cdk.aws_sns as sns
 
-class PostProcessStack(core.Stack):
+from aws_cdk.aws_dynamodb import Table
+
+class PostProcessStack(Stack):
     """Make a step function state machine with lambdas doing the work."""
 
-    def __init__(self, scope: core.Construct, id: str, lambda_tracing, ddb_table: Table, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, lambda_tracing, ddb_table: Table, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         fail_topic = sns.Topic(self, "Postprocessing Failure Topic")
@@ -29,12 +27,12 @@ class PostProcessStack(core.Stack):
         elo_lambda = _lambda.Function(
             self, 'elo-lambda',
             function_name='rtcwpro-elo',
-            code=_lambda.Code.asset('lambdas/postprocessing/elo'),
+            code=_lambda.Code.from_asset('lambdas/postprocessing/elo'),
             handler='elo.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
             role=ddb_lambda_role,
             tracing=lambda_tracing,
-            timeout=core.Duration.seconds(30),
+            timeout=Duration.seconds(30),
             environment={
                 'RTCWPROSTATS_TABLE_NAME': ddb_table.table_name,
             }
@@ -43,12 +41,12 @@ class PostProcessStack(core.Stack):
         gamelog_lambda = _lambda.Function(
             self, 'gamelog-lambda',
             function_name='rtcwpro-gamelog',
-            code=_lambda.Code.asset('lambdas/postprocessing/gamelog'),
+            code=_lambda.Code.from_asset('lambdas/postprocessing/gamelog'),
             handler='gamelog.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
             role=ddb_lambda_role,
             tracing=lambda_tracing,
-            timeout=core.Duration.seconds(30),
+            timeout=Duration.seconds(30),
             environment={
                 'RTCWPROSTATS_TABLE_NAME': ddb_table.table_name,
             }
@@ -57,12 +55,12 @@ class PostProcessStack(core.Stack):
         summary_lambda = _lambda.Function(
             self, 'summary-lambda',
             function_name='rtcwpro-stats-summary',
-            code=_lambda.Code.asset('lambdas/postprocessing/summary'),
+            code=_lambda.Code.from_asset('lambdas/postprocessing/summary'),
             handler='summary.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
             role=ddb_lambda_role,
             tracing=lambda_tracing,
-            timeout=core.Duration.seconds(30),
+            timeout=Duration.seconds(30),
             environment={
                 'RTCWPROSTATS_TABLE_NAME': ddb_table.table_name,
             }
@@ -113,7 +111,7 @@ class PostProcessStack(core.Stack):
 
         postproc_state_machine = sfn.StateMachine(self, "ProcessMatchData",
                          definition=choice,
-                         timeout=core.Duration.minutes(5)
+                         timeout=Duration.minutes(5)
                          )
         
         self.postproc_state_machine = postproc_state_machine

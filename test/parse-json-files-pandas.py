@@ -4,7 +4,11 @@ import os
 import shutil
 
 directory = r".\gamestats3\\"
-directory = r"C:\c\.wolf\rtcwpro\stats"
+directory = r"C:\c\.wolf-mine\rtcwpro\stats"
+directory = r"C:\c\adlad-ams\rtcwpro\stats"
+directory = r"C:\c\adlad-london\rtcwpro\stats"
+directory = r"C:\c\murkey\rtcwpro\stats"
+directory = r"C:\c\virkes\rtcwpro\stats"
 directory_rejects_twofers = r"C:\Temp\.wolf-rejects\twofers"
 directory_rejects_blankmatchid = r"C:\Temp\.wolf-rejects\blank_match"
 directory_rejects_notjson = r"C:\Temp\.wolf-rejects\notjson"

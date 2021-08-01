@@ -283,7 +283,7 @@ def get_range(pk, sklow, skhigh, table, log_stream_name):
     """Get several items by pk and range of sk."""
     item_info = pk + ":" + sklow + " to " + skhigh + ". Logstream: " + log_stream_name
     try:
-        response = table.query(KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sklow, skhigh))
+        response = table.query(KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sklow, skhigh), Limit=40,ReturnConsumedCapacity='NONE')
     except ClientError as e:
         logger.warning("Exception occurred: " + e.response['Error']['Message'])
         result = make_error_dict("[x] Client error calling database: ", item_info)
@@ -298,7 +298,7 @@ def get_begins(pk, begins_with, ddb_table, index_name, skname,  log_stream_name)
     """Get several items by pk and range of sk."""
     item_info = pk + ": begins with " + begins_with + ". Logstream: " + log_stream_name
     try:
-        response = ddb_table.query(IndexName=index_name,KeyConditionExpression=Key('pk').eq(pk) & Key(skname).begins_with(begins_with))
+        response = ddb_table.query(IndexName=index_name,KeyConditionExpression=Key('pk').eq(pk) & Key(skname).begins_with(begins_with), Limit=40)
     except ClientError as e:
         logger.warning("Exception occurred: " + e.response['Error']['Message'])
         result = make_error_dict("[x] Client error calling database: ", item_info)

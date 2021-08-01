@@ -47,6 +47,10 @@ def submit_file(file_name):
     return match_id_round
 
 boto3.set_stream_logger('boto3.resources', logging.INFO)
+log_level = logging.INFO
+logging.basicConfig(format='%(name)s:%(levelname)s:%(message)s')
+logger = logging.getLogger("test_submit")
+logger.setLevel(log_level)
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table("rtcwprostats-database-DDBTable2F2A2F95-1BCIOU7IE3DSE")
@@ -55,12 +59,10 @@ url_api = 'https://rtcwproapi.donkanator.com/'
 url_path_submit = 'submit'
 test_dir = r".\gamestats5"
 test_dir = r"C:\c\.wolf\rtcwpro\stats\\"
-
-log_level = logging.INFO
-logging.basicConfig(format='%(name)s:%(levelname)s:%(message)s')
-logger = logging.getLogger("test_submit")
-logger.setLevel(log_level)
-
+test_dir = r"C:\c\adlad-ams\rtcwpro\stats"
+test_dir = r"C:\c\adlad-london\rtcwpro\stats"
+test_dir = r"C:\c\murkey\rtcwpro\stats"
+test_dir = r"C:\c\virkes\rtcwpro\stats"
 
 test_files = get_files(test_dir)
 
@@ -68,10 +70,13 @@ file_name = test_files[0]
 test_files.remove(file_name)
 match_id_round = submit_file(file_name)
 
-#curl --location --request POST 'https://rtcwproapi.donkanator.com/submit' 
-#--header 'matchid: 123455678' 
-#--header 'x-api-key: rtcwproapikeythatisjustforbasicauthorization' 
-#--data-raw 'ewogICAgImdsb3NzYXJ5IjogewogICAgICAgICJ0aXRsZSI6ICJleGFtcGxlIGdsb3NzYXJ5IiwKCQkiR2xvc3NEaXYiOiB7CiAgICAgICAgICAgICJ0aXRsZSI6ICJTIiwKCQkJIkdsb3NzTGlzdCI6IHsKICAgICAgICAgICAgICAgICJHbG9zc0VudHJ5IjogewogICAgICAgICAgICAgICAgICAgICJJRCI6ICJTR01MIiwKCQkJCQkiU29ydEFzIjogIlNHTUwiLAoJCQkJCSJHbG9zc1Rlcm0iOiAiU3RhbmRhcmQgR2VuZXJhbGl6ZWQgTWFya3VwIExhbmd1YWdlIiwKCQkJCQkiQWNyb255bSI6ICJTR01MIiwKCQkJCQkiQWJicmV2IjogIklTTyA4ODc5OjE5ODYiLAoJCQkJCSJHbG9zc0RlZiI6IHsKICAgICAgICAgICAgICAgICAgICAgICAgInBhcmEiOiAiQSBtZXRhLW1hcmt1cCBsYW5ndWFnZSwgdXNlZCB0byBjcmVhdGUgbWFya3VwIGxhbmd1YWdlcyBzdWNoIGFzIERvY0Jvb2suIiwKCQkJCQkJIkdsb3NzU2VlQWxzbyI6IFsiR01MIiwgIlhNTCJdCiAgICAgICAgICAgICAgICAgICAgfSwKCQkJCQkiR2xvc3NTZWUiOiAibWFya3VwIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfQp9'
+'''
+post this to git on windows or just linux
+curl --location --request POST 'https://rtcwproapi.donkanator.com/submit' \
+--header 'matchid: 123455678' \
+--header 'x-api-key: rtcwproapikeythatisjustforbasicauthorization' \
+--data-raw 'ewogICAgImdsb3NzYXJ5IjogewogICAgICAgICJ0aXRsZSI6ICJleGFtcGxlIGdsb3NzYXJ5IiwKCQkiR2xvc3NEaXYiOiB7CiAgICAgICAgICAgICJ0aXRsZSI6ICJTIiwKCQkJIkdsb3NzTGlzdCI6IHsKICAgICAgICAgICAgICAgICJHbG9zc0VudHJ5IjogewogICAgICAgICAgICAgICAgICAgICJJRCI6ICJTR01MIiwKCQkJCQkiU29ydEFzIjogIlNHTUwiLAoJCQkJCSJHbG9zc1Rlcm0iOiAiU3RhbmRhcmQgR2VuZXJhbGl6ZWQgTWFya3VwIExhbmd1YWdlIiwKCQkJCQkiQWNyb255bSI6ICJTR01MIiwKCQkJCQkiQWJicmV2IjogIklTTyA4ODc5OjE5ODYiLAoJCQkJCSJHbG9zc0RlZiI6IHsKICAgICAgICAgICAgICAgICAgICAgICAgInBhcmEiOiAiQSBtZXRhLW1hcmt1cCBsYW5ndWFnZSwgdXNlZCB0byBjcmVhdGUgbWFya3VwIGxhbmd1YWdlcyBzdWNoIGFzIERvY0Jvb2suIiwKCQkJCQkJIkdsb3NzU2VlQWxzbyI6IFsiR01MIiwgIlhNTCJdCiAgICAgICAgICAgICAgICAgICAgfSwKCQkJCQkiR2xvc3NTZWUiOiAibWFya3VwIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfQp9'
+'''
 
 sleep_time = 10 #seconds
 logger.debug(f"Sleeping for {sleep_time} seconds")
@@ -163,14 +168,17 @@ def submit_batch(test_files, size):
                 submitted +=1
                 logger.info("Submitted " + str(submitted) + " files out of " + str(size))
                 submitted_files.write(file_name.split('\\')[-1]+"\n")
-                time.sleep(1)
+                time.sleep(2)
             except ConnectionError as ex:
-                print(ex.args)
-                raise
-            except Exception as ex:
+                logger.error("Connection error.")
                 template = "An exception of type {0} occurred. Arguments:\n{1!r}"
                 error_msg = template.format(type(ex).__name__, ex.args)
-                print(error_msg)
+                logger.error(error_msg)
+                time.sleep(10)
+            except Exception as ex:
+                template = "A submit exception of type {0} occurred. Arguments:\n{1!r}"
+                error_msg = template.format(type(ex).__name__, ex.args)
+                logger.error(error_msg)
             
             if submitted >= size:
                 print("Finished " +str(submitted) + "//" + str(size) + " iterations.")
@@ -178,10 +186,11 @@ def submit_batch(test_files, size):
             
         print("Out of cycle.")
     except Exception as ex:
-        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        template = "A general loop error of type {0} occurred. Arguments:\n{1!r}"
         error_msg = template.format(type(ex).__name__, ex.args)
         message = "Failed to load file " + file_name + "\n" + error_msg
-        logger.info(message)
+        logger.error(message)
+        time.sleep(10)
     finally:
         submitted_files.close()
 

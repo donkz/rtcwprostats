@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from aws_cdk import core
-from aws_cdk import aws_lambda as _lambda
+import aws_cdk as cdk
+import aws_cdk.aws_lambda as _lambda
 
 from stacks.api import APIStack
 from stacks.storage import StorageStack
@@ -24,7 +24,7 @@ from stacks.settings import (
     zone_name
 )
 
-app = core.App()
+app = cdk.App()
 
 lambda_tracing = _lambda.Tracing.DISABLED
 if enable_tracing:
@@ -45,6 +45,6 @@ ProcessingStack(app, "rtcwprostats-processing", env=env, lambda_tracing=lambda_t
 DeliveryStack(app, "rtcwprostats-delivery", api=apistack.api, retriever=retriever.retriever_lambda, env=env)
 
 
-core.Tags.of(app).add("purpose", "rtcwpro")
+cdk.Tags.of(app).add("purpose", "rtcwpro")
 
 app.synth()

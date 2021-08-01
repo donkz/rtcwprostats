@@ -19,22 +19,8 @@ setuptools.setup(
     packages=setuptools.find_packages(where="rtcwprostats"),
 
     install_requires=[
-        "aws-cdk.core>=1.74.0",
-        "aws-cdk.aws-s3>=1.74.0",
-        "aws-cdk.aws-iam>=1.74.0",
-        "aws-cdk.aws-lambda>=1.74.0",
-        "aws-cdk.aws-sns>=1.74.0",
-        "aws-cdk.aws-s3-notifications>=1.74.0",
-        "aws-cdk.aws-sns-subscriptions>=1.74.0",
-        "aws-cdk.aws-apigateway>=1.74.0",
-        "aws-cdk.aws-route53>=1.74.0",
-        "aws-cdk.aws_route53_targets",
-        "aws-cdk.aws_events_targets",
-        "aws-cdk.aws_dynamodb",
-        "aws-cdk.aws_stepfunctions",
-        "aws-cdk.aws_stepfunctions_tasks",
-        "aws-cdk.aws-sqs",
-        "aws-cdk.aws-lambda-event-sources"
+        "aws-cdk-lib==2.0.0-rc.10",
+        "constructs>=10.0.0,<11.0.0",
     ],
 
     python_requires=">=3.6",

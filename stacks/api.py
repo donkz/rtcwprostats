@@ -1,17 +1,17 @@
-from aws_cdk import (
-    aws_lambda as _lambda,
-    aws_apigateway as apigw,
-    aws_iam as iam,
-    aws_certificatemanager as acm,
-    aws_s3 as s3,
-    core
-)
+from aws_cdk import Stack, Duration
+from constructs import Construct
+
+import aws_cdk.aws_lambda as _lambda
+import aws_cdk.aws_apigateway as apigw
+import aws_cdk.aws_iam as iam
+import aws_cdk.aws_certificatemanager as acm
+import aws_cdk.aws_s3 as s3
 
 
-class APIStack(core.Stack):
+class APIStack(Stack):
     """Begin API and start with a submit method."""
 
-    def __init__(self, scope: core.Construct, construct_id: str, lambda_tracing, api_key: str, cert_arn: str, storage_bucket: s3.Bucket, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, lambda_tracing, api_key: str, cert_arn: str, storage_bucket: s3.Bucket, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         ####################################
@@ -29,10 +29,10 @@ class APIStack(core.Stack):
             function_name='rtcwpro-save-payload',
             handler='save_payload.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset('lambdas/pipeline/save_payload'),
+            code=_lambda.Code.from_asset('lambdas/pipeline/save_payload'),
             role=save_payload_role,
             tracing=lambda_tracing,
-            timeout=core.Duration.seconds(10)
+            timeout=Duration.seconds(10)
         )
 
         storage_bucket.grant_put(save_payload, ["intake/*"])
@@ -76,8 +76,7 @@ class APIStack(core.Stack):
         )
 
         plan = api.add_usage_plan("UsagePlan",
-                                  name="Easy",
-                                  api_key=api_key_obj,
+                                  name="rtcwproapi",
                                   throttle={
                                       "rate_limit": 1,  # 1 request per second
                                       "burst_limit": 2
@@ -86,6 +85,8 @@ class APIStack(core.Stack):
         plan.add_api_stage(
             stage=api.deployment_stage
         )
+        
+        plan.add_api_key(api_key_obj)
 
         self.save_payload = save_payload
         self.api = api

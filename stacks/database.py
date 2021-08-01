@@ -1,6 +1,5 @@
-from aws_cdk import (
-    core
-)
+from aws_cdk import Stack, Duration, RemovalPolicy
+from constructs import Construct
 
 from aws_cdk.aws_dynamodb import (
     Table,
@@ -11,10 +10,10 @@ from aws_cdk.aws_dynamodb import (
 )
 
 
-class DatabaseStack(core.Stack):
+class DatabaseStack(Stack):
     """Make a database for storing transactional data."""
 
-    def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         ddb_table = Table(
@@ -24,7 +23,7 @@ class DatabaseStack(core.Stack):
             billing_mode=BillingMode.PAY_PER_REQUEST,
             point_in_time_recovery=True,
             encryption=TableEncryption.AWS_MANAGED,
-            removal_policy=core.RemovalPolicy.RETAIN
+            removal_policy=RemovalPolicy.RETAIN
         )
 
         ddb_table.add_global_secondary_index(
@@ -49,7 +48,5 @@ class DatabaseStack(core.Stack):
             # non_key_attributes=[],
             # projection_type = ProjectionType.ALL
         )
-
-        core.Tags.of(ddb_table).add("purpose", "rtcwpro")
 
         self.ddb_table = ddb_table

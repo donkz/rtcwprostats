@@ -1,14 +1,14 @@
-from aws_cdk import (
-    aws_lambda as _lambda,
-    aws_apigateway as apigw,
-    core
-)
+from aws_cdk import Stack, Duration
+from constructs import Construct
+
+import aws_cdk.aws_lambda as _lambda
+import aws_cdk.aws_apigateway as apigw
 
 
-class DeliveryStack(core.Stack):
+class DeliveryStack(Stack):
     """Public API for retrieving match and player data."""
 
-    def __init__(self, scope: core.Construct, id: str, api: apigw.RestApi, retriever: _lambda.IFunction, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, api: apigw.RestApi, retriever: _lambda.IFunction, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         retriever_integration = apigw.LambdaIntegration(retriever)

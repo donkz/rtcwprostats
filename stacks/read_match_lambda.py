@@ -1,24 +1,21 @@
-from aws_cdk import (
-    aws_s3 as s3,
-    aws_iam as iam,
-    aws_lambda as _lambda,
-    aws_s3_notifications as s3n,
-    aws_sqs as sqs,
-    aws_stepfunctions as sfn,
-    core
-)
+from aws_cdk import Stack, Duration
+from constructs import Construct
 
-from aws_cdk.aws_dynamodb import (
-    Table
-)
+import aws_cdk.aws_s3 as s3
+import aws_cdk.aws_iam as iam
+import aws_cdk.aws_lambda as _lambda
+import aws_cdk.aws_s3_notifications as s3n
+import aws_cdk.aws_sqs as sqs
+import aws_cdk.aws_stepfunctions as sfn
 
+from aws_cdk.aws_dynamodb import Table
 from aws_cdk.aws_lambda_event_sources import SqsEventSource
 
 
-class ReadMatchStack(core.Stack):
+class ReadMatchStack(Stack):
     """Lambda to react to incoming files."""
 
-    def __init__(self, scope: core.Construct, id: str,
+    def __init__(self, scope: Construct, id: str,
                  lambda_tracing,
                  ddb_table: Table,
                  read_queue: sqs.Queue,
@@ -39,10 +36,10 @@ class ReadMatchStack(core.Stack):
             function_name='rtcwpro-read-match',
             handler='read_match.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset('lambdas/storage/read_match'),
+            code=_lambda.Code.from_asset('lambdas/storage/read_match'),
             role=read_match_role,
             tracing=lambda_tracing,
-            timeout=core.Duration.seconds(10),
+            timeout=Duration.seconds(10),
             environment={
                 'RTCWPROSTATS_TABLE_NAME': ddb_table.table_name,
                 'RTCWPROSTATS_MATCH_STATE_MACHINE': postproc_state_machine.state_machine_arn
@@ -67,10 +64,10 @@ class ReadMatchStack(core.Stack):
             function_name='rtcwpro-read-match-dlq',
             handler='read_match_dlq.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset('lambdas/storage/read_match_dlq'),
+            code=_lambda.Code.from_asset('lambdas/storage/read_match_dlq'),
             role=read_dlq_role,
             tracing=lambda_tracing,
-            timeout=core.Duration.seconds(10),
+            timeout=Duration.seconds(10),
             environment={
                 'RTCWPROSTATS_TABLE_NAME': ddb_table.table_name,
                 'RTCWPROSTATS_MATCH_STATE_MACHINE': postproc_state_machine.state_machine_arn

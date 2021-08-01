@@ -1,18 +1,17 @@
-from aws_cdk import (
-    aws_lambda as _lambda,
-    aws_iam as iam,
-    core
-)
+from aws_cdk import Stack, Duration
+from constructs import Construct
 
-from aws_cdk.aws_dynamodb import (
-    Table
-)
+import aws_cdk.aws_lambda as _lambda
+import aws_cdk.aws_iam as iam
 
 
-class DeliveryRetrieverStack(core.Stack):
+from aws_cdk.aws_dynamodb import Table
+
+
+class DeliveryRetrieverStack(Stack):
     """Public API for retrieving match and player data."""
 
-    def __init__(self, scope: core.Construct, id: str, ddb_table: Table, lambda_tracing, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, ddb_table: Table, lambda_tracing, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         retriever_role = iam.Role(self, "RtcwproRetriever",
@@ -27,7 +26,7 @@ class DeliveryRetrieverStack(core.Stack):
             function_name='rtcwpro-retriever',
             handler='retriever.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
-            code=_lambda.Code.asset('lambdas/delivery/retriever'),
+            code=_lambda.Code.from_asset('lambdas/delivery/retriever'),
             role=retriever_role,
             tracing=lambda_tracing,
             environment={

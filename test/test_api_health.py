@@ -91,21 +91,21 @@ check_json_value(obj[0], "match_id", str, 10)
 url_path_match = "matches/recent"
 obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, list)
-check_num_elements(obj, 2, 1000)
+check_num_elements(obj, 2, 40)
 check_json_value(obj[0], "match_id", str, 10)
 
 # /matches/recent/number
 url_path_match = "matches/recent/92"
 obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, list)
-check_num_elements(obj, 10, 1000)
+check_num_elements(obj, 10, 40)
 check_json_value(obj[0], "match_id", str, 10)
 
 # /stats/player/{player_guid}
 url_path_match = "stats/player/" + player_guid
 obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, list)
-check_num_elements(obj, 0, 3000)
+check_num_elements(obj, 0, 40)
 if len(obj) > 0:
     check_json_value(obj[0], "match_id", str, 10)
     check_json_value(obj[0], "categories", dict, None)
@@ -117,11 +117,10 @@ else:
 url_path_match = "wstats/player/" + player_guid
 obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, list)
-check_num_elements(obj, 0, 3000)
+check_num_elements(obj, 0, 40)
 if len(obj) > 0:
     check_json_value(obj[0], "match_id", str, 10)
     check_json_value(obj[0], "wstats", list, None)
-    check_json_value(obj[0], "player_guid", str, 14)
 else:
     logger.warning("No player wstats in last 30 days. Skipped integrity checks.")
 
