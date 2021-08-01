@@ -61,7 +61,7 @@ def get_last_few_aliases(ddb_table, guid):
         for alias in response["Items"]:
             alias_value = alias["data"]
             alias_counter[alias_value] +=1
-        print(alias_counter.most_common(10))
+        print(alias_counter.most_common(6))
         alias_most_common = alias_counter.most_common(10)[0][0]
         print(f'        "{guid}": "{alias_most_common}",') 
 
@@ -211,6 +211,82 @@ if __name__ == "__main__":
         "FDA55D6797CBBE": "reker",
         "FDA630F9167B17": "leonneke",
     }
+    
+    real_name_dict = {
+        "fc11488047c7ccf07d3b667b4ade00d6": "kris",
+        "fbe2ed832f8415efbaaa5df10074484a": "jam",
+        "fba16f435d3bd6973aed9d3449fd1a05": "carnage",
+        "fae5bff63ab34b2cbe6db4b1423b7c77": "fonze",
+        "fa96d4a163ed3f9c2a3983bc964e828e": "zenix",
+        "f8e8ae804becc55b321a043e5a2896e8": "syl",
+        "f8637c71d8e5a2b0feab511e7382445b": "mystx",
+        "f4d8915ae098c62e5adb1ff27851384f": "plaz",
+        "ef2041bac90bddbc7e866287c77a04d2": "elsa",
+        "eafea804ea9191f4dc957d009dac0fec": "neo",
+        "e84126df87d5c76f4b909ef14403a15b": "sixers",
+        "e626a83825acc3528661ae3ebd11bd20": "steve",
+        "e04cac87f458048a5d53b6f8813bc910": "zed",
+        "ddd3378ee7deb6f93ed2e170c2f4c654": "lasher",
+        "dcf1772db8c1c1cef21b2ce8cb4e30ae": "ipod",
+        "d4d4bd719b5992ad340694bc48ed001e": "cliffdark",
+        "d417e300957bdc39a81540b18e644555": "d3v",
+        "ce811d1e9a81d4077276221d559d7b21": "eternal",
+        "01cf12e8114d67c45142e0f62cd24628": "nigel",
+        "029568b3f1a6be2a3a0abc2801132f75": "backmagik",
+        "05bf7407f67bd9bf77fb5a0c0a37aa89": "virus047",
+        "092b932c7ff15681c699ff3e587bb30e": "blazk",
+        "098f6bcd4621d373cade4e832627b4f6": "murkey",
+        "0d25a81785f7a2c03590410994884053": "olden",
+        "10352b3aab1331dafbc842131738f874": "kiz",
+        "10696de558af19f8599a48f18705691b": "fro",
+        "111a77f3fed13d7ee45579489a922c90": "malmen",
+        "13f0f65682c3d85121d8b654cc7d707b": "packiej",
+        "14ac583287528b0a5b1b0a5121edb0b7": "eddo",
+        "18c4c31131ec8067a0bbb9c18e360468": "lrd",
+        "19cf2c20f150c255911d7c01caac05e2": "adlad",
+        "1e24524f380985623ec9f215a409b1b6": "siluro",
+        "22b0e88467093a63d5dd979eec2631d1": "donkz",
+        "23b2521206ae62b595c4a78de79aa8f9": "yeniceri",
+        "2b7a74823eb4f1a2a4ea54a7366b811a": "merlinator",
+        "383be354f366e213fad3fec6f2a77d39": "nizou",
+        "3e73ede96b4607286a753e41631ce076": "delgon",
+        "432626a8732c15a42910c231fa9cbe62": "dictator",
+        "43a2cf49f0dcd228cc9f3dfcb27df158": "biggi",
+        "5379320f3c64f43cdaf3350fc13011ce": "xrb",
+        "58e419de5a8b2655f6d48eab68275db5": "faster",
+        "65f39437a7455f6b94c9e999dfbb060d": "rob",
+        "6619a6fdc2ebb392371a28c68ce3cab3": "mata",
+        "677560c5fc004980e846911049ce3ee7": "mirage",
+        "69a89ff1b245d666324acf899c87bb74": "engma",
+        "69aeab8db8aba4814b86853101f5b528": "lelle",
+        "6a5be834b6d2fc5789d482e5fa6b84f6": "murkey",
+        "6ae623d02db90921de9ede71ada85351": "silentstorm",
+        "6afd85307c0bdf40c2e8c13ce1c4d7b6": "toryu",
+        "7058a686841807d4c20af6730ea823ab": "joep",
+        "72a5d6513a00f86bacf62e95583f4959": "leonneke",
+        "7700b9b2b70bb2c48b71fe2be571c8bf": "rekernator",
+        "80eb428d71a1d11c65acbc42ebcf2a39": "miles",
+        "8879a24a9769680f3bacf3bd485dbace": "syn",
+        "8cb6576202ecfb1fb9587f0425a1108f": "dary",
+        "8ff4ecf7bd1b87edad5383efcfdb3c8d": "illkilla",
+        "905a6fd997a70fe18309ea3030c7bc7c": "tragic",
+        "90d02d2fa11f37f62c6f624109d87ab5": "mooshu",
+        "9524f4278ac802d005fd42e4ba3c0a1d": "luna",
+        "9562e8ae4aed6279c5e4b1592e23be3c": "festus",
+        "96a8ea1acd085303c5267232e271648f": "corpse",
+        "96aafa402b8e44cb887c79e047f0e772": "parcher",
+        "a928daaba6dbdb67ba9b392c3966b22e": "source",
+        "a96cd62f89fb020a468263568bca83b2": "snipercat",
+        "b2d502943ddae6108f1ff22bc09e3367": "twister",
+        "b916224dc1cbeecae3cef184a1af44ba": "vacs",
+        "41e30e5dd230f4469712df0f4c3e60c3": "naif(/)",
+        "c4bee65ef1516ea08bac14d6a0be00ab": "gracoes",
+        "c0ab6495072452985c7bdf6657493a22": "dtto",
+        "bcbf3c6eefa4d8a7685d46c826804d0d": "ding",
+        }
+    real_name_dict = {
+        "c4bee65ef1516ea08bac14d6a0be00ab": "gracoes"
+        }
     update_player_info_real_name(ddb_table, real_name_dict)
 
 
