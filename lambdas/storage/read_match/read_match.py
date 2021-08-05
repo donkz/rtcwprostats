@@ -3,6 +3,7 @@ import boto3
 import json
 import time as _time
 import os
+import datetime
 
 from reader_writeddb import (
     # ddb_put_item,
@@ -38,7 +39,7 @@ else:
 dynamodb = boto3.resource('dynamodb')
 ddb_client = boto3.client('dynamodb')
 
-TABLE_NAME = os.environ['RTCWPROSTATS_TABLE_NAME']
+
 table = dynamodb.Table(TABLE_NAME)
 
 s3 = boto3.client('s3')
@@ -120,6 +121,16 @@ def handler(event, context):
     match_type = region + "#" + gametype
     logger.info("Setting the match_type to " + match_type)
     gamestats["match_type"] = match_type
+    gamestats["gameinfo"]["server_name"] = gamestats['serverinfo']['serverName']
+    
+    date_time_human = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        date_time_human = datetime.datetime.fromtimestamp(int(gamestats["gameinfo"]["match_id"])).strftime("%Y-%m-%d %H:%M:%S")
+    except:
+        logger.warning("Could not convert epoch time to timestamp: " + gamestats["gameinfo"]["match_id"])
+     
+    gamestats["gameinfo"]["date_time_human"] = date_time_human
+    
 
     submitter_ip = gamestats.get("submitter_ip", "no.ip.in.file")
 
@@ -218,6 +229,11 @@ def integrity_checks(gamestats):
         integrity = False
         message = "No stats in " + gamestats["gameinfo"].get('match_id', 'na')
         return integrity, message
+    
+    if len(gamestats["stats"]) < 5:
+        integrity = False
+        message = "Number of players is less than 3v3, not saving."
+        return integrity, message
 
     if isinstance(gamestats["stats"], dict):
         integrity = False
@@ -228,67 +244,12 @@ def integrity_checks(gamestats):
 
 
 if __name__ == "__main__":
-    event_str_s3_direct_old = """
-    {
-      "Records": [
-        {
-          "eventVersion": "2.0",
-          "eventSource": "aws:s3",
-          "awsRegion": "us-east-1",
-          "eventTime": "1970-01-01T00:00:00.000Z",
-          "eventName": "ObjectCreated:Put",
-          "userIdentity": {
-            "principalId": "EXAMPLE"
-          },
-          "requestParameters": {
-            "sourceIPAddress": "127.0.0.1"
-          },
-          "responseElements": {
-            "x-amz-request-id": "EXAMPLE123456789",
-            "x-amz-id-2": "EXAMPLE123/5678abcdefghijklambdaisawesome/mnopqrstuvwxyzABCDEFGH"
-          },
-          "s3": {
-            "s3SchemaVersion": "1.0",
-            "configurationId": "testConfigRule",
-            "bucket": {
-              "name": "rtcwprostats",
-              "ownerIdentity": {
-                "principalId": "EXAMPLE"
-              },
-              "arn": "arn:aws:s3:::example-bucket"
-            },
-            "object": {
-              "key": "test/gameStats_match_1613786926_round_2_mp_assault.json",
-              "size": 1024,
-              "eTag": "0123456789abcdef0123456789abcdef",
-              "sequencer": "0A1B2C3D4E5F678901"
-            }
-          }
-        }
-      ]
-    }
-    """
-    event_str = """
-    {
+    #not working since sqs was introduced. Finniky json double quotes
+    event = {
     "Records": [
                     {
-                    "messageId": "d8509457-8c80-471c-955f-d86a326e22f3",
-                    "receiptHandle": "AQEBDIkUVtAYZhWF0cVKCxHu/bRb4GMRV8SP06jV8dJ+pWxcoXmkcSOGT8VHQi5x4RAJ4PKgzNt7W5TVEkiGPYLyaxNXv2xTov0ttj4t2O8Y8bKUVX8aMMfg5tJZvoyBfVcgfO2m6l29uaMLiOmurPhyNeN6K0QfUIobNC93bxoek+D7pO32nQPU0ZG1S4Cps2Bq/bCpL95T7RtMrF+62VGGPGZsNqd3/VFfCnuTsP4ZwMgjtUjFGFQmVojFzKHZvWjMzJAQSmqm8kpyDt3MWJL/rim0O9//UhZpteLXSAGBS6NpZREuaANx0vaco5naNz+l8sAZ1xBupR2sWrKnni7TjuxQHdp91bE29jUAh8D2qic88NzsH1ax94sjoijw4PQKIPYvS3Hd846dahZnUNxPGUBLs+zdnB1UorxlOwYgBVf15oB+KeOXc+k7a+ijF5SG",
-                    "body": "{\"Records\":[{\"eventVersion\":\"2.1\",\"eventSource\":\"aws:s3\",\"awsRegion\":\"us-east-1\",\"eventTime\":\"2021-06-11T15:47:09.112Z\",\"eventName\":\"ObjectCreated:Put\",\"userIdentity\":{\"principalId\":\"AWS:AROA3RJVP5VAO5OYH3DA3:rtcwpro-save-payload\"},\"requestParameters\":{\"sourceIPAddress\":\"18.209.36.186\"},\"responseElements\":{\"x-amz-request-id\":\"Z31NB050WBY0ZC2G\",\"x-amz-id-2\":\"YImKYXRd5ZCrI4L2xKyU7qrUHflZDPaeci9JxTDV3BdrCVa7hPQtOWVT4jIQBb5/8lGXU8IIkWRR3dWYB8m+twKzXUvquCDH\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"NWZjMDJhNmItOWVkNi00ZDg2LWE3MWQtZjc0ZDk2MTE2ZmI2\",\"bucket\":{\"name\":\"rtcwprostats\",\"ownerIdentity\":{\"principalId\":\"A2QI3L1FD36UKG\"},\"arn\":\"arn:aws:s3:::rtcwprostats\"},\"object\":{\"key\":\"intake/20210611-154709-1609817356.txt\",\"size\":74356,\"eTag\":\"9cf296d9ea2d548643403f1d6bf89117\",\"versionId\":\"rvPyTkKWoA6GSTAaCH8ZJNZwU6jnnmp7\",\"sequencer\":\"0060C3857FD576E5B7\"}}}]}",
-                    "attributes": {
-                        "ApproximateReceiveCount": "234",
-                        "SentTimestamp": "1623426433410",
-                        "SenderId": "AIDAJHIPRHEMV73VRJEBU",
-                        "ApproximateFirstReceiveTimestamp": "1623426433410"
-                        },
-                    "messageAttributes": {},
-                    "md5OfBody": "f7d4977e5a0820251eb5cf45efa66ae0",
-                    "eventSource": "aws:sqs",
-                    "eventSourceARN": "arn:aws:sqs:us-east-1:793070529856:rtcwprostats-storage-ReadMatchQueueFCAADC95-GIXAQFEK0LSY",
-                    "awsRegion": "us-east-1"
+                    "body": "{\"Records\":[{\"s3\":{\"bucket\":{\"name\":\"rtcwprostats\"},\"object\":{\"key\":\"intake/20210801-222527-1627856127.txt\"}}}]}"
                     }
         ]
     }
-    """
-    event = json.loads(event_str)
     print("Test result" + handler(event, None))

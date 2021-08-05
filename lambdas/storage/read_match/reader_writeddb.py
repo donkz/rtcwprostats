@@ -83,10 +83,16 @@ def ddb_prepare_server_item(gamestats):
     server_name = gamestats['serverinfo']['serverName']
     
     if " na "       in server_name.lower(): region = 'na'
+    if "-na "       in server_name.lower(): region = 'na'
     if " virginia " in server_name.lower(): region = 'na'
     if " donkz "    in server_name.lower(): region = 'na'
     if " eu "       in server_name.lower(): region = 'eu'
+    if "-eu "       in server_name.lower(): region = 'eu'
+    if "adlad"      in server_name.lower(): region = 'eu'
+    if "amster"     in server_name.lower(): region = 'eu'
+    if "london"     in server_name.lower(): region = 'eu'
     if " sa "       in server_name.lower(): region = 'sa'
+    if "chile"      in server_name.lower(): region = 'sa'
     
     
     server_item = {
@@ -127,7 +133,7 @@ def ddb_prepare_match_item(gamestats):
         'pk'    : 'match',
         'sk'    : gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
         'lsipk' : gamestats["match_type"] + "#" + gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
-        'gsi1pk': "match#" + gamestats["gameinfo"]["map"],
+        'gsi1pk': "match#" + gamestats['serverinfo']['serverName'],
         'gsi1sk': gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
         'data'  : json.dumps(gamestats["gameinfo"])
         }
