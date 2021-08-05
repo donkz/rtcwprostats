@@ -61,8 +61,28 @@ def handler(event, context):
                         data.append(match_data)
                 else:
                     data = response
-            elif path_tokens[0] == "map":
-                raise
+            elif path_tokens[0] == "server" and len(path_tokens) > 1:
+                server_name = path_tokens[1]
+                pk_name = "gsi1pk"
+                pk="match"
+                begins_with = server_name
+                index_name = "gsi1"
+                skname = "gsi1sk"
+                limit = 100
+                acending = False
+                responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, log_stream_name, limit, acending)
+
+                # logic specific to /matches/recent/{days}
+                if "error" not in responses:
+                    data = []
+                    for line in responses:
+                        tmp_data = json.loads(line["data"])
+                        match_type_tokens = line.get('lsipk',"##").split("#")
+                        tmp_data["type"] = "#".join(match_type_tokens[0:2])
+                        tmp_data["match_round_id"] = line["sk"]
+                        data.append(tmp_data)
+                else:
+                    data = responses
             elif path_tokens[0] == "type":
                 raise
             elif path_tokens[0] == "recent":
@@ -77,7 +97,7 @@ def handler(event, context):
                 pk = "match"
                 skhigh = int(time.time())
                 sklow = skhigh - 60 * 60 * 24 * int(days)
-                responses = get_range(pk, str(sklow), str(skhigh), ddb_table, log_stream_name)
+                responses = get_range(None, pk, str(sklow), str(skhigh), ddb_table, log_stream_name, 100)
 
                 # logic specific to /matches/recent/{days}
                 if "error" not in responses:
@@ -99,7 +119,7 @@ def handler(event, context):
             pk = "stats" + "#" + guid
             skhigh = int(time.time())
             sklow = skhigh - 60 * 60 * 24 * 30
-            responses = get_range(pk, str(sklow), str(skhigh), ddb_table, log_stream_name)
+            responses = get_range(None, pk, str(sklow), str(skhigh), ddb_table, log_stream_name, 40)
 
             if "error" not in responses:
                 # logic specific to /stats/player/{player_guid}
@@ -139,7 +159,7 @@ def handler(event, context):
             pk = "wstats" + "#" + guid
             skhigh = int(time.time())
             sklow = skhigh - 60 * 60 * 24 * 30  # last 30 days only
-            responses = get_range(pk, str(sklow), str(skhigh), ddb_table, log_stream_name)
+            responses = get_range(None, pk, str(sklow), str(skhigh), ddb_table, log_stream_name, 40)
 
             if "error" not in responses:
                 # logic specific to /stats/player/{player_guid}
@@ -229,10 +249,11 @@ def handler(event, context):
         if "begins_with" in event["pathParameters"]:
             begins_with = "playerinfo#" + event["pathParameters"]["begins_with"]
             logger.info("Parameter: " + begins_with)
+            pk_name = "pk"
             pk = "player"
             index_name = "lsi"
             skname="lsipk"
-            responses = get_begins(pk, begins_with, ddb_table, index_name, skname,  log_stream_name)
+            responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname,  log_stream_name, 100, True)
 
             if "error" not in responses:
                 # logic specific to /player/search/{begins_with}
@@ -279,11 +300,14 @@ def get_item(pk, sk, table, log_stream_name):
     return result
 
 
-def get_range(pk, sklow, skhigh, table, log_stream_name):
+def get_range(index_name, pk, sklow, skhigh, table, log_stream_name, limit):
     """Get several items by pk and range of sk."""
     item_info = pk + ":" + sklow + " to " + skhigh + ". Logstream: " + log_stream_name
     try:
-        response = table.query(KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sklow, skhigh), Limit=40,ReturnConsumedCapacity='NONE')
+        if index_name:
+            response = table.query(IndexName=index_name, KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sklow, skhigh), Limit=limit,ReturnConsumedCapacity='NONE')
+        else:
+            response = table.query(KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sklow, skhigh), Limit=limit,ReturnConsumedCapacity='NONE')
     except ClientError as e:
         logger.warning("Exception occurred: " + e.response['Error']['Message'])
         result = make_error_dict("[x] Client error calling database: ", item_info)
@@ -294,11 +318,11 @@ def get_range(pk, sklow, skhigh, table, log_stream_name):
             result = make_error_dict("[x] Items do not exist: ", item_info)
     return result
 
-def get_begins(pk, begins_with, ddb_table, index_name, skname,  log_stream_name):
+def get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, log_stream_name, limit, ascending):
     """Get several items by pk and range of sk."""
     item_info = pk + ": begins with " + begins_with + ". Logstream: " + log_stream_name
     try:
-        response = ddb_table.query(IndexName=index_name,KeyConditionExpression=Key('pk').eq(pk) & Key(skname).begins_with(begins_with), Limit=40)
+        response = ddb_table.query(IndexName=index_name,KeyConditionExpression=Key(pk_name).eq(pk) & Key(skname).begins_with(begins_with), Limit=limit, ScanIndexForward=ascending)
     except ClientError as e:
         logger.warning("Exception occurred: " + e.response['Error']['Message'])
         result = make_error_dict("[x] Client error calling database: ", item_info)
@@ -398,6 +422,12 @@ if __name__ == "__main__":
     {
      "resource":"/matches/{proxy+}",
      "pathParameters":{"proxy":"16098173561,16242774991,16103355022,16103355022x"}
+    }
+    '''
+    event_str = '''
+    {
+     "resource":"/matches/{proxy+}",
+     "pathParameters":{"proxy":"server/kekekke haha"}
     }
     '''
     

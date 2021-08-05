@@ -133,8 +133,8 @@ def ddb_prepare_match_item(gamestats):
         'pk'    : 'match',
         'sk'    : gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
         'lsipk' : gamestats["match_type"] + "#" + gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
-        'gsi1pk': "match#" + gamestats['serverinfo']['serverName'],
-        'gsi1sk': gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
+        'gsi1pk': "match",
+        'gsi1sk': gamestats['serverinfo']['serverName'] + "#" + gamestats["gameinfo"]["match_id"] + gamestats["gameinfo"]["round"],
         'data'  : json.dumps(gamestats["gameinfo"])
         }
     return match_item
