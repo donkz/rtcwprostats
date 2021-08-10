@@ -27,6 +27,8 @@ class DeliveryStack(Stack):
 # 9       ---gamelogs/{match_round_id}
 #10       ---/player/{player_guid}
 #20       |---------/search/{begins_with}
+#30       ---/server
+#31       |---------/region/{region}
         
           
 
@@ -83,5 +85,20 @@ class DeliveryStack(Stack):
         player_search = player.add_resource("search")
         player_search_guid = player_search.add_resource("{begins_with}")
         player_search_guid.add_method("GET", retriever_integration)
+        
+        #30
+        servers = api.root.add_resource("servers")
+        servers.add_method("GET", retriever_integration)
+        
+        #31
+        servers_region = servers.add_resource("region")
+        servers_region_name = servers_region.add_resource("{region}")
+        servers_region_name.add_method("GET", retriever_integration)
+        
+        #32
+        servers_detail = servers.add_resource("detail")
+        servers_detail.add_method("GET", retriever_integration)
+
+
         
         

@@ -50,7 +50,7 @@ def ddb_get_server(sk, table):
 
 def ddb_update_item(key, expression, values, table):
     try: 
-        response = table.update_item(Key=key, UpdateExpression=expression,ExpressionAttributeValues=values)
+        response = table.update_item(Key=key, UpdateExpression=expression,ExpressionAttributeValues=values, ExpressionAttributeNames={"#data_value": "data"})
     except botocore.exceptions.ClientError as err:
         logger.error(err.response['Error']['Message'])
         logger.error("Item was: " + str(key))
@@ -69,17 +69,17 @@ def ddb_update_item(key, expression, values, table):
         if http_code != 200:
             logger.error(f"Erroneous HTTP Code ({http_code}) while updating an item \n" + str(key) + "\n" + str(response))
 
-def ddb_update_server_record(gamestats, table):
+def ddb_update_server_record(gamestats, table, region, date_time_human):
     key = {
         'pk'    : "server",
         'sk'    : gamestats['serverinfo']['serverName']
         }
-    expression = 'SET submissions = submissions + :val1'
-    values = {':val1': 1}
+    expression = 'SET submissions = submissions + :val1, lsipk = :val2, #data_value = :val3'
+    values = {':val1': 1, ':val2': region + "#" + date_time_human, ':val3': gamestats["serverinfo"]}
     ddb_update_item(key, expression, values, table)
 
 def ddb_prepare_server_item(gamestats):
-    region = ''
+    region = None
     server_name = gamestats['serverinfo']['serverName']
     
     if " na "       in server_name.lower(): region = 'na'
@@ -94,11 +94,13 @@ def ddb_prepare_server_item(gamestats):
     if " sa "       in server_name.lower(): region = 'sa'
     if "chile"      in server_name.lower(): region = 'sa'
     
+    if not region: region = 'unk'
+    
     
     server_item = {
         'pk'    : 'server',
         'sk'    : server_name,
-        'lsipk' : region + '#' + gamestats['serverinfo']['serverName'],
+        'lsipk' : region + '#' + gamestats["gameinfo"]["date_time_human"],
         'data'  : gamestats["serverinfo"],
         'submissions' : 1,
         'region' : region

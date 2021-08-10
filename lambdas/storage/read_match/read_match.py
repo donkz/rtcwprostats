@@ -89,14 +89,22 @@ def handler(event, context):
     if not integrity:
         logger.error("Failed integrity check:" + message)
         return message
+    
+    date_time_human = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        date_time_human = datetime.datetime.fromtimestamp(int(gamestats["gameinfo"]["match_id"])).strftime("%Y-%m-%d %H:%M:%S")
+    except:
+        logger.warning("Could not convert epoch time to timestamp: " + gamestats["gameinfo"]["match_id"])
+     
+    gamestats["gameinfo"]["date_time_human"] = date_time_human
 
     server = ddb_get_server(gamestats['serverinfo']['serverName'], table)
     region = ""
     server_item = None
     if server:
         logger.info("Updating the server with +1 match")
-        ddb_update_server_record(gamestats, table)
         region = server["region"]
+        ddb_update_server_record(gamestats, table, region, date_time_human)
     else:
         server_item = ddb_prepare_server_item(gamestats)
 
@@ -122,15 +130,6 @@ def handler(event, context):
     logger.info("Setting the match_type to " + match_type)
     gamestats["match_type"] = match_type
     gamestats["gameinfo"]["server_name"] = gamestats['serverinfo']['serverName']
-    
-    date_time_human = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    try:
-        date_time_human = datetime.datetime.fromtimestamp(int(gamestats["gameinfo"]["match_id"])).strftime("%Y-%m-%d %H:%M:%S")
-    except:
-        logger.warning("Could not convert epoch time to timestamp: " + gamestats["gameinfo"]["match_id"])
-     
-    gamestats["gameinfo"]["date_time_human"] = date_time_human
-    
 
     submitter_ip = gamestats.get("submitter_ip", "no.ip.in.file")
 
@@ -248,7 +247,7 @@ if __name__ == "__main__":
     event = {
     "Records": [
                     {
-                    "body": "{\"Records\":[{\"s3\":{\"bucket\":{\"name\":\"rtcwprostats\"},\"object\":{\"key\":\"intake/20210801-222527-1627856127.txt\"}}}]}"
+                    "body": "{\"Records\":[{\"s3\":{\"bucket\":{\"name\":\"rtcwprostats\"},\"object\":{\"key\":\"intake/20210803-144348-1628001413.txt\"}}}]}"
                     }
         ]
     }

@@ -69,6 +69,7 @@ def check_json_value(obj, key, correct_type, length):
 test_matches = ['1610076805']
 test_guids = ['2918F80471E175']
 seach_player = "donk"
+server_name = "^dS^1A^7|RTCWCHILE.COM"
 
 match_id = test_matches[0]
 player_guid = test_guids[0]
@@ -168,3 +169,10 @@ obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, list)
 check_num_elements(obj, 1, 30)
 check_json_value(obj[0], "real_name", str, 5)
+
+# /match/{server}
+url_path_match = "matches/server/" +  server_name
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj, 1, 30)
+check_json_value(obj[0], "round", str, 1)

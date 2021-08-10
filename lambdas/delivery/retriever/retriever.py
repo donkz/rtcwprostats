@@ -6,6 +6,7 @@ import time
 import logging
 import os
 import decimal
+import urllib.parse
 
 if __name__ == "__main__":
     TABLE_NAME = "rtcwprostats-database-DDBTable2F2A2F95-1BCIOU7IE3DSE"
@@ -62,10 +63,10 @@ def handler(event, context):
                 else:
                     data = response
             elif path_tokens[0] == "server" and len(path_tokens) > 1:
-                server_name = path_tokens[1]
                 pk_name = "gsi1pk"
                 pk="match"
-                begins_with = server_name
+                begins_with = urllib.parse.unquote(path_tokens[1])
+                logger.info("Searching for matches from server " + begins_with)
                 index_name = "gsi1"
                 skname = "gsi1sk"
                 limit = 100
@@ -267,6 +268,33 @@ def handler(event, context):
                     data.append(data_line)
             else:
                 data = responses
+                
+    if api_path == "/servers" or api_path == "/servers/detail":
+        logger.info("Processing " + api_path)
+        pk_name = "pk"
+        pk = "server"
+        limit =200
+        responses = get_query_all(pk_name, pk, ddb_table, log_stream_name, limit)
+
+        if "error" not in responses:
+            # logic specific to /servers
+            data = []
+            for server in responses:
+                data_line = {}
+                
+                data_line["server_name"] = server["sk"]
+                data_line["region"] = server["region"]
+                if server["lsipk"][0:2] ==  data_line["region"]:
+                    data_line["last_submission"] = server["lsipk"][3:]
+                else:
+                    data_line["last_submission"] = '2021-07-31 23:59:59'
+                data_line["submissions"]=int(server["submissions"])
+                data_line["IP"]=server["data"]['serverIP']
+                if api_path == "/servers/detail":
+                    data_line["data"]=server["data"]
+                data.append(data_line)
+        else:
+            data = responses
 
     return {
         'statusCode': 200,
@@ -323,6 +351,21 @@ def get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, log_stre
     item_info = pk + ": begins with " + begins_with + ". Logstream: " + log_stream_name
     try:
         response = ddb_table.query(IndexName=index_name,KeyConditionExpression=Key(pk_name).eq(pk) & Key(skname).begins_with(begins_with), Limit=limit, ScanIndexForward=ascending)
+    except ClientError as e:
+        logger.warning("Exception occurred: " + e.response['Error']['Message'])
+        result = make_error_dict("[x] Client error calling database: ", item_info)
+    else:
+        if response['Count'] > 0:
+            result = response['Items']
+        else:
+            result = make_error_dict("[x] Items do not exist: ", item_info)
+    return result
+
+def get_query_all(pk_name, pk, ddb_table, log_stream_name, limit):
+    """Get several items by pk."""
+    item_info = pk + ". Logstream: " + log_stream_name
+    try:
+        response = ddb_table.query(KeyConditionExpression=Key(pk_name).eq(pk), Limit=limit)
     except ClientError as e:
         logger.warning("Exception occurred: " + e.response['Error']['Message'])
         result = make_error_dict("[x] Client error calling database: ", item_info)
@@ -427,7 +470,7 @@ if __name__ == "__main__":
     event_str = '''
     {
      "resource":"/matches/{proxy+}",
-     "pathParameters":{"proxy":"server/kekekke haha"}
+     "pathParameters":{"proxy":"server/kekekke%20haha"}
     }
     '''
     

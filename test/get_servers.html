@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>RTCW Pro Servers</title>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+
+</head>
+
+<body>
+
+<table id="servers" border='1'>
+    <tr>
+        <th>server_name</th>
+        <th>IP</th>
+		<th>region</th>
+        <th>last_submission</th>
+        <th>submissions</th>
+    </tr>
+</table>
+
+<script>
+
+$(document).ready(function(){
+
+    jQuery.support.cors = true;
+     
+    $.ajax(
+    {
+		type: "GET",
+        url: 'https://rtcwproapi.donkanator.com/servers',
+        //data: "{}",
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        cache: false,
+		crossDomain: true,
+        success: function (data) {
+            var trHTML = '';
+            $.each(data, function (i, item) {	
+				trHTML += '<tr><td>' + data[i].server_name + '</td><td>' + data[i].IP + '</td><td>' + data[i].region + '</td><td>' + data[i].last_submission + '</td><td>' + data[i].submissions + '</td></tr>';
+			});
+        
+        $('#servers').append(trHTML);
+        
+        },
+        
+        error: function (msg) {    
+            console.log(msg);
+        }
+    });
+})
+
+</script>
+
+</body>
+</html>
