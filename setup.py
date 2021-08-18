@@ -15,8 +15,8 @@ setuptools.setup(
 
     author="donkz",
 
-    package_dir={"": "rtcwprostats"},
-    packages=setuptools.find_packages(where="rtcwprostats"),
+    # package_dir={"": "rtcwprostats"},
+    # packages=setuptools.find_packages(where="rtcwprostats"),
 
     install_requires=[
         "aws-cdk-lib==2.0.0-rc.10",

@@ -138,22 +138,22 @@ def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
     if "error" not in response:
         for result in response:
             if "elos" in result:
+                guid = result["sk"].split("#")[1]
                 if match_region_type + "#elo" in result["elos"]:
-                    guid = result["sk"].split("#")[1]
                     elo_dict[guid] = result["elos"][match_region_type + "#elo"]
                     elo_games[guid] = int(result["elos"].get(match_region_type + "#games",20)) # if elo is there, default to 20
-                    old_elos_ddb_maps[guid] = result["elos"]
                     try:
                         if "real_name" in result:
                             name = result["real_name"]
                         else:
                             name = "no_real_name"
                         real_names[guid] = name
-                        logger.info("Retrieved " + result["sk"].split("#")[1] + " " + name.ljust(20) + " elo:" + str(elo_dict[guid]) + " games " + str(elo_games[guid]))
+                        logger.info("Retrieved " + match_region_type + "#elo" + " " + result["sk"].split("#")[1] + " " + name.ljust(20) + " elo:" + str(elo_dict[guid]) + " games " + str(elo_games[guid]))
                     except Exception as ex:
                         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
                         error_msg = template.format(type(ex).__name__, ex.args)
                         logger.warning("Failed to display an elo.\n" + error_msg)
+                old_elos_ddb_maps[guid] = result["elos"]
     else:
         logger.error("Failed to retrieve any player elos.")
         logger.error(json.dumps(response))
