@@ -306,7 +306,7 @@ def create_batch_write_structure(table_name, items, start_num, batch_size):
     return item_batch
 
 def ddb_batch_write(client, table_name, items):
-        messages = ""
+        message = ""
         num_items = len(items)
         logger.info(f'Performing ddb_batch_write to dynamo with {num_items} items.')
         start = 0
@@ -353,6 +353,7 @@ def ddb_batch_write(client, table_name, items):
                 break
             if response["ResponseMetadata"]['HTTPStatusCode'] != 200:
                 message += f"\nBatch {start} returned non 200 code"
+                logger.warning(message)
             start += 25
 
 def inject_json_version(obj, gamestats):
