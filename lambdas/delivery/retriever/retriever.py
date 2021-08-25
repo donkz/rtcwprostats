@@ -98,7 +98,7 @@ def handler(event, context):
                 pk = "match"
                 skhigh = int(time.time())
                 sklow = skhigh - 60 * 60 * 24 * int(days)
-                responses = get_range(None, pk, str(sklow), str(skhigh), ddb_table, log_stream_name, 100)
+                responses = get_range(None, pk, str(sklow), str(skhigh), ddb_table, log_stream_name, 100, False)
 
                 # logic specific to /matches/recent/{days}
                 if "error" not in responses:
@@ -120,7 +120,7 @@ def handler(event, context):
             pk = "stats" + "#" + guid
             skhigh = int(time.time())
             sklow = skhigh - 60 * 60 * 24 * 30
-            responses = get_range(None, pk, str(sklow), str(skhigh), ddb_table, log_stream_name, 40)
+            responses = get_range(None, pk, str(sklow), str(skhigh), ddb_table, log_stream_name, 40, False)
 
             if "error" not in responses:
                 # logic specific to /stats/player/{player_guid}
@@ -160,7 +160,7 @@ def handler(event, context):
             pk = "wstats" + "#" + guid
             skhigh = int(time.time())
             sklow = skhigh - 60 * 60 * 24 * 30  # last 30 days only
-            responses = get_range(None, pk, str(sklow), str(skhigh), ddb_table, log_stream_name, 40)
+            responses = get_range(None, pk, str(sklow), str(skhigh), ddb_table, log_stream_name, 40, False)
 
             if "error" not in responses:
                 # logic specific to /stats/player/{player_guid}
@@ -328,14 +328,14 @@ def get_item(pk, sk, table, log_stream_name):
     return result
 
 
-def get_range(index_name, pk, sklow, skhigh, table, log_stream_name, limit):
+def get_range(index_name, pk, sklow, skhigh, table, log_stream_name, limit, ascending):
     """Get several items by pk and range of sk."""
     item_info = pk + ":" + sklow + " to " + skhigh + ". Logstream: " + log_stream_name
     try:
         if index_name:
-            response = table.query(IndexName=index_name, KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sklow, skhigh), Limit=limit,ReturnConsumedCapacity='NONE')
+            response = table.query(IndexName=index_name, KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sklow, skhigh), Limit=limit,ReturnConsumedCapacity='NONE', ScanIndexForward=ascending)
         else:
-            response = table.query(KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sklow, skhigh), Limit=limit,ReturnConsumedCapacity='NONE')
+            response = table.query(KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sklow, skhigh), Limit=limit,ReturnConsumedCapacity='NONE', ScanIndexForward=ascending)
     except ClientError as e:
         logger.warning("Exception occurred: " + e.response['Error']['Message'])
         result = make_error_dict("[x] Client error calling database: ", item_info)
@@ -401,19 +401,19 @@ if __name__ == "__main__":
     event_str = '''
     {
     "resource": "/stats/player/{player_guid}",
-    "path": "/stats/player/1441314A80B76F",
+    "path": "/stats/player/08ce652ba1a7c8c6c3ff101e7c390d20",
     "httpMethod": "GET",
     "headers": null,
     "multiValueHeaders": null,
     "queryStringParameters": null,
     "multiValueQueryStringParameters": null,
     "pathParameters": {
-        "player_guid": "1441314A80B76F"
+        "player_guid": "08ce652ba1a7c8c6c3ff101e7c390d20"
     },
     "stageVariables": null
     }
     '''
-
+    
     event_str = '''
     {
     "resource": "/matches/{proxy+}",
@@ -473,6 +473,6 @@ if __name__ == "__main__":
      "pathParameters":{"proxy":"server/kekekke%20haha"}
     }
     '''
-    
+ 
     event = json.loads(event_str)
     print(handler(event, None))
