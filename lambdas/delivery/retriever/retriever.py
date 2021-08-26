@@ -85,7 +85,48 @@ def handler(event, context):
                 else:
                     data = responses
             elif path_tokens[0] == "type":
-                raise
+                error_msg = None
+                logger.info("Processing " + api_path)
+                if len(path_tokens) == 1:
+                    error_msg = make_error_dict("Missing region and gametype", "")
+                if len(path_tokens) >= 2:
+                    if path_tokens[1].lower() in ['na','sa','eu','unk']:
+                        region = path_tokens[1].lower()
+                    else:
+                        error_msg = make_error_dict("Invalid region", "")
+                if len(path_tokens) == 3:
+                    if path_tokens[2].lower() in ['3','6','6plus']:
+                        teams = path_tokens[2].lower()
+                    else:
+                        error_msg = make_error_dict("Invalid match type", "")
+                else:
+                    teams = '6'
+                    
+                if error_msg:
+                    data = error_msg
+                else:
+                    match_type = region + "#" + teams + "#"
+                    logger.info("Processing match type " + match_type)
+                    
+                    pk = "match"
+                    pk_name = "pk"
+                    index_name = "lsi"
+                    skname="lsipk"
+                    begins_with = match_type
+                    responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname,  log_stream_name, 100, False)
+                    
+                    # logic specific to /matches/type/...
+                    if "error" not in responses:
+                        data = []
+                        for line in responses:
+                            tmp_data = json.loads(line["data"])
+                            match_type_tokens = line['lsipk'].split("#")
+                            tmp_data["type"] = "#".join(match_type_tokens[0:2])
+                            tmp_data["match_round_id"] = line["sk"]
+                            data.append(tmp_data)
+                    else:
+                        data = responses
+                    
             elif path_tokens[0] == "recent":
                 if len(path_tokens) == 1:
                     days = 30
@@ -473,6 +514,13 @@ if __name__ == "__main__":
      "pathParameters":{"proxy":"server/kekekke%20haha"}
     }
     '''
+    
+    event_str_match_type = '''
+    {
+     "resource":"/matches/{proxy+}",
+     "pathParameters":{"proxy":"type/na"}
+    }
+    '''
  
-    event = json.loads(event_str)
+    event = json.loads(event_str_match_type)
     print(handler(event, None))
