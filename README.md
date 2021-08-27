@@ -46,33 +46,50 @@ x is done , / is work in progress, blank is planned
 |Status  |Domain  |API Path  |Query  |
 |-------- |-------- |-------- |--------|
 |[x] |Matches |/matches/{match_round_id_1},{match_round_id_N} |Get match info(s) |
-|    |Matches |/matches/map/{map} |Filter matches by map to get map counts, wins, times |
-|    |Matches |/matches/type/{type} |Filter type of matches and process their individual lines |
+|[x] |Matches |/matches/type/{region}/{type} |Filter type of matches by region (sa na eu, unk) and type(3,6,6plus) |
 |[x] |Matches |/matches/recent |Filter by last 30 days to get matches |
 |[x] |Matches |/matches/recent/{days} |Filter by last x days to get recent matches |
+|[x] |Matches |/matches/server/{begins_with} |Get 100 recent matches from a server |
 |[x] |Gamelog |/gamelogs/{match_round_id} |Retrieve game log for a match |
 |[x] |Stats   |/stats/player/{guid} |Filter stats for a player guid from many matches |
 |[x] |Stats   |/stats/{matchid} |Filter stats for a match or range of matches |
-|    |Stats   |/stats/type/{type} |Filter stats for a match type on range of matches |
+|    |Stats   |/stats/type/{region}/{type} |Filter stats for a match type on range of matches |
 |[x] |Weapons |/wstats/{matchid} |By match retrieve all wstats |
 |[x] |Weapons |/wstats/player/{player_guid}/match/{matchid} |By player by match |
 |[x] |Weapons |/wstats/player/{player_guid} |By player by several matches |
 |[x] |Players |/player/{player_guid} |Filter by given guid to get player info |
 |    |Players |/player/{player_guid}/aliases |Filter by guid to get aliases range and dates |
 |    |Players |/player/{player_guid}/weaponaccuracy/{weapon} |Filter by given guid to get weapon stats |
-|    |Players |/player/{player_guid}/eloprogress/{type} |Filter by guid sort by time to get elo progress |
+|    |Players |/player/{player_guid}/eloprogress/{region}/{type} |Filter by guid sort by time to get elo progress |
 |    |Players |/player/recent |Filter by last 30 days to get primary aliases |
 |[x] |Players |/player/search/{begins_with} |Search for real names that start with a string |
+|[x] |Servers |/servers |Get list of all servers with stats |
+|[x] |Servers |/servers/detail |Same, but with details |
 
 Example:
 
 https://rtcwproapi.donkanator.com/matches/recent/92 will (maybe) give match 16098173561, therefore stats and wstats will follow:
+
+https://rtcwproapi.donkanator.com/matches/type/na/6
+note: idenitifying server region is done by some server name parts or manually
+
+https://rtcwproapi.donkanator.com/matches/server/virg
 
 https://rtcwproapi.donkanator.com/stats/1609817356
 
 https://rtcwproapi.donkanator.com/wstats/1609817356
 
 https://rtcwproapi.donkanator.com/wstats/player/A53B3ED2A896CB/match/1609817356
+
+https://rtcwproapi.donkanator.com/player/01cf12e8114d67c45142e0f62cd24628#1626146020
+
+https://rtcwproapi.donkanator.com/player/search/donk
+note: idenitifying players by real_name is a manual effort at this time
+
+https://rtcwproapi.donkanator.com/servers
+
+https://rtcwproapi.donkanator.com/servers/detail
+
 
 ## Usage 
 * Familiarize yourself with what's available in the API section
@@ -142,11 +159,38 @@ https://rtcwproapi.donkanator.com/stats/1609817356
 Can you make sense of these events? Can you come up with a plan to process json and store results?
 Can you work towards making your results available to final consumer?
 
-Where to start:
+### Where to start:
 The project currently uses python, but I'm open to Java, Go, PowerShell, Node. js, C#, Python, and Ruby, as long as you are willing to support it.
 * Understand what you want to do: final consumer presentation or inner pipeline calc
 * Save or call a particular API like https://rtcwproapi.donkanator.com/gamelogs/16098173561
 * Ingest JSON and do your thing
 * Make a plan what needs to be saved/cached
+
+## My commitment
+One of the main points of this project is to channel rtcw data to app consumers - front-end developers, discord bots, etc. It is of outmost importance to me to:
+* keep existing functionality from breaking
+* communicate new features
+* ensure upstream application uptime
+
+Below you will find a log of API fixes/additions.
+
+If you are an API consumer, please do your part:
+* subscribe to commits https://github.com/donkz/rtcwprostats/watchers
+* talk to me on discord https://discord.com/invite/SSSZDGa
+* open an issue https://github.com/donkz/rtcwprostats/issues
+
+## ChangeLog
+(see full documentation and example URLs above)
+* add: /player/search/{begins_with}
+* fix: /matches/recent - sort descending
+* add: /matches/server/{begins_with}
+* add: /servers and /servers/detail
+* fix: player json had elo values resetting every time the player played a different match type
+* add: /matches/type/{region}/{type}
+* add: started work on /groups - this will contain matches that relate to an event
+
+
+
+
 
 
