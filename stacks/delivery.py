@@ -98,6 +98,25 @@ class DeliveryStack(Stack):
         #32
         servers_detail = servers.add_resource("detail")
         servers_detail.add_method("GET", retriever_integration)
+        
+        #40
+        groups = api.root.add_resource("groups")
+        groups.add_method("GET", retriever_integration)
+        
+        #41
+        groups_region = groups.add_resource("region")
+        groups_region_name = groups_region.add_resource("{region}")
+        groups_region_name.add_method("GET", retriever_integration)
+        
+        #49
+        groups_add = groups.add_resource("add")
+        groups_add_name = groups_add.add_resource("{group_name}")
+        groups_add_name_matchlist = groups_add_name.add_resource("{match_list}")
+        groups_add_name_matchlist.add_method("GET", retriever_integration)
+        
+        
+        
+
 
 
         
