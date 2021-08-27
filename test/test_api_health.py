@@ -176,3 +176,24 @@ obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, list)
 check_num_elements(obj, 1, 30)
 check_json_value(obj[0], "round", str, 1)
+
+# /matches/type/{region}/{teams}
+url_path_match = "matches/type/" +  "na/6"
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj, 1, 101)
+check_json_value(obj[0], "round", str, 1)
+
+#expecting error
+url_path_match = "matches/type/" +  "mx"
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, dict)
+check_num_elements(obj, 1, 1)
+check_json_value(obj, "error", str, None)
+
+#expecting error
+url_path_match = "matches/type/" +  "na/8"
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, dict)
+check_num_elements(obj, 1, 1)
+check_json_value(obj, "error", str, None)
