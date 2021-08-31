@@ -91,6 +91,7 @@ def ddb_prepare_server_item(gamestats):
     if "adlad"      in server_name.lower(): region = 'eu'
     if "amster"     in server_name.lower(): region = 'eu'
     if "london"     in server_name.lower(): region = 'eu'
+    if "hyperion"   in server_name.lower(): region = 'eu'
     if " sa "       in server_name.lower(): region = 'sa'
     if "chile"      in server_name.lower(): region = 'sa'
     if "brazil"     in server_name.lower(): region = 'sa'
