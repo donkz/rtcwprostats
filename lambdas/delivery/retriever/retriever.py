@@ -7,6 +7,7 @@ import logging
 import os
 import decimal
 import urllib.parse
+import datetime
 
 if __name__ == "__main__":
     TABLE_NAME = "rtcwprostats-database-DDBTable2F2A2F95-1BCIOU7IE3DSE"
@@ -181,17 +182,44 @@ def handler(event, context):
         if "match_id" in event["pathParameters"]:
             match_id = event["pathParameters"]["match_id"]
             logger.info("Parameter: " + match_id)
-            pk = "statsall"
-            sk = match_id
-            response = get_item(pk, sk, ddb_table, log_stream_name)
-
-            # logic specific to /stats/{match_id}
-            if "error" not in response:
-                data = {"statsall": json.loads(response["data"])}
-                data["match_id"] = response["sk"]
-                data["type"] = response["gsi1pk"].replace("statsall#", "")
-            else:
-                data = response
+            
+            if match_id.isnumeric(): 
+                pk = "statsall"
+                sk = match_id
+                response = get_item(pk, sk, ddb_table, log_stream_name)
+    
+                # logic specific to /stats/{match_id}
+                if "error" not in response:
+                    data = {"statsall": json.loads(response["data"])}
+                    data["match_id"] = response["sk"]
+                    data["type"] = response["gsi1pk"].replace("statsall#", "")
+                else:
+                    data = response
+                    
+            if len(match_id.split(','))>1:
+                matches = match_id.split(",")
+                item_list = []
+                match_dups = []
+                for match in matches:
+                    if match.isnumeric() and int(match) > 1006210516:  # rtcw release
+                        if match in match_dups:
+                            logger.warning("Matches query string contains duplicate values. Dropping duplicates.")
+                            continue
+                        item_list.append({"pk": "statsall", "sk": match})
+                        match_dups.append(match)
+                        
+                responses = get_batch_items(item_list, ddb_table, log_stream_name)
+                
+                # logic specific to /stats/{match_id} with match array
+                if "error" not in responses:
+                    data = []
+                    for match_stat in responses: 
+                        data_line = {match_stat["sk"]: json.loads(match_stat["data"])}
+                        data_line["match_id"] = match_stat["sk"]
+                        data_line["type"] = match_stat["gsi1pk"].replace("statsall#", "")
+                        data.append(data_line)
+                else:
+                    data = responses
 
     if api_path == "/wstats/player/{player_guid}":
         logger.info("Processing " + api_path)
@@ -336,6 +364,91 @@ def handler(event, context):
                 data.append(data_line)
         else:
             data = responses
+    
+    # if api_path == "/groups/add":
+        # this functionality is in delivery_writer.py
+
+    if api_path == "/groups/{proxy+}":
+        # data = event
+        path = event.get("pathParameters",{}).get("proxy","")
+        logger.info("Proxy path " + path)
+        path_tokens = path.split("/")
+        data = {}
+        
+        if len(path_tokens) == 2 and path_tokens[0] == "group_name" and len(path_tokens[0].strip())>0:
+            logger.info("Parameter: /groups/group_name/{group_name}")
+            pk_name = "pk"
+            pk = "group"
+            index_name = None
+            skname="sk"
+            begins_with = path_tokens[1]
+            ascending = False
+            responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname,  log_stream_name, 100, ascending)  
+            
+            if "error" not in responses:
+                data = {}
+                for group in responses:
+                    data[group["sk"].split("#")[0]] = json.loads(group["data"])
+            else:
+                data = responses    
+        
+        if len(path_tokens) == 2 and path_tokens[0] == "region" and path_tokens[1] in ["sa","na","eu","unk"]:
+            logger.info("Parameter: /groups/region/{region_name}")
+            pk_name = "pk"
+            pk = "group"
+            index_name = "lsi"
+            skname="lsipk"
+            begins_with = path_tokens[1]
+            ascending = False
+            responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname,  log_stream_name, 100, ascending)  
+            
+            if "error" not in responses:
+                data = {}
+                for group in responses:
+                    data[group["sk"].split("#")[0]] = json.loads(group["data"])
+            else:
+                data = responses    
+        
+        if (len(path_tokens) == 4 and path_tokens[0] == "region" and path_tokens[1] in ["sa","na","eu","unk"] and 
+           path_tokens[2] == "type" and path_tokens[3] in ["3","6","6plus"]) :
+            logger.info("Parameter: /groups/region/{region_name}/type/{match_type}")
+            pk_name = "pk"
+            pk = "group"
+            index_name = "lsi"
+            skname="lsipk"
+            begins_with = path_tokens[1] + "#" + path_tokens[3]
+            ascending = False
+            responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname,  log_stream_name, 100, ascending)  
+            
+            if "error" not in responses:
+                data = {}
+                for group in responses:
+                    data[group["sk"].split("#")[0]] = json.loads(group["data"])
+            else:
+                data = responses
+                
+        if (len(path_tokens) == 6 and path_tokens[0] == "region" and path_tokens[1] in ["sa","na","eu","unk"] and 
+           path_tokens[2] == "type" and path_tokens[3] in ["3","6","6plus"] and
+           path_tokens[4] == "group_name" and len(path_tokens[5].strip()) > 0 ):
+            logger.info("Parameter: /groups/region/{region_name}/type/{match_type}/group_name/{group_name}")
+            pk_name = "pk"
+            pk = "group"
+            index_name = "lsi"
+            skname="lsipk"
+            begins_with = path_tokens[1] + "#" + path_tokens[3] + "#" + path_tokens[5]
+            ascending = False
+            responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname,  log_stream_name, 100, ascending)  
+            
+            if "error" not in responses:
+                data = {}
+                for group in responses:
+                    data[group["sk"].split("#")[0]] = json.loads(group["data"])
+            else:
+                data = responses
+        
+        if len(data) == 0:
+            data = make_error_dict("Could not match path:", path)
+        
 
     return {
         'statusCode': 200,
@@ -350,6 +463,8 @@ def handler(event, context):
 def default_type_error_handler(obj):
     if isinstance(obj, decimal.Decimal):
         return int(obj)
+    else:
+        logger.error("Default type handler could not handle object" + str(obj))
     raise TypeError
 
 
@@ -391,7 +506,10 @@ def get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, log_stre
     """Get several items by pk and range of sk."""
     item_info = pk + ": begins with " + begins_with + ". Logstream: " + log_stream_name
     try:
-        response = ddb_table.query(IndexName=index_name,KeyConditionExpression=Key(pk_name).eq(pk) & Key(skname).begins_with(begins_with), Limit=limit, ScanIndexForward=ascending)
+        if index_name:
+            response = ddb_table.query(IndexName=index_name,KeyConditionExpression=Key(pk_name).eq(pk) & Key(skname).begins_with(begins_with), Limit=limit, ScanIndexForward=ascending)
+        else:
+            response = ddb_table.query(KeyConditionExpression=Key(pk_name).eq(pk) & Key(skname).begins_with(begins_with), Limit=limit, ScanIndexForward=ascending)
     except ClientError as e:
         logger.warning("Exception occurred: " + e.response['Error']['Message'])
         result = make_error_dict("[x] Client error calling database: ", item_info)
@@ -437,7 +555,6 @@ def make_error_dict(message, item_info):
     """Make an error message for API gateway."""
     return {"error": message + " " + item_info}
 
-
 if __name__ == "__main__":
     event_str = '''
     {
@@ -450,6 +567,17 @@ if __name__ == "__main__":
     "multiValueQueryStringParameters": null,
     "pathParameters": {
         "player_guid": "08ce652ba1a7c8c6c3ff101e7c390d20"
+    },
+    "stageVariables": null
+    }
+    '''
+    
+    event_stats_csv = '''
+    {
+    "resource": "/stats/{match_id}",
+    "path": "/stats/1630476331,1630475541,1630474233,1630472750",
+    "pathParameters": {
+        "match_id": "1630476331,1630475541,1630474233,1630472750"
     },
     "stageVariables": null
     }
@@ -521,6 +649,42 @@ if __name__ == "__main__":
      "pathParameters":{"proxy":"type/na"}
     }
     '''
+    
+    event_str_group_name = '''
+    {
+     "resource": "/groups/{proxy+}",
+     "pathParameters": {
+         "proxy": "group_name/bather"
+         }
+     }
+    '''
+    
+    event_str_group_region = '''
+    {
+     "resource": "/groups/{proxy+}",
+     "pathParameters": {
+         "proxy": "region/na"
+         }
+     }
+    '''
+    
+    event_str_group_region_type = '''
+    {
+     "resource": "/groups/{proxy+}",
+     "pathParameters": {
+         "proxy": "region/na/type/6"
+         }
+     }
+    '''
+    
+    event_str_group_region_type_name = '''
+    {
+     "resource": "/groups/{proxy+}",
+     "pathParameters": {
+         "proxy": "region/eu/type/6/group_name/bath"
+         }
+     }
+    '''
  
-    event = json.loads(event_str_match_type)
+    event = json.loads(event_stats_csv)
     print(handler(event, None))

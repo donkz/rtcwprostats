@@ -9,6 +9,7 @@ from stacks.dns import DNSStack
 from stacks.processing import ProcessingStack
 from stacks.database import DatabaseStack
 from stacks.delivery_retriever import DeliveryRetrieverStack
+from stacks.delivery_writer import DeliveryWriterStack
 from stacks.delivery import DeliveryStack
 from stacks.postprocess import PostProcessStack
 from stacks.read_match_lambda import ReadMatchStack
@@ -37,12 +38,13 @@ post_process_stack = PostProcessStack(app, "rtcwprostats-postprocess", lambda_tr
 
 reader = ReadMatchStack(app, "rtcwprostats-reader", storage_bucket=storage.storage_bucket, ddb_table=database.ddb_table, read_queue=storage.read_queue, read_dlq=storage.read_dlq, postproc_state_machine=post_process_stack.postproc_state_machine, lambda_tracing=lambda_tracing, env=env)
 retriever = DeliveryRetrieverStack(app, "rtcwprostats-retriever", ddb_table=database.ddb_table, env=env, lambda_tracing=lambda_tracing)
+delivery_writer = DeliveryWriterStack(app, "rtcwprostats-delivery-writer", ddb_table=database.ddb_table, env=env, lambda_tracing=lambda_tracing)
 
 apistack = APIStack(app, "rtcwprostats-API", cert_arn=cert_arn, api_key=api_key, storage_bucket=storage.storage_bucket, env=env, lambda_tracing=lambda_tracing)
 DNSStack(app, "rtcwprostats-DNS", api=apistack.api, env=env, dns_resource_name=dns_resource_name, hosted_zone_id=hosted_zone_id, zone_name=zone_name)
 
 ProcessingStack(app, "rtcwprostats-processing", env=env, lambda_tracing=lambda_tracing)
-DeliveryStack(app, "rtcwprostats-delivery", api=apistack.api, retriever=retriever.retriever_lambda, env=env)
+DeliveryStack(app, "rtcwprostats-delivery", api=apistack.api, retriever=retriever.retriever_lambda, delivery_writer=delivery_writer.delivery_writer_lambda, env=env)
 
 
 cdk.Tags.of(app).add("purpose", "rtcwpro")

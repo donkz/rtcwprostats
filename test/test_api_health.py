@@ -38,6 +38,8 @@ def get_api_response_as_json(url_path_match):
     result_json = json.loads(response.text)
     if "error" in result_json:
         logger.error(result_json["error"])
+    if "Internal server error" in response.text:
+        raise ValueError("API call failed to be processed by the back end.")
     return result_json
 
 #i should be writing real test framework, but for now this will do
@@ -67,6 +69,7 @@ def check_json_value(obj, key, correct_type, length):
             raise KeyError
 
 test_matches = ['1610076805']
+match_id_array = "1630476331,1630475541,1630474233,1630472750"
 test_guids = ['2918F80471E175']
 seach_player = "donk"
 server_name = "^dS^1A^7|RTCWCHILE.COM"
@@ -92,14 +95,14 @@ check_json_value(obj[0], "match_id", str, 10)
 url_path_match = "matches/recent"
 obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, list)
-check_num_elements(obj, 2, 40)
+check_num_elements(obj, 2, 100)
 check_json_value(obj[0], "match_id", str, 10)
 
 # /matches/recent/number
 url_path_match = "matches/recent/92"
 obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, list)
-check_num_elements(obj, 10, 40)
+check_num_elements(obj, 10, 100)
 check_json_value(obj[0], "match_id", str, 10)
 
 # /stats/player/{player_guid}
@@ -131,6 +134,13 @@ obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, dict)
 check_num_elements(obj, 3, 30)
 check_json_value(obj, "match_id", str, 10)
+
+# /stats/{match_id} with csv
+url_path_match = "stats/" +  match_id_array
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj, 4, 4)
+# check_json_value(obj[0], "1630476331", list, None)
 
 # /wstats/{match_id}
 url_path_match = "wstats/" +  match_id
@@ -186,6 +196,7 @@ check_json_value(obj[0], "round", str, 1)
 
 #expecting error
 url_path_match = "matches/type/" +  "mx"
+logger.info("Expecting error.")
 obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, dict)
 check_num_elements(obj, 1, 1)
@@ -193,7 +204,57 @@ check_json_value(obj, "error", str, None)
 
 #expecting error
 url_path_match = "matches/type/" +  "na/8"
+logger.info("Expecting error.")
 obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, dict)
 check_num_elements(obj, 1, 1)
 check_json_value(obj, "error", str, None)
+
+# /matches/type/{region}/{teams}
+url_path_match = "matches/type/" +  "na/6"
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj, 1, 101)
+check_json_value(obj[0], "round", str, 1)
+
+# group retrieve vars
+region = "na"
+match_type = "6"
+group_name = "gather15943"
+# /groups/group_name/{group_name}
+url_path_match = "groups/group_name/" +  group_name
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, dict)
+check_num_elements(obj, 1, 10)
+check_json_value(obj, "gather15943", list, None)
+
+# /groups/region/{region_name}
+url_path_match = "groups/region/" +  region
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, dict)
+check_num_elements(obj, 1, 100)
+#check_json_value(obj, "gather15943", list, None)
+
+# /groups/region/{region_name}/type/{match_type}
+url_path_match = "groups/region/" +  region + "/type/" + match_type
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, dict)
+check_num_elements(obj, 1, 100)
+
+# /groups/region/{region_name}/type/{match_type}/group_name/{group_name}
+url_path_match = "groups/region/" +  region + "/type/" + match_type + "/group_name/" + group_name
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, dict)
+check_num_elements(obj, 1, 10)
+check_json_value(obj, "gather15943", list, None)
+
+# Expecting error
+url_path_match = "groups/region/" +  region + "/type/" + match_type + "/group_name/" + "fake_group"
+logger.info("Expecting error.")
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, dict)
+check_num_elements(obj, 1, 1)
+check_json_value(obj, "error", str, None)
+
+
+

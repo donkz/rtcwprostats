@@ -8,10 +8,11 @@ import aws_cdk.aws_apigateway as apigw
 class DeliveryStack(Stack):
     """Public API for retrieving match and player data."""
 
-    def __init__(self, scope: Construct, id: str, api: apigw.RestApi, retriever: _lambda.IFunction, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, api: apigw.RestApi, retriever: _lambda.IFunction, delivery_writer: _lambda.IFunction, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         retriever_integration = apigw.LambdaIntegration(retriever)
+        delivery_writer_integration = apigw.LambdaIntegration(delivery_writer)
 
 # =============================================================================
 #         API
@@ -104,15 +105,12 @@ class DeliveryStack(Stack):
         groups.add_method("GET", retriever_integration)
         
         #41
-        groups_region = groups.add_resource("region")
-        groups_region_name = groups_region.add_resource("{region}")
-        groups_region_name.add_method("GET", retriever_integration)
+        groups_proxy = groups.add_proxy(default_integration=retriever_integration, any_method=False)
+        groups_proxy.add_method("GET")
         
         #49
         groups_add = groups.add_resource("add")
-        groups_add_name = groups_add.add_resource("{group_name}")
-        groups_add_name_matchlist = groups_add_name.add_resource("{match_list}")
-        groups_add_name_matchlist.add_method("GET", retriever_integration)
+        groups_add.add_method("POST", delivery_writer_integration, request_parameters={"method.request.header.pass": True})
         
         
         

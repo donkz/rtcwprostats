@@ -77,6 +77,8 @@ https://rtcwproapi.donkanator.com/matches/server/virg
 
 https://rtcwproapi.donkanator.com/stats/1609817356
 
+https://rtcwproapi.donkanator.com/stats/1630476331,1630475541,1630474233,1630472750
+
 https://rtcwproapi.donkanator.com/wstats/1609817356
 
 https://rtcwproapi.donkanator.com/wstats/player/A53B3ED2A896CB/match/1609817356
@@ -90,6 +92,15 @@ https://rtcwproapi.donkanator.com/servers
 
 https://rtcwproapi.donkanator.com/servers/detail
 
+https://rtcwproapi.donkanator.com/groups/add (POST)
+
+https://rtcwproapi.donkanator.com/groups/group_name/gather15943
+
+https://rtcwproapi.donkanator.com/groups/region/na
+
+https://rtcwproapi.donkanator.com/groups/region/na/type/6
+
+https://rtcwproapi.donkanator.com/groups/region/na/type/6/group_name/gather15943
 
 ## Usage 
 * Familiarize yourself with what's available in the API section
@@ -188,6 +199,12 @@ If you are an API consumer, please do your part:
 * fix: player json had elo values resetting every time the player played a different match type
 * add: /matches/type/{region}/{type}
 * add: started work on /groups - this will contain matches that relate to an event
+* add: /groups/add (POST)
+* add: /groups/group_name/{group_name}
+* add: /groups/region/{region_name}
+* add: /groups/region/{region_name}/type/{match_type}
+* add: /groups/region/{region_name}/type/{match_type}/group_name/{group_name}
+* add: /stats/{match_id} with csv match_ids
 
 
 
