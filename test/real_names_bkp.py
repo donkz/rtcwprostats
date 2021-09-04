@@ -37,7 +37,7 @@ def update_player_info_real_name(ddb_table, real_name_dict):
         else:
             logger.warning("Unexpected HTTP code" + str(response["ResponseMetadata"]['HTTPStatusCode']) + ". Did not update " + guid + " " + real_name)           
             
-def get_empty_real_names(ddb_table):
+def get_empty_real_names(ddb_table, min_games = 5):
     pk = "player"
     skname = "sk"
     begins_with = "playerinfo#"
@@ -48,10 +48,10 @@ def get_empty_real_names(ddb_table):
     if response['Count'] > 0:
         for record in response["Items"]:
             guid = record["sk"].replace("playerinfo#", "")
-            get_last_few_aliases(ddb_table, guid)
+            get_last_few_aliases(ddb_table, guid, min_games)
 
 
-def get_last_few_aliases(ddb_table, guid):
+def get_last_few_aliases(ddb_table, guid, min_games):
     pk = "player"
     skname = "sk" 
     begins_with = "aliases#" + guid
@@ -61,9 +61,12 @@ def get_last_few_aliases(ddb_table, guid):
         for alias in response["Items"]:
             alias_value = alias["data"]
             alias_counter[alias_value] +=1
-        print(alias_counter.most_common(6))
-        alias_most_common = alias_counter.most_common(10)[0][0]
-        print(f'        "{guid}": "{alias_most_common}",') 
+        if sum(alias_counter.values()) > min_games:
+            print("-------")
+            print("Processing guid: " + guid)
+            print(alias_counter.most_common(6))
+            alias_most_common = alias_counter.most_common(10)[0][0]
+            print(f'        "{guid}": "{alias_most_common}",') 
 
 if __name__ == "__main__":
     real_name_dict = {
@@ -171,7 +174,6 @@ if __name__ == "__main__":
         "8FA545D3E4B815": "puma",
         "8FE7B746C7914D": "sengo",
         "91493F4F94B49D": "adlad",
-        "9570ADE4A0420C": "askungen:o)",
         "9312D9AC447886": "donka?",
         "9570ADE4A0420C": "askungen",
         "9AF43C6C2100FA": "desk1ciao",
@@ -285,7 +287,63 @@ if __name__ == "__main__":
         "bcbf3c6eefa4d8a7685d46c826804d0d": "ding",
         }
     real_name_dict = {
-        "c4bee65ef1516ea08bac14d6a0be00ab": "gracoes"
+        "c4bee65ef1516ea08bac14d6a0be00ab": "gracoes",
+        "f50e7de0a7deefbb088c60c0d89a79eb": "webe",
+        "fb4b4ae08d99d0d5d798aa5530a982eb": "owzo",
+        "fd7bb250e8bb1a33350bc0f9034d4d3c": "np.l4mpje",
+        "f235396f1069b50cbd90908636112135": "bloodje",
+        "f0f878b447747af6fc2045bcfa68d2ce": "crumbs",
+        "ecfc385510bbbaa564f8b6cfd4c68f61": "kittens",
+        "e568ef7afff4595eb4f2a39af8e589ff": "kengog",
+        "e36178cfe46d84198b5f369b920f9592": "souldriver",
+        "e126a9586a4b96fff9438a776975afb9": "bully",
+        "da07b82953745515f40af018d02be094": "bru",
+        "d6f9fe03c50084062041d8fc11be57ed": "toxin",
+        "cddaa8f726bdbf1f054fa76237507679": "sem",
+        "c835c658572c4c974fc82f3f2ee2799b": "vis",
+        "c5e33e4d09c2cba378f105ed64c0ed9b": "d1ego",
+        "c5b5d6eddfa435d61b42c9af1c1fba74": "cky",
+        "c22dc4b078b2eb6ccc9b3094560d3ebf": "prowler",
+        "be5eed7e4717d442e2fe9c3e90e3c51f": "pipe",
+        "b3465bff43fe40ea76f9e522d3314809": "parcher",
+        "b1ae78b449ff114b976f38a738c8b784": "tosspot",
+        "a1153397a7b333078b710e7ec535f364": "uyop",
+        "a0b20c2b0f9febc038b001260907185a": "cypher",
+        "96fe9714e6041eb1c8b2c01e2c06f63b": "conscious",
+        "820b6c493fa3b7d3b577efcda612991c": "stahl",
+        "7d669f9c93ac1bcfe05e5b6553ade0bb": "whizzard",
+        "7d57743b60c7b7b10a62fc7b2e00bc0d": "je$tz0r",
+        "7d52b9640302f4d469211cc075ce5057": "john_mullins",
+        "7d17eafdb49fd5577974ad143da515bc": "dillweed",
+        "7c6a3fd4c8ed8f4b2e1638d1936ae959": "utrolig",
+        "7148bf623a507de5c5d400cd0e9cf2b4": "oksii",
+        "64FDC59648F4C7": "nigel",
+        "611d79d1b08949e650c4c299aadd0fde": "spaztik",
+        "5ddda39a8d1e8f685ca77a0b232dc565": "raiser",
+        "572e2202f20279063d9e6da7418b0c62": "swanidius",
+        "54128439647bfa229bd36be3a7c36ea4": "warri0r",
+        "5377b0fe4286aee69fc4c49d2d44c295": "c@k-el",
+        "4cdd977998c99627b48a323248f63edf": "sonix",
+        "49d64b3c0fcd5512a8e87b6287b29b21": "xill",
+        "477c523b105a795728682ee27a678db7": "v1rkes",
+        "3654a03f0b140222b475dc809a56ce20": "dusty",
+        "36366e2f47dd2b3ec445848dd29b47c8": "silentstorm",
+        "34e4207e8320e98830e65224bb27a6eb": "oranje",
+        "2c0e52c26f06ab91954a8f2e49939a73": "ducts",
+        "2b948fb19e6fdabc48fe3616b7070c21": "blox",
+        "1d2d182cba337487db76d6ba02b76c18": "taby",
+        "11925ec75862feb61ebf9d659784f6a4": "die",
+        "1177bf7dcacebac3885a56d01524df3c": "donkey",
+        "10d3f973708df6a3265b3f8be6d1ce74": "brako",
+        "09e74b17f0910bca98d523305670548b": "goose",
+        }
+    real_name_dict = {
+        "08ce652ba1a7c8c6c3ff101e7c390d20": "kevin",
+        "08dce4247a598442bb5a3acf2223e5c0": "canhanc",
+        "3b574d914d9bef5dc61dd3438af31b2f": "nova",
+        "8e6a51baf1c7e338a118d9e32472954e": "doza",
+        "a8cbc2fb87e7e1191be0f87637473e8b": "iii",
+        "b6b61456699bd30b48fe6c1249efeab9": "jin"
         }
     update_player_info_real_name(ddb_table, real_name_dict)
 
