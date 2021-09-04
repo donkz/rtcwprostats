@@ -25,11 +25,38 @@
 $(document).ready(function(){
 
     jQuery.support.cors = true;
+    
+    // https://stackoverflow.com/questions/19491336/how-to-get-url-parameter-using-jquery-or-plain-javascript
+    $.urlParam = function(name){
+        var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+        if (results==null) {
+           return null;
+        }
+        return decodeURI(results[1]) || 0;
+    }
+    
+    region = $.urlParam('region')
+    active = $.urlParam('active')
+    
+    apiUrl = 'https://rtcwproapi.donkanator.com/servers'
+    
+    const regions = ["na", "eu", "sa", "unk"];
+    if (regions.includes(region)) {
+        console.log("valid region " + region);
+        apiUrl += "/region/" + region;
+        
+        const actives = ["yes"];
+        if (actives.includes(active)) {
+            console.log("valid active ind " + active);
+            apiUrl += "/active";
+        }
+    }
+    console.log(apiUrl);    
      
     $.ajax(
     {
 		type: "GET",
-        url: 'https://rtcwproapi.donkanator.com/servers',
+        url: apiUrl,
         //data: "{}",
         contentType: "application/json; charset=utf-8",
         dataType: "json",

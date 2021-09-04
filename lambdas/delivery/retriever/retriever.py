@@ -345,25 +345,31 @@ def handler(event, context):
         limit =200
         responses = get_query_all(pk_name, pk, ddb_table, log_stream_name, limit)
 
-        if "error" not in responses:
-            # logic specific to /servers
-            data = []
-            for server in responses:
-                data_line = {}
-                
-                data_line["server_name"] = server["sk"]
-                data_line["region"] = server["region"]
-                if server["lsipk"][0:2] ==  data_line["region"]:
-                    data_line["last_submission"] = server["lsipk"][3:]
-                else:
-                    data_line["last_submission"] = '2021-07-31 23:59:59'
-                data_line["submissions"]=int(server["submissions"])
-                data_line["IP"]=server["data"]['serverIP']
-                if api_path == "/servers/detail":
-                    data_line["data"]=server["data"]
-                data.append(data_line)
-        else:
-            data = responses
+        data = process_server_responses(api_path, responses)
+    
+    if api_path == "/servers/region/{region}" or api_path == "/servers/region/{region}/active":
+        logger.info("Processing " + api_path)
+        region = event["pathParameters"]["region"]
+        logger.info("Parameter: " + region)
+        pk_name = "pk"
+        pk = "server"
+        index_name = "lsi"
+        skname="lsipk"
+        limit = 200
+        ascending = False
+             
+        if api_path == "/servers/region/{region}":
+            begins_with = region
+            responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname,  log_stream_name, limit, ascending)
+        
+        if api_path == "/servers/region/{region}/active":
+            dt = datetime.datetime.now() - datetime.timedelta(days=30)
+            dt_str = dt.strftime("%Y-%m-%d %H:%M:%S")
+            sklow = region + "#" + dt_str
+            skhigh = region + "#" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            responses = get_range(index_name, pk, str(sklow), str(skhigh), ddb_table, log_stream_name, limit, ascending)
+
+        data = process_server_responses(api_path, responses)
     
     # if api_path == "/groups/add":
         # this functionality is in delivery_writer.py
@@ -489,7 +495,7 @@ def get_range(index_name, pk, sklow, skhigh, table, log_stream_name, limit, asce
     item_info = pk + ":" + sklow + " to " + skhigh + ". Logstream: " + log_stream_name
     try:
         if index_name:
-            response = table.query(IndexName=index_name, KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sklow, skhigh), Limit=limit,ReturnConsumedCapacity='NONE', ScanIndexForward=ascending)
+            response = table.query(IndexName=index_name, KeyConditionExpression=Key('pk').eq(pk) & Key("lsipk").between(sklow, skhigh), Limit=limit,ReturnConsumedCapacity='NONE', ScanIndexForward=ascending)
         else:
             response = table.query(KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sklow, skhigh), Limit=limit,ReturnConsumedCapacity='NONE', ScanIndexForward=ascending)
     except ClientError as e:
@@ -554,6 +560,28 @@ def get_batch_items(item_list, ddb_table, log_stream_name):
 def make_error_dict(message, item_info):
     """Make an error message for API gateway."""
     return {"error": message + " " + item_info}
+
+def process_server_responses(api_path, responses):
+    if "error" not in responses:
+        # logic specific to /servers
+        data = []
+        for server in responses:
+            data_line = {}
+            
+            data_line["server_name"] = server["sk"]
+            data_line["region"] = server["region"]
+            if server["lsipk"].split("#")[0] ==  data_line["region"]:
+                data_line["last_submission"] = server["lsipk"].split("#")[1]
+            else:
+                data_line["last_submission"] = '2021-07-31 23:59:59'
+            data_line["submissions"]=int(server["submissions"])
+            data_line["IP"]=server["data"]['serverIP']
+            if api_path == "/servers/detail":
+                data_line["data"]=server["data"]
+            data.append(data_line)
+    else:
+        data = responses
+    return data
 
 if __name__ == "__main__":
     event_str = '''

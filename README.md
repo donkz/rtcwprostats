@@ -65,6 +65,8 @@ x is done , / is work in progress, blank is planned
 |[x] |Players |/player/search/{begins_with} |Search for real names that start with a string |
 |[x] |Servers |/servers |Get list of all servers with stats |
 |[x] |Servers |/servers/detail |Same, but with details |
+|[x] |Servers |/servers/region/{region} | Get server list by region |
+|[x] |Servers |/servers/region/{region}/active |Same, but with 30 days since last submission |
 
 Example:
 
@@ -91,6 +93,10 @@ note: idenitifying players by real_name is a manual effort at this time
 https://rtcwproapi.donkanator.com/servers
 
 https://rtcwproapi.donkanator.com/servers/detail
+
+https://rtcwproapi.donkanator.com/servers/region/na
+
+https://rtcwproapi.donkanator.com/servers/region/na/active
 
 https://rtcwproapi.donkanator.com/groups/add (POST)
 
@@ -205,9 +211,7 @@ If you are an API consumer, please do your part:
 * add: /groups/region/{region_name}/type/{match_type}
 * add: /groups/region/{region_name}/type/{match_type}/group_name/{group_name}
 * add: /stats/{match_id} with csv match_ids
-
-
-
-
-
+* add: /servers/region/{region}
+* add: /servers/region/{region}/active
+* add: used new api in server POC page https://s3.amazonaws.com/donkanator.com/forever/get_servers.html?region=eu&active=yes
 

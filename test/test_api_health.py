@@ -73,6 +73,7 @@ match_id_array = "1630476331,1630475541,1630474233,1630472750"
 test_guids = ['2918F80471E175']
 seach_player = "donk"
 server_name = "^dS^1A^7|RTCWCHILE.COM"
+region = "na"
 
 match_id = test_matches[0]
 player_guid = test_guids[0]
@@ -255,6 +256,32 @@ obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, dict)
 check_num_elements(obj, 1, 1)
 check_json_value(obj, "error", str, None)
+
+#servers
+url_path_match = "servers"
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj[0], 1, 200)
+check_json_value(obj[0], "server_name", str, None)
+
+url_path_match = "servers/detail"
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj[0], 1, 200)
+check_json_value(obj[0]["data"], "g_gametype", str, 1)
+
+url_path_match = "servers/region/" + region
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj, 1, 200)
+check_json_value(obj[0], "server_name", str, None)
+
+url_path_match = "servers/region/" + region + "/active"
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj, 1, 200)
+check_json_value(obj[0], "server_name", str, None)
+
 
 
 

@@ -96,6 +96,10 @@ class DeliveryStack(Stack):
         servers_region_name = servers_region.add_resource("{region}")
         servers_region_name.add_method("GET", retriever_integration)
         
+        #31.5
+        servers_region_name_active = servers_region_name.add_resource("active")
+        servers_region_name_active.add_method("GET", retriever_integration)
+        
         #32
         servers_detail = servers.add_resource("detail")
         servers_detail.add_method("GET", retriever_integration)
