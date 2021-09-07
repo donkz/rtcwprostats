@@ -1,4 +1,4 @@
-from aws_cdk import Stack, Duration
+from aws_cdk import Stack
 from constructs import Construct
 
 import aws_cdk.aws_lambda as _lambda
