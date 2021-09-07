@@ -56,6 +56,8 @@ def get_last_few_aliases(ddb_table, guid, min_games):
     skname = "sk" 
     begins_with = "aliases#" + guid
     response = ddb_table.query(KeyConditionExpression=Key('pk').eq(pk) & Key(skname).begins_with(begins_with))
+    debug = False
+    
     if response['Count'] > 0:
         alias_counter = Counter()
         for alias in response["Items"]:
@@ -67,6 +69,11 @@ def get_last_few_aliases(ddb_table, guid, min_games):
             print(alias_counter.most_common(6))
             alias_most_common = alias_counter.most_common(10)[0][0]
             print(f'        "{guid}": "{alias_most_common}",') 
+        elif debug:
+            print("Not enough aliases(" + str(sum(alias_counter.values())) + ") for " + guid)
+    elif debug:
+        print("Not enough aliases(0) for " + guid)
+            
 
 if __name__ == "__main__":
     real_name_dict = {
@@ -343,7 +350,9 @@ if __name__ == "__main__":
         "3b574d914d9bef5dc61dd3438af31b2f": "nova",
         "8e6a51baf1c7e338a118d9e32472954e": "doza",
         "a8cbc2fb87e7e1191be0f87637473e8b": "iii",
-        "b6b61456699bd30b48fe6c1249efeab9": "jin"
+        "b6b61456699bd30b48fe6c1249efeab9": "jin",
+        "CD0BB1C6361C5D": "valor-jaytee",
+        "80fc34f8c0cdd139e3e85e143cbe9f3b": "rezta",
         }
     update_player_info_real_name(ddb_table, real_name_dict)
 
