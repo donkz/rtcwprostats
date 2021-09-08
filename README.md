@@ -67,6 +67,11 @@ x is done , / is work in progress, blank is planned
 |[x] |Servers |/servers/detail |Same, but with details |
 |[x] |Servers |/servers/region/{region} | Get server list by region |
 |[x] |Servers |/servers/region/{region}/active |Same, but with 30 days since last submission |
+|[x] |Groups  |/groups/add (POST)| Add a group of matches|
+|[x] |Groups  |/groups/group_name/{begins_with} |Get groups that begin with partial word|
+|[x] |Groups  |/groups/region/{region}|Get groups that were marked with a region|
+|[x] |Groups  |/groups/region/{region}/type/{type}|Get groups that were marked with a region and type|
+|[x] |Groups  |/groups/region/{region}/type/{type}/group_name/{begins_with}|...and partial name|
 
 Example:
 
@@ -214,4 +219,5 @@ If you are an API consumer, please do your part:
 * add: /servers/region/{region}
 * add: /servers/region/{region}/active
 * add: used new api in server POC page https://s3.amazonaws.com/donkanator.com/forever/get_servers.html?region=eu&active=yes
+* add: discord webhook reporting 
 
