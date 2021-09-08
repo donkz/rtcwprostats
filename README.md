@@ -53,14 +53,12 @@ x is done , / is work in progress, blank is planned
 |[x] |Gamelog |/gamelogs/{match_round_id} |Retrieve game log for a match |
 |[x] |Stats   |/stats/player/{guid} |Filter stats for a player guid from many matches |
 |[x] |Stats   |/stats/{matchid} |Filter stats for a match or range of matches |
-|    |Stats   |/stats/type/{region}/{type} |Filter stats for a match type on range of matches |
 |[x] |Weapons |/wstats/{matchid} |By match retrieve all wstats |
 |[x] |Weapons |/wstats/player/{player_guid}/match/{matchid} |By player by match |
 |[x] |Weapons |/wstats/player/{player_guid} |By player by several matches |
 |[x] |Players |/player/{player_guid} |Filter by given guid to get player info |
 |    |Players |/player/{player_guid}/aliases |Filter by guid to get aliases range and dates |
-|    |Players |/player/{player_guid}/weaponaccuracy/{weapon} |Filter by given guid to get weapon stats |
-|    |Players |/player/{player_guid}/eloprogress/{region}/{type} |Filter by guid sort by time to get elo progress |
+|    |Players |/player/{player_guid}/eloprogress/region/{region}/type/{type} |Filter by guid sort by time to get elo progress |
 |    |Players |/player/recent |Filter by last 30 days to get primary aliases |
 |[x] |Players |/player/search/{begins_with} |Search for real names that start with a string |
 |[x] |Servers |/servers |Get list of all servers with stats |
