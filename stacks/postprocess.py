@@ -22,6 +22,7 @@ class PostProcessStack(Stack):
                                    role_name='rtcwpro-lambda-postprocessing-role',
                                    assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
                                    )
+        ddb_lambda_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('service-role/AWSLambdaBasicExecutionRole'))
         ddb_table.grant_read_write_data(ddb_lambda_role)
 
         elo_lambda = _lambda.Function(

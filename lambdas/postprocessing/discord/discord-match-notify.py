@@ -91,7 +91,7 @@ def send_notification(match_id, hook_url, server_name, ip_str, map_, time):
 
 
 if __name__ == "__main__":
-    event = 1630818174
+    event = 1631141726
     handler(event, None)
 
 
