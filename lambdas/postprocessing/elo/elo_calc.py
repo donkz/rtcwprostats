@@ -4,16 +4,12 @@ credit to https://github.com/PredatH0r/XonStat/blob/master/xonstat/elo.py .
 ELO algorithm to calculate player ranks
 
 """
-import os
 from datetime import datetime
 import logging
 import math
 from botocore.exceptions import ClientError
 import json
 import boto3
-# import random
-# import sys
-# import pandas as pd
 from collections import namedtuple
 import time as _time
 
@@ -85,11 +81,20 @@ class KReduction:
             k *= 1.0 - (1.0 - self.games_factor) * (mygames - self.games_min) / float(self.games_max - self.games_min)
         #print("Elo.KReduction.eval: " + str(k))
         return k
+    
+# parameters for K reduction
+# this may be touched even if the DB already exists
+
+KREDUCTION = KReduction(900, 75, 0.5, 5, 15, 0.2)
+
+# parameters for chess elo
+# only global_K may be touched even if the DB already exists
+# we start at K=200, and fall to K=40 over the first 20 games
+ELOPARMS = EloParms(global_K=200)
   
 def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
     "RTCWPro pipeline specific logic."
     t1 = _time.time()
-    error_ecnountered = False
     sk = match_id
     
     response = get_item("statsall", sk, ddb_table, log_stream_name)
@@ -100,7 +105,6 @@ def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
     else:
         logger.error("Failed to retrieve statsall.")
         logger.error(json.dumps(response))
-        error_ecnountered = True
     
     response = get_item("wstatsall", sk, ddb_table, log_stream_name)
     if "error" not in response:
@@ -109,7 +113,6 @@ def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
     else:
         logger.error("Failed to retrieve wstatsall.")
         logger.error(json.dumps(response))
-        error_ecnountered = True
 
     response = get_item("match", sk + "2", ddb_table, log_stream_name)  # round 2
     if "error" not in response:
@@ -126,7 +129,6 @@ def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
     else:
         logger.error("Failed to retrieve match.")
         logger.error(json.dumps(response))
-        error_ecnountered = True
        
     item_list = prepare_player_elo_list(stats)
     response = get_batch_items(item_list, ddb_table, log_stream_name)
@@ -157,7 +159,6 @@ def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
     else:
         logger.error("Failed to retrieve any player elos.")
         logger.error(json.dumps(response))
-        error_ecnountered = True
     
     Player = namedtuple('Player', 'score duration games')
    
@@ -371,18 +372,6 @@ def update_elos(elos, scores, ep):
 
     return (elo_deltas, elos)
 
-    
-
-# parameters for K reduction
-# this may be touched even if the DB already exists
-
-KREDUCTION = KReduction(900, 75, 0.5, 5, 15, 0.2)
-
-# parameters for chess elo
-# only global_K may be touched even if the DB already exists
-# we start at K=200, and fall to K=40 over the first 20 games
-ELOPARMS = EloParms(global_K=200)
-
 
 def make_error_dict(message, item_info):
     """Make an error message for API gateway."""
@@ -490,7 +479,7 @@ def ddb_batch_write(client, table_name, items):
                 break
             try: 
                 response = client.batch_write_item(RequestItems=request_items)
-            except botocore.exceptions.ClientError as err:
+            except ClientError as err:
                 logger.error(err.response['Error']['Message'])
                 logger.error("Failed to run full batch_write_item")
                 raise
@@ -501,7 +490,7 @@ def ddb_batch_write(client, table_name, items):
                 logger.warning('Hit write limit, backing off then retrying')
                 sleep_time = 5 #seconds
                 logger.warning(f"Sleeping for {sleep_time} seconds")
-                time.sleep(sleep_time)
+                _time.sleep(sleep_time)
 
                 # Items left over that haven't been inserted
                 unprocessed_items = response['UnprocessedItems']
@@ -518,13 +507,13 @@ def ddb_batch_write(client, table_name, items):
                     if len(unprocessed_items) > 0:
                         sleep_time = 5 #seconds
                         logger.warning(f"Sleeping for {sleep_time} seconds")
-                        time.sleep(sleep_time)
+                        _time.sleep(sleep_time)
 
                 # Inserted all the unprocessed items, exit loop
                 logger.warning('Unprocessed items successfully inserted')
                 break
             if response["ResponseMetadata"]['HTTPStatusCode'] != 200:
-                message += f"\nBatch {start} returned non 200 code"
+                messages += f"\nBatch {start} returned non 200 code"
             start += 25
 
 
