@@ -300,29 +300,21 @@ def handler(event, context):
         if "player_guid" in event["pathParameters"]:
             player_guid = event["pathParameters"]["player_guid"]
             logger.info("Parameter: " + player_guid)
-            pk = "player"
-            sk = "playerinfo" + "#" + player_guid
-            response = get_item(pk, sk, ddb_table, log_stream_name)
 
-            # logic specific to /player/{player_guid}
-            data = {}
-            if "error" not in response:
-                for key in response:
-                    if key not in ["lsipk","pk","sk","gsi1pk","gsi1sk"]:
-                        data[key]=response[key]
-                data["player_guid"]=response["sk"].split("#")[1]
-            else:
-                data = response
+            pk = "player" + "#" + player_guid
+            sk = None
+            response = get_items_pk(pk, ddb_table, log_stream_name)
+            data = process_player_response(response)
                 
     if api_path == "/player/search/{begins_with}":
         logger.info("Processing " + api_path)
         if "begins_with" in event["pathParameters"]:
-            begins_with = "playerinfo#" + event["pathParameters"]["begins_with"]
+            begins_with = "realname#" + event["pathParameters"]["begins_with"]
             logger.info("Parameter: " + begins_with)
-            pk_name = "pk"
-            pk = "player"
-            index_name = "lsi"
-            skname="lsipk"
+            pk_name = "gsi1pk"
+            pk = "realname"
+            index_name = "gsi1"
+            skname="gsi1sk"
             responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname,  log_stream_name, 100, True)
 
             if "error" not in responses:
@@ -331,9 +323,8 @@ def handler(event, context):
                 for player in responses:
                     data_line = {}
                     
-                    data_line["real_name"] = player.get("real_name","na")
-                    data_line["guid"] = player["lsipk"].split("#")[2]
-                    data_line["frequent_region"] = player.get("frequent_region","na")
+                    data_line["real_name"] = player.get("data","na")
+                    data_line["guid"] = player["pk"].split("#")[1]
                     data.append(data_line)
             else:
                 data = responses
@@ -489,6 +480,21 @@ def get_item(pk, sk, table, log_stream_name):
             result = make_error_dict("[x] Item does not exist: ", item_info)
     return result
 
+def get_items_pk(pk, table, log_stream_name):
+    """Get several items by pk."""
+    item_info = pk + " Logstream: " + log_stream_name
+    try:
+        response = table.query(KeyConditionExpression=Key('pk').eq(pk), Limit=100,ReturnConsumedCapacity='NONE')
+    except ClientError as e:
+        logger.warning("Exception occurred: " + e.response['Error']['Message'])
+        result = make_error_dict("[x] Client error calling database: ", item_info)
+    else:
+        if response['Count'] > 0:
+            result = response['Items']
+        else:
+            result = make_error_dict("[x] Items do not exist: ", item_info)
+    return result
+
 
 def get_range(index_name, pk, sklow, skhigh, table, log_stream_name, limit, ascending):
     """Get several items by pk and range of sk."""
@@ -582,6 +588,42 @@ def process_server_responses(api_path, responses):
     else:
         data = responses
     return data
+
+def process_player_response(response):
+    data = {}
+    data["elos"] = {}
+    data["aggstats"] = {}
+    data["aggwstats"] = {}
+    data["kdr"] = {}
+    data["acc"] = {}
+    data["realname"] = ""
+    if "error" in response:
+        data = response
+    else:
+        try:
+            for item in response:
+                if "elo#" in  item["sk"]:
+                    data["elos"][item["sk"].replace("elo#","")] = {}
+                    data["elos"][item["sk"].replace("elo#","")]["elo"] = int(item["data"])
+                    data["elos"][item["sk"].replace("elo#","")]["games"] = int(item["games"])
+                if "realname" in  item["sk"]:
+                    data["realname"] = item["data"]
+                if "aggstats#" in  item["sk"]:
+                    data["aggstats"][item["sk"].replace("aggstats#","")] = item["data"]
+                    data["kdr"][item["gsi1pk"].replace("leaderkdr#","")] = float(item["gsi1sk"])
+                if "aggstats#" in  item["sk"]:
+                    data["aggwstats"][item["sk"].replace("aggwstats#","")] = item["data"]
+                    data["acc"][item["gsi1pk"].replace("leaderacc#","")] = float(item["gsi1sk"])
+        except:
+            item_info = "unkown"
+            if len(response) > 0:
+                if "pk" in response[0]:
+                   item_info = item["pk"]
+            data["error"] = "Could not process player response for " + item_info
+            logger.error(data["error"])
+    return data
+                
+        
 
 if __name__ == "__main__":
     event_str = '''

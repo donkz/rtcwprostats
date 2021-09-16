@@ -48,7 +48,7 @@ class PlayerElo(object):
 
 
 class EloParms:
-    def __init__(self, global_K = 15, initial = 100, floor = 100, logdistancefactor = math.log(10)/float(400), maxlogdistance = math.log(10)):
+    def __init__(self, global_K = 15, initial = 100, floor = 80, logdistancefactor = math.log(10)/float(400), maxlogdistance = math.log(10)):
         self.global_K = global_K
         self.initial = initial
         self.floor = floor
@@ -79,13 +79,13 @@ class KReduction:
             k *= self.games_factor
         elif mygames > self.games_min:
             k *= 1.0 - (1.0 - self.games_factor) * (mygames - self.games_min) / float(self.games_max - self.games_min)
-        #print("Elo.KReduction.eval: " + str(k))
+        
         return k
     
 # parameters for K reduction
 # this may be touched even if the DB already exists
 
-KREDUCTION = KReduction(900, 75, 0.5, 5, 15, 0.2)
+KREDUCTION = KReduction(900, 75, 0.5, 3, 10, 0.2)
 
 # parameters for chess elo
 # only global_K may be touched even if the DB already exists
@@ -103,7 +103,9 @@ def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
         logger.info("Retrieved statsall for " + str(len(stats)) + " players")
         stats = convert_stats_to_dict(stats)
     else:
-        logger.error("Failed to retrieve statsall.")
+        message = "Failed to retrieve statsall."
+        logger.error(message)
+        return message
         logger.error(json.dumps(response))
     
     response = get_item("wstatsall", sk, ddb_table, log_stream_name)
@@ -111,7 +113,9 @@ def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
         wstats = json.loads(response["data"])
         logger.info("Retrieved wstatsall for " + str(len(wstats)) + " players")
     else:
-        logger.error("Failed to retrieve wstatsall.")
+        message = "Failed to retrieve wstatsall."
+        logger.error(message)
+        return message
         logger.error(json.dumps(response))
 
     response = get_item("match", sk + "2", ddb_table, log_stream_name)  # round 2
@@ -127,35 +131,35 @@ def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
             duration = 600
         winner = match["winner"]
     else:
-        logger.error("Failed to retrieve match.")
+        message = "Failed to retrieve match."
+        logger.error(message)
+        return message
         logger.error(json.dumps(response))
-       
-    item_list = prepare_player_elo_list(stats)
-    response = get_batch_items(item_list, ddb_table, log_stream_name)
-
-    elo_dict = {}
-    elo_games = {}
-    old_elos_ddb_maps = {}
+        
+    real_name_request_list = prepare_player_name_list(stats)
+    response = get_batch_items(real_name_request_list, ddb_table, log_stream_name)
     real_names = {}
     if "error" not in response:
         for result in response:
-            if "elos" in result:
-                guid = result["sk"].split("#")[1]
-                if match_region_type + "#elo" in result["elos"]:
-                    elo_dict[guid] = result["elos"][match_region_type + "#elo"]
-                    elo_games[guid] = int(result["elos"].get(match_region_type + "#games",20)) # if elo is there, default to 20
-                    try:
-                        if "real_name" in result:
-                            name = result["real_name"]
-                        else:
-                            name = "no_real_name"
-                        real_names[guid] = name
-                        logger.info("Retrieved " + match_region_type + "#elo" + " " + result["sk"].split("#")[1] + " " + name.ljust(20) + " elo:" + str(elo_dict[guid]) + " games " + str(elo_games[guid]))
-                    except Exception as ex:
-                        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-                        error_msg = template.format(type(ex).__name__, ex.args)
-                        logger.warning("Failed to display an elo.\n" + error_msg)
-                old_elos_ddb_maps[guid] = result["elos"]
+            guid = result["pk"].split("#")[1]
+            if "data" in result:
+                real_names[guid] = result["data"]
+                logger.info("Retrieved " + guid + " name: " + result["data"])
+
+       
+    elo_item_list = prepare_player_elo_list(stats, match_region_type)
+    response = get_batch_items(elo_item_list, ddb_table, log_stream_name)
+
+    elo_dict = {}
+    elo_games = {}
+    if "error" not in response:
+        for result in response:
+            guid = result["pk"].split("#")[1]
+            if match_region_type in result["sk"]:
+                elo_dict[guid] = result["data"]
+                elo_games[guid] = int(result["games"]) 
+                logger.info("Retrieved " + match_region_type + "#elo" + " " + " " + real_names.get(guid,"no_name").ljust(20) + " elo:" + str(elo_dict[guid]) + " games " + str(elo_games[guid]))
+
     else:
         logger.error("Failed to retrieve any player elos.")
         logger.error(json.dumps(response))
@@ -188,19 +192,22 @@ def process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name):
 
     (elo_deltas, elos) = process_elos(player_scores, elo_dict)
     
-    elo_delta_items = ddb_prepare_eloprogress_items(elo_deltas, match_id)
+    items = []
+    elo_delta_items = ddb_prepare_eloprogress_items(player_scores, elos, elo_deltas, match_id, match_region_type, real_names)
+    player_elo_items = ddb_prepare_player_elo_items(elos, match_region_type, real_names)
+    items.extend(elo_delta_items)
+    items.extend(player_elo_items)
     
     try:
-        ddb_batch_write(ddb_client, ddb_table.name, elo_delta_items)
+        ddb_batch_write(ddb_client, ddb_table.name, items)
     except Exception as ex:
         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
         error_msg = template.format(type(ex).__name__, ex.args)
         message = "Failed to load all eloprogress records for a match " + match_id + "\n" + error_msg
         logger.info(message)
+        return message
     else:
         message = "Elo progress records inserted.\n"
-
-    update_player_info(ddb_table, elos, match_region_type, old_elos_ddb_maps, real_names)
     
     time_to_write = str(round((_time.time() - t1), 3))
     logger.info(f"Time to process ELOs is {time_to_write} s")
@@ -394,11 +401,18 @@ def get_item(pk, sk, table, log_stream_name):
     return result
 
 
-def prepare_player_elo_list(stats):
+def prepare_player_elo_list(stats, match_region_type):
     """Make a list of guids to retrieve from ddb."""
     item_list = []
     for guid, player_stats in stats.items():
-        item_list.append({"pk": "player", "sk": "playerinfo#" + guid})
+        item_list.append({"pk": "player#"+guid, "sk": "elo#" + match_region_type})
+    return item_list
+
+def prepare_player_name_list(stats):
+    """Make a list of guids to retrieve from ddb."""
+    item_list = []
+    for guid, player_stats in stats.items():
+        item_list.append({"pk": "player#"+guid, "sk": "realname"})
     return item_list
 
 
@@ -407,7 +421,7 @@ def get_batch_items(item_list, ddb_table, log_stream_name):
     dynamodb = boto3.resource('dynamodb')
     item_info = "get_batch_items. Logstream: " + log_stream_name
     try:
-        response = dynamodb.batch_get_item(RequestItems={ddb_table.name: {'Keys': item_list, 'ProjectionExpression': 'sk, elos, real_name'}})
+        response = dynamodb.batch_get_item(RequestItems={ddb_table.name: {'Keys': item_list, 'ProjectionExpression': 'pk, sk, #data_value, real_name, games', 'ExpressionAttributeNames': {'#data_value': 'data'}}})
     except ClientError as e:
         logger.warning("Exception occurred: " + e.response['Error']['Message'])
         result = make_error_dict("[x] Client error calling database: ", item_info)
@@ -417,32 +431,6 @@ def get_batch_items(item_list, ddb_table, log_stream_name):
         else:
             result = make_error_dict("[x] Item does not exist: ", item_info)
     return result
-
-
-def update_player_info(ddb_table, elos, match_region_type, old_elos_ddb_maps, real_names):
-    """Update existing players with new elo map."""
-    # Example: ddb_table.update_item(Key=Key, UpdateExpression="set elos.#eloname = :elo, elos.#gamesname = :games", ExpressionAttributeNames={"#eloname": "na#6#elo", "#gamesname": "na#6#games"}, ExpressionAttributeValues={':elo': 134, ':games' : 135})
-    update_expression="set elos = :elos"
-    for guid, player_elo in elos.items():
-        key = { "pk": "player" , "sk": "playerinfo#" + guid }
-        if guid in old_elos_ddb_maps:
-            new_elos_map = old_elos_ddb_maps[guid]
-        else:
-            new_elos_map = {}
-        
-        new_elo = int(round(player_elo.elo, 0))
-        new_games = player_elo.games
-        new_elos_map[match_region_type + "#elo"] = new_elo
-        new_elos_map[match_region_type + "#games"] = new_games
-        expression_values = {':elos': new_elos_map}
-        response = ddb_table.update_item(Key=key, 
-                                         UpdateExpression=update_expression, 
-                                         ExpressionAttributeValues=expression_values)
-        if response["ResponseMetadata"]['HTTPStatusCode'] == 200:
-            logger.info("Updated   " + guid + " " + real_names.get(guid,"no_real_name") + " elo:" + str(new_elo) + " games " + str(new_games))
-        else:
-            logger.warning("Unexpected HTTP code" + str(response["ResponseMetadata"]['HTTPStatusCode']) + ". Did not update " + guid + " " + real_names.get(guid,"no_real_name"))           
-            
             
 def create_batch_write_structure(table_name, items, start_num, batch_size):
     """
@@ -517,14 +505,47 @@ def ddb_batch_write(client, table_name, items):
             start += 25
 
 
-def ddb_prepare_eloprogress_items(elo_deltas, match_id):
+def ddb_prepare_eloprogress_items(player_scores, elos, elo_deltas, match_id, match_region_type, real_names):
     elo_delta_items = []
+    
     for guid in elo_deltas:
+        if guid in player_scores:
+            performance_score = player_scores[guid].score
+        if guid in elos:
+            elo = elos[guid].elo
         elo_item = {
-            'pk'    : "eloprogress",
-            'sk'    : "sk#" + guid + "#" + match_id,
+            'pk'    : "eloprogress#" + guid,
+            'sk'    : match_region_type + "#" + match_id,
             'data'  : int(round(elo_deltas[guid],0)),
-            'lsipk' : "elomatch#" + match_id + "#" + guid
+            'gsi1pk': "eloprogressmatch",
+            'gsi1sk': match_id,
+            'real_name': real_names.get(guid,""),
+            'elo': int(round(elo, 0)),
+            'performance_score': performance_score
             }
         elo_delta_items.append(elo_item)
     return elo_delta_items
+
+def ddb_prepare_player_elo_items(elos, match_region_type, real_names):
+    player_elo_items = []
+    ts = datetime.now().isoformat()
+    for guid, elo in elos.items():
+        elo_item = ddb_prepare_elo_item(guid, match_region_type, elo.elo, elo.games, ts, real_names.get(guid,""))
+        player_elo_items.append(elo_item)
+    return player_elo_items
+
+def ddb_prepare_elo_item(guid, match_region_type, elo, games, ts, real_name):  
+    elo = int(round(elo, 0))
+    elo_item = {
+            'pk'            : "player"+ "#" + guid,
+            'sk'            : "elo#" + match_region_type,
+            # 'lsipk'         : "",
+            'gsi1pk'        : "leaderelo#" + match_region_type,
+            'gsi1sk'        : str(elo).zfill(3),
+            'data'          : str(elo),
+            'games'         : games,
+            'updated'       : ts,
+            "real_name"     : real_name
+        }
+    logger.info("Setting   " + guid + " " + real_name + " elo:" + str(elo) + " games " + str(games))
+    return elo_item

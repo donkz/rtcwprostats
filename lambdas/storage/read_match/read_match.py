@@ -13,7 +13,7 @@ from reader_writeddb import (
     ddb_prepare_gamelog_item,
     ddb_prepare_wstat_items,
     ddb_prepare_wstatsall_item,
-    ddb_prepare_player_items,
+    ddb_prepare_alias_items,
     ddb_prepare_log_item,
     ddb_batch_write,
     ddb_update_server_record,
@@ -109,7 +109,7 @@ def handler(event, context):
         server_item = ddb_prepare_server_item(gamestats)
 
     if region == "":
-        region = "na"  # TODO: insert region logic
+        region = "unk"  # TODO: insert region logic
 
     if len(gamestats.get("stats", 0)) == 2:
         team1_size = len(gamestats["stats"][0].keys())
@@ -141,7 +141,7 @@ def handler(event, context):
     gamelog_item = ddb_prepare_gamelog_item(gamestats)
     wstats_items = ddb_prepare_wstat_items(gamestats)
     wstatsall_item = ddb_prepare_wstatsall_item(gamestats)
-    player_items = ddb_prepare_player_items(gamestats)
+    alias_items = ddb_prepare_alias_items(gamestats)
     log_item = ddb_prepare_log_item(match_id, file_key,
                                     len(match_item["data"]),
                                     len(stats_items),
@@ -149,7 +149,7 @@ def handler(event, context):
                                     len(gamelog_item["data"]),
                                     len(wstats_items),
                                     len(wstatsall_item["data"]),
-                                    len(player_items),
+                                    len(alias_items),
                                     # timestamp,
                                     submitter_ip)
 
@@ -159,7 +159,7 @@ def handler(event, context):
     items.append(gamelog_item)
     items.extend(wstats_items)
     items.append(wstatsall_item)
-    items.extend(player_items)
+    items.extend(alias_items)
     items.append(log_item)
     if server_item:
         items.append(server_item)
@@ -188,6 +188,8 @@ def handler(event, context):
         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
         error_msg = template.format(type(ex).__name__, ex.args)
         message = "Failed to load all records for a match " + file_key + "\n" + error_msg
+        logger.error(message)
+        return message
         
     try:
         response = sf_client.start_execution(
@@ -198,12 +200,16 @@ def handler(event, context):
         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
         error_msg = template.format(type(ex).__name__, ex.args)
         message = "Failed to start state machine for " + gamestats["gameinfo"]["match_id"] + "\n" + error_msg
+        logger.error(message)
+        return message
     else:
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
             logger.info("Started state machine " + response['executionArn'])
         else:
             logger.warning("Bad response from state machine " + str(response))
             message += "\nState machine failed."
+            logger.error(message)
+            return message
             
     logger.info(message)
     time_to_write = str(round((_time.time() - t1), 3))
@@ -247,7 +253,7 @@ if __name__ == "__main__":
     event = {
     "Records": [
                     {
-                    "body": "{\"Records\":[{\"s3\":{\"bucket\":{\"name\":\"rtcwprostats\"},\"object\":{\"key\":\"intake/20210803-144348-1628001413.txt\"}}}]}"
+                    "body": "{\"Records\":[{\"s3\":{\"bucket\":{\"name\":\"rtcwprostats\"},\"object\":{\"key\":\"intake/20210916-144606-1631803341.txt\"}}}]}"
                     }
         ]
     }
