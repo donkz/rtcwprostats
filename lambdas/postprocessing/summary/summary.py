@@ -1,6 +1,5 @@
 import boto3
 import logging
-import json
 import os
 from summary_calc import process_rtcwpro_summary
 
@@ -48,5 +47,5 @@ def handler(event, context):
 
 
 if __name__ == "__main__":
-    event = 1609820373
+    event = 1631762863
     handler(event, None)

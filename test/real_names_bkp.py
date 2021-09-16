@@ -1,7 +1,5 @@
 import boto3
 import logging
-import json
-import os
 from boto3.dynamodb.conditions import Key, Attr
 from collections import Counter
 
@@ -48,7 +46,8 @@ def get_empty_real_names(ddb_table, min_games = 5):
     if response['Count'] > 0:
         for record in response["Items"]:
             guid = record["sk"].replace("playerinfo#", "")
-            get_last_few_aliases(ddb_table, guid, min_games)
+            if guid not in ["","1"]:
+                get_last_few_aliases(ddb_table, guid, min_games)
 
 
 def get_last_few_aliases(ddb_table, guid, min_games):
@@ -73,10 +72,67 @@ def get_last_few_aliases(ddb_table, guid, min_games):
             print("Not enough aliases(" + str(sum(alias_counter.values())) + ") for " + guid)
     elif debug:
         print("Not enough aliases(0) for " + guid)
-            
+
+def get_empty_real_names2(ddb_table, min_games = 5):
+    
+    index_name = "gsi1"
+    pkname = "gsi1pk" 
+    # skname = "gsi1sk" 
+    
+    pk = "realname"
+    response = ddb_table.query(IndexName=index_name, KeyConditionExpression=Key(pkname).eq(pk),
+                               # & Key(skname).begins_with(begins_with),
+                               FilterExpression=Attr('data').not_exists(),
+                               ProjectionExpression="pk")
+    
+    if response['Count'] > 0:
+        for record in response["Items"]:
+            guid = record["pk"].replace("player#", "")
+            if guid not in ["","1"]:
+                get_last_few_aliases2(ddb_table, guid, min_games)
+
+
+def get_last_few_aliases2(ddb_table, guid, min_games):
+    pk = "aliases#" + guid
+    response = ddb_table.query(KeyConditionExpression=Key('pk').eq(pk))
+    debug = False
+    
+    if response['Count'] > 0:
+        alias_counter = Counter()
+        for alias in response["Items"]:
+            alias_value = alias["data"]
+            alias_counter[alias_value] +=1
+        if sum(alias_counter.values()) > min_games:
+            print("-------")
+            print("Processing guid: " + guid)
+            print(alias_counter.most_common(6))
+            alias_most_common = alias_counter.most_common(10)[0][0]
+            print(f'        "{guid}": "{alias_most_common}",') 
+        elif debug:
+            print("Not enough aliases(" + str(sum(alias_counter.values())) + ") for " + guid)
+    elif debug:
+        print("Not enough aliases(0) for " + guid)        
+
+def update_player_info_real_name2(ddb_table, real_name_dict):
+    """Update existing players with new real_name."""
+    # Example: ddb_table.update_item(Key=Key, UpdateExpression="set elos.#eloname = :elo, elos.#gamesname = :games", ExpressionAttributeNames={"#eloname": "na#6#elo", "#gamesname": "na#6#games"}, ExpressionAttributeValues={':elo': 134, ':games' : 135})
+    update_expression="set #data_value = :real_name, lsipk = :lsipk"
+    for guid, real_name in real_name_dict.items():
+        key = { "pk": "player"+ "#" + guid, "sk": "realname" }
+        lsipk = "realname#" + real_name
+        expression_values = {':real_name': real_name, ':lsipk': lsipk}
+        response = ddb_table.update_item(Key=key, 
+                                         UpdateExpression=update_expression, 
+                                         ExpressionAttributeValues=expression_values,
+                                         ExpressionAttributeNames={"#data_value": "data"})
+        if response["ResponseMetadata"]['HTTPStatusCode'] == 200:
+            logger.info("Updated name for " + guid + " as " + real_name)
+        else:
+            logger.warning("Unexpected HTTP code" + str(response["ResponseMetadata"]['HTTPStatusCode']) + ". Did not update " + guid + " " + real_name)           
+          
 
 if __name__ == "__main__":
-    real_name_dict = {
+    real_name_dict4 = {
         "096EAA64064398": "nizouuuu",
         "10DDD781C9AB87": "Stahl",
         "1299E6698A2B37": "bru",
@@ -127,7 +183,7 @@ if __name__ == "__main__":
         "FDE32828995C0A": "fonze",
         "FFF4EF1FD439BB": "source"
     }
-    real_name_dict = {
+    real_name_dict3 = {
         "0267DFCD0A0C4C": "cliffdark",
         "093BDE87AD00E0": "bully",
         "0ACA00499288FB": "murkey",
@@ -221,7 +277,7 @@ if __name__ == "__main__":
         "FDA630F9167B17": "leonneke",
     }
     
-    real_name_dict = {
+    real_name_dict2 = {
         "fc11488047c7ccf07d3b667b4ade00d6": "kris",
         "fbe2ed832f8415efbaaa5df10074484a": "jam",
         "fba16f435d3bd6973aed9d3449fd1a05": "carnage",
@@ -293,7 +349,7 @@ if __name__ == "__main__":
         "c0ab6495072452985c7bdf6657493a22": "dtto",
         "bcbf3c6eefa4d8a7685d46c826804d0d": "ding",
         }
-    real_name_dict = {
+    real_name_dict1 = {
         "c4bee65ef1516ea08bac14d6a0be00ab": "gracoes",
         "f50e7de0a7deefbb088c60c0d89a79eb": "webe",
         "fb4b4ae08d99d0d5d798aa5530a982eb": "owzo",
@@ -353,7 +409,16 @@ if __name__ == "__main__":
         "b6b61456699bd30b48fe6c1249efeab9": "jin",
         "CD0BB1C6361C5D": "valor-jaytee",
         "80fc34f8c0cdd139e3e85e143cbe9f3b": "rezta",
-        }
-    update_player_info_real_name(ddb_table, real_name_dict)
+        "65584f6d88375109b3c15e525c3435b6": "diegosky",
+        "68deaefc0a07be79fcb2cc5104a71b1e": "crabje",
+        "965098f826dc9ec2ac14de6949698408": "s1lentnoob",
+        "901a69f8ea850ff932aaeb0cb6c25dec": "shaz",
+        } # complete
+    
+    read_only = True
+    if read_only:
+        get_empty_real_names(ddb_table, min_games = 5)
+    else:
+        update_player_info_real_name(ddb_table, real_name_dict)
 
 

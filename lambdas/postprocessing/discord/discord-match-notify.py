@@ -63,15 +63,15 @@ def handler(event, context):
         raise
     
     if hook_active == "yes" and hook_url:
-        send_notification(match_id, hook_url, server_name, ip_str, map_, time)
+        send_notification(match_id, match_type, hook_url, server_name, ip_str, map_, time)
     else:
         logger.info("Nothing to do.")
 
     logger.info("Done.")
 
-def send_notification(match_id, hook_url, server_name, ip_str, map_, time):
+def send_notification(match_id, match_type, hook_url, server_name, ip_str, map_, time):
     
-    content = f"{server_name}{ip_str} posted stats for match {match_id} on {map_} after {time} minutes"
+    content = f"{server_name}{ip_str} posted stats for match {match_id}({match_type}) on {map_} after {time} minutes"
     payload = {
         "content": content
         }
@@ -91,7 +91,7 @@ def send_notification(match_id, hook_url, server_name, ip_str, map_, time):
 
 
 if __name__ == "__main__":
-    event = 1630818174
+    event = 1631141726
     handler(event, None)
 
 

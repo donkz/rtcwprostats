@@ -1,6 +1,5 @@
 import boto3
 import logging
-import json
 import os
 from elo_calc import process_rtcwpro_elo
 
@@ -48,5 +47,5 @@ def handler(event, context):
 
 
 if __name__ == "__main__":
-    event = 1613805345
+    event = 1623640685
     handler(event, None)

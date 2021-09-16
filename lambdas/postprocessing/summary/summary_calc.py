@@ -1,37 +1,29 @@
-import os
-from datetime import datetime
 import logging
 from botocore.exceptions import ClientError
 import json
 import boto3
-# import random
-# import sys
-# import pandas as pd
 import time as _time
-
 
 log_level = logging.INFO
 logging.basicConfig(format='%(name)s:%(levelname)s:%(message)s')
 logger = logging.getLogger("summary_calc")
 logger.setLevel(log_level)
-debug = False  # very local debug
   
 def process_rtcwpro_summary(ddb_table, ddb_client, match_id, log_stream_name):
     "RTCWPro pipeline specific logic."
     t1 = _time.time()
-    error_encountered = False
     sk = match_id
     message = ""
     
     response = get_item("statsall", sk, ddb_table, log_stream_name)
     if "error" not in response:
         stats = json.loads(response["data"])
+        match_region_type = response['gsi1pk'].replace("statsall#","")
         logger.info("Retrieved statsall for " + str(len(stats)) + " players")
         stats = convert_stats_to_dict(stats)
     else:
         logger.error("Failed to retrieve statsall: " + sk)
         logger.error(json.dumps(response))
-        error_encountered = True
         message += "Error in getting stats" + response["error"]
         return message
     
@@ -42,28 +34,59 @@ def process_rtcwpro_summary(ddb_table, ddb_client, match_id, log_stream_name):
     else:
         logger.error("Failed to retrieve wstatsall: " + sk)
         logger.error(json.dumps(response))
-        error_encountered = True
         message += "Error in getting wstats" + response["error"]
         return message
     
-    item_list = prepare_playerinfo_list(stats)
-    response = get_batch_items(item_list, ddb_table, log_stream_name, "stats_sum, wstats_sum")
-
-    stats_old = {}
-    wstats_old= {}
+    
+    real_name_list = prepare_playerinfo_list(stats, match_region_type, "realname")
+    item_list = real_name_list
+    response = get_batch_items(item_list, ddb_table, log_stream_name)
+    
+    real_names = {}
     if "error" not in response:
         for result in response:
-            guid = result["sk"].split("#")[1]
-            if "stats_sum" in result:
-                stats_old[guid] = result["stats_sum"]
-            if "wstats_sum" in result:
-                wstats_old[guid] = result["wstats_sum"]
+            guid = result["pk"].split("#")[1]
+            if "data" in result:
+                real_names[guid] = result["data"]
+                logger.debug("Retrieved " + guid + " name: " + result["data"])
+    
+    aggstats_item_list = prepare_playerinfo_list(stats, match_region_type, "aggstats#" + match_region_type)
+    item_list = aggstats_item_list
+    response = get_batch_items(item_list, ddb_table, log_stream_name)
+
+    stats_old = {}
+    if "error" not in response:
+        for result in response:
+            guid = result["pk"].split("#")[1]
+            if "data" in result:
+                stats_old[guid] = result["data"]
     else:
-        logger.error("Failed to retrieve any player summaries.")
-        logger.error(json.dumps(response))
-        error_ecnountered = True
-        message += "Error in getting prepare_playerinfo_list" + response["error"]
-        return message
+        if "Items do not exist" in response["error"]:
+            logger.warning("Starting fresh.")
+        else:   
+            logger.error("Failed to retrieve any player wstats.")
+            logger.error(json.dumps(response))
+            message += "Error in getting prepare_playerinfo_list" + response["error"]
+            return message
+    
+    aggwstats_item_list = prepare_playerinfo_list(stats, match_region_type, "aggwstats#" + match_region_type)
+    item_list = aggwstats_item_list
+    response = get_batch_items(item_list, ddb_table, log_stream_name)
+
+    wstats_old = {}
+    if "error" not in response:
+        for result in response:
+            guid = result["pk"].split("#")[1]
+            if "data" in result:
+                wstats_old[guid] = result["data"]
+    else:
+        if "Items do not exist" in response["error"]:
+            logger.warning("Starting fresh.")
+        else:   
+            logger.error("Failed to retrieve any player wstats.")
+            logger.error(json.dumps(response))
+            message += "Error in getting prepare_playerinfo_list" + response["error"]
+            return message
    
     new_wstats = {}
     for wplayer_wrap in wstats:
@@ -75,16 +98,27 @@ def process_rtcwpro_summary(ddb_table, ddb_client, match_id, log_stream_name):
     
     # build updated stats summaries
     stats_dict_updated = build_new_stats_summary(stats, stats_old)
-
-    # submit updated stats summaries
-    update_player_info_stats(ddb_table, stats_dict_updated, "stats_sum")
+    stats_items = ddb_prepare_statswstats_items("stats", stats_dict_updated, match_region_type, real_names)
     
     # build updated wtats summaries
     wstats = new_wstats
     wstats_dict_updated = build_new_wstats_summary(wstats, wstats_old)
+    wstats_items = ddb_prepare_statswstats_items("wstats", wstats_dict_updated, match_region_type, real_names)
 
-    # submit updated wstats summaries
-    update_player_info_stats(ddb_table, wstats_dict_updated, "wstats_sum")
+    # submit updated summaries
+    items = []
+    items.extend(stats_items)
+    items.extend(wstats_items)
+    
+    try:
+        ddb_batch_write(ddb_client, ddb_table.name, items)
+    except Exception as ex:
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        error_msg = template.format(type(ex).__name__, ex.args)
+        message = "Failed to load aggregate stats for a match " + match_id + "\n" + error_msg
+        logger.info(message)
+    else:
+        message = "Elo progress records inserted.\n"
     
     time_to_write = str(round((_time.time() - t1), 3))
     logger.info(f"Time to process summaries is {time_to_write} s")
@@ -181,20 +215,20 @@ def get_item(pk, sk, table, log_stream_name):
     return result
 
 
-def prepare_playerinfo_list(stats):
+def prepare_playerinfo_list(stats, match_region_type, sk):
     """Make a list of guids to retrieve from ddb."""
     item_list = []
     for guid, player_stats in stats.items():
-        item_list.append({"pk": "player", "sk": "playerinfo#" + guid})
+        item_list.append({"pk": "player#" + guid, "sk": sk})
     return item_list
 
 
-def get_batch_items(item_list, ddb_table, log_stream_name, extra_projections):
+def get_batch_items(item_list, ddb_table, log_stream_name):
     """Get items in a batch."""
     dynamodb = boto3.resource('dynamodb')
     item_info = "get_batch_items. Logstream: " + log_stream_name
     try:
-        response = dynamodb.batch_get_item(RequestItems={ddb_table.name: {'Keys': item_list, 'ProjectionExpression': 'sk, real_name, ' + extra_projections}})
+        response = dynamodb.batch_get_item(RequestItems={ddb_table.name: {'Keys': item_list, 'ProjectionExpression': 'pk, #data_value', 'ExpressionAttributeNames': {'#data_value': 'data'}}})
     except ClientError as e:
         logger.warning("Exception occurred: " + e.response['Error']['Message'])
         result = make_error_dict("[x] Client error calling database: ", item_info)
@@ -202,7 +236,7 @@ def get_batch_items(item_list, ddb_table, log_stream_name, extra_projections):
         if len(response["Responses"][ddb_table.name]) > 0:
             result = response["Responses"][ddb_table.name]
         else:
-            result = make_error_dict("[x] Item does not exist: ", item_info)
+            result = make_error_dict("[x] Items do not exist: ", item_info)
     return result
 
 
@@ -215,6 +249,146 @@ def update_player_info_stats(ddb_table, stats_dict_updated, stats_type):
         key = { "pk": "player" , "sk": "playerinfo#" + guid }
             
         expression_values = {':stat': new_stat}
-        response = ddb_table.update_item(Key=key, 
-                                         UpdateExpression=update_expression, 
-                                         ExpressionAttributeValues=expression_values)
+        ddb_table.update_item(Key=key, 
+                              UpdateExpression=update_expression, 
+                              ExpressionAttributeValues=expression_values)
+        
+        
+def ddb_prepare_statswstats_items(stat_type, dict_, match_region_type, real_names):
+    items = []
+    for guid, player_stat in dict_.items():
+        item = ddb_prepare_stat_item(stat_type, guid, match_region_type, player_stat, real_names)
+        items.append(item)
+    return items
+
+def ddb_prepare_stat_item(stat_type, guid, match_region_type, player_stat, real_names): 
+    if stat_type == "stats":
+        sk = "aggstats#" + match_region_type
+        gsi1pk = "leaderkdr#" + match_region_type
+        try:
+            deaths = player_stat["deaths"] if player_stat["deaths"] > 0 else 1
+            kdr = player_stat["kills"]/deaths
+            games = player_stat["games"]
+        except: 
+            logger.warning("Could not calculate KDR for guid")
+            kdr = 0.0  
+            games = 0
+        kdr_str = str(round(kdr,1)).zfill(3)
+        gsi1sk = kdr_str
+        logger.debug("Setting new agg stats for " + guid + " with kdr of " + str(kdr_str))
+    elif stat_type == "wstats":
+        sk = "aggwstats#" + match_region_type
+        gsi1pk = "leaderacc#" + match_region_type
+        try:
+            acc = calculate_accuracy(player_stat)
+            games = player_stat[list(player_stat.keys())[0]]['games']
+        except: 
+            logger.warning("Could not calculate KDR for guid")
+            acc = 0.0
+            games = 0
+        acc_str = str(round(acc,1)).zfill(4)
+        gsi1sk =  acc_str
+        logger.debug("Setting new agg stats for " + guid + " with acc of " + str(acc_str))
+    
+    
+    real_name = real_names.get(guid, "no_name#")
+    
+    item = {
+            'pk'            : "player"+ "#" + guid,
+            'sk'            : sk,
+            # 'lsipk'         : "",
+            'gsi1pk'        : gsi1pk,
+            'gsi1sk'        : gsi1sk,
+            'data'          : player_stat,
+            'games'         : games,
+            "real_name"     : real_name
+        }
+    
+
+    return item
+
+def calculate_accuracy(player_stat):
+    try:
+        hits = shots = 0
+        for weapon, wstat in player_stat.items():
+            if weapon in ['MP-40','Thompson','Sten', 'Colt', 'Luger']:
+                hits += wstat["hits"]
+                s = wstat["shots"] if wstat["shots"] > 0 else 1
+                shots += s
+        acc = round(hits/shots*100, 1)
+    except:
+        acc = 0.0
+    return acc
+
+
+def create_batch_write_structure(table_name, items, start_num, batch_size):
+    """
+    Create item structure for passing to batch_write_item
+    :param table_name: DynamoDB table name
+    :param items: large collection of items
+    :param start_num: Start index
+    :param num_items: Number of items
+    :return: dictionary of tables to write to
+    """
+    
+    serializer = boto3.dynamodb.types.TypeSerializer()
+    item_batch = { table_name: []}
+    item_batch_list = items[start_num : start_num + batch_size]
+    if len(item_batch_list) < 1:
+        return None
+    for item in item_batch_list:
+        item_serialized = {k: serializer.serialize(v) for k,v in item.items()}
+        item_batch[table_name].append({'PutRequest': {'Item': item_serialized}})
+                
+    return item_batch
+
+
+def ddb_batch_write(client, table_name, items):
+        messages = ""
+        num_items = len(items)
+        logger.info(f'Performing ddb_batch_write to dynamo with {num_items} items.')
+        start = 0
+        batch_size = 25
+        while True:
+            # Loop adding 25 items to dynamo at a time
+            request_items = create_batch_write_structure(table_name,items, start, batch_size)
+            if not request_items:
+                break
+            try: 
+                response = client.batch_write_item(RequestItems=request_items)
+            except ClientError as err:
+                logger.error(err.response['Error']['Message'])
+                logger.error("Failed to run full batch_write_item")
+                raise
+            if len(response['UnprocessedItems']) == 0:
+                logger.info(f'Wrote a batch of about {batch_size} items to dynamo')
+            else:
+                # Hit the provisioned write limit
+                logger.warning('Hit write limit, backing off then retrying')
+                sleep_time = 5 #seconds
+                logger.warning(f"Sleeping for {sleep_time} seconds")
+                _time.sleep(sleep_time)
+
+                # Items left over that haven't been inserted
+                unprocessed_items = response['UnprocessedItems']
+                logger.warning('Resubmitting items')
+                # Loop until unprocessed items are written
+                while len(unprocessed_items) > 0:
+                    response = client.batch_write_item(RequestItems=unprocessed_items)
+                    # If any items are still left over, add them to the
+                    # list to be written
+                    unprocessed_items = response['UnprocessedItems']
+
+                    # If there are items left over, we could do with
+                    # sleeping some more
+                    if len(unprocessed_items) > 0:
+                        sleep_time = 5 #seconds
+                        logger.warning(f"Sleeping for {sleep_time} seconds")
+                        _time.sleep(sleep_time)
+
+                # Inserted all the unprocessed items, exit loop
+                logger.warning('Unprocessed items successfully inserted')
+                break
+            if response["ResponseMetadata"]['HTTPStatusCode'] != 200:
+                messages += f"\nBatch {start} returned non 200 code"
+            start += 25
