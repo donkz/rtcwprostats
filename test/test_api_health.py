@@ -1,9 +1,4 @@
 import requests
-import os
-import time
-import json
-import sys
-import boto3
 import json
 import logging
 
@@ -70,7 +65,7 @@ def check_json_value(obj, key, correct_type, length):
 
 test_matches = ['1610076805']
 match_id_array = "1630476331,1630475541,1630474233,1630472750"
-test_guids = ['2918F80471E175']
+test_guids = ['22b0e88467093a63d5dd979eec2631d1']
 seach_player = "donk"
 server_name = "^dS^1A^7|RTCWCHILE.COM"
 region = "na"
