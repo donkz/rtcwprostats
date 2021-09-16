@@ -218,4 +218,5 @@ If you are an API consumer, please do your part:
 * add: /servers/region/{region}/active
 * add: used new api in server POC page https://s3.amazonaws.com/donkanator.com/forever/get_servers.html?region=eu&active=yes
 * add: discord webhook reporting 
+* fix: redo table structure behind players. /player/search/{begins_with} should not be affected /player/{player_guid} is changing.
 

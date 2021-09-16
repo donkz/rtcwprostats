@@ -53,7 +53,7 @@ def get_matches_for_prefix(ddb_table, skip_servers, begins_with="na#6#", limit=2
 
 def execute_sf(match_id):
     request = None
-    MATCH_STATE_MACHINE= "arn:aws:states:us-east-1:793070529856:stateMachine:ProcessMatchDataA1C168FE-zrtv8AF2Cd8C"
+    MATCH_STATE_MACHINE= ""
     try:
         response = sf_client.start_execution(
                 stateMachineArn=MATCH_STATE_MACHINE,
