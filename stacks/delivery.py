@@ -116,7 +116,37 @@ class DeliveryStack(Stack):
         groups_add = groups.add_resource("add")
         groups_add.add_method("POST", delivery_writer_integration, request_parameters={"method.request.header.pass": True})
         
+        #50
+        leaders_cat_region_name_type_name = api.root.add_resource("leaders").add_resource("{category}").add_resource("region").add_resource("{region}").add_resource("type").add_resource("{type}")
+        leaders_cat_region_name_type_name.add_method("GET", retriever_integration)
         
+        #51
+        leaders_cat_region_name_type_name_limit = leaders_cat_region_name_type_name.add_resource("limit").add_resource("{limit}")
+        leaders_cat_region_name_type_name_limit.add_method("GET", retriever_integration)
+        
+        #60
+        eloprogress = api.root.add_resource("eloprogress")
+        eloprogress_player = eloprogress.add_resource("player").add_resource("{player_guid}").add_resource("region").add_resource("{region}").add_resource("type").add_resource("{type}")
+        eloprogress_player.add_method("GET", retriever_integration)
+        
+        #61
+        eloprogress_match = eloprogress.add_resource("match").add_resource("{match_id}")
+        eloprogress_match.add_method("GET", retriever_integration)
+        
+        #70
+        aliases = api.root.add_resource("aliases")
+        aliases_player = aliases.add_resource("player").add_resource("{player_guid}")
+        aliases_player.add_method("GET", retriever_integration)
+        
+        #71
+        aliases_search = aliases.add_resource("search").add_resource("{begins_with}")
+        aliases_search.add_method("GET", retriever_integration)
+        
+        
+        
+        
+        
+
         
 
 
