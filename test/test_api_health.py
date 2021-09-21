@@ -147,13 +147,14 @@ check_json_value(obj, "match_id", str, 10)
 check_json_value(obj, "wstatsall", list, None)
 
 # /wstats/player/{player_guid}/match/{match_id}
-url_path_match = "wstats/player/" + player_guid + "/match/" + match_id
+match_id_local = "1627011217"
+url_path_match = "wstats/player/" + player_guid + "/match/" + match_id_local
 obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, dict)
 check_num_elements(obj, 2, 3)
 check_json_value(obj, "match_id", str, 10)
 check_json_value(obj, "wstats", list, None)
-check_json_value(obj, "player_guid", str, 14)
+check_json_value(obj, "player_guid", str, 32)
 
 # /gamelogs/{match_round_id}"
 url_path_match = "gamelogs/" +  match_id + "2"
@@ -167,7 +168,7 @@ url_path_match = "player/" +  player_guid
 obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, dict)
 check_num_elements(obj, 4, 30)
-check_json_value(obj, "player_guid", str, 14)
+check_json_value(obj, "realname", str, None)
 
 # /player/search/{begins_with}
 url_path_match = "player/search/" +  seach_player
@@ -277,6 +278,64 @@ check_obj_type(obj, list)
 check_num_elements(obj, 1, 200)
 check_json_value(obj[0], "server_name", str, None)
 
+category = "elo"
+type_ = "6"
+url_path_match = "leaders/" + category + "/region/" + region + "/type/" + type_
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj, 1, 20)
+check_json_value(obj[0], "guid", str, 32)
+
+category = "kdr"
+type_ = "6"
+url_path_match = "leaders/" + category + "/region/" + region + "/type/" + type_
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj, 1, 20)
+check_json_value(obj[0], "guid", str, 32)
+
+category = "acc"
+type_ = "3"
+url_path_match = "leaders/" + category + "/region/" + region + "/type/" + type_
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj, 1, 20)
+check_json_value(obj[0], "guid", str, 32)
+
+category = "elo"
+type_ = "6"
+url_path_match = "leaders/" + category + "/region/" + region + "/type/" + type_ + "/limit/" + "100"
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj, 1, 100)
+check_json_value(obj[0], "guid", str, 32)
+
+
+url_path_match = "aliases/player/" + player_guid
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj, 1, 100)
+check_json_value(obj[0], "guid", str, 32)
+
+url_path_match = "aliases/search/" + "donk"
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj, 1, 100)
+check_json_value(obj[0], "guid", str, 32)
+
+type_ = "6"
+url_path_match = f"eloprogress/player/{player_guid}/region/{region}/type/{type_}"
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj, 1, 100)
+check_json_value(obj[0], "value", int, None)
+
+match_id_local = "1632108123"
+url_path_match = f"eloprogress/match/{match_id_local}"
+obj = get_api_response_as_json(url_path_match)
+check_obj_type(obj, list)
+check_num_elements(obj, 1, 100)
+check_json_value(obj[0], "value", int, None)
 
 
 
