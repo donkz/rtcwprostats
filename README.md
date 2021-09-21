@@ -70,6 +70,11 @@ x is done , / is work in progress, blank is planned
 |[x] |Groups  |/groups/region/{region}|Get groups that were marked with a region|
 |[x] |Groups  |/groups/region/{region}/type/{type}|Get groups that were marked with a region and type|
 |[x] |Groups  |/groups/region/{region}/type/{type}/group_name/{begins_with}|...and partial name|
+|[x] |Leaders |/leaders/{category}/region/{region}/type/{type}/limit/{limit}| Leaderboards. Categories:elo, kdr, acc|
+|[x] |Elo prog.|/eloprogress/match/{match_id}| Elo progress for players in a given match|
+|[x] |Elo prog.|/eloprogress/player/{player_guid}/region/{region}/type/{type}| Elo progress for a player|
+|[x] |Aliases  |/aliases/search/{begins_with}| Get guids for partial alias match|
+|[x] |Aliases  |/aliases/player/{player_guid}| Get aliases for a player|
 
 Example:
 
@@ -110,6 +115,20 @@ https://rtcwproapi.donkanator.com/groups/region/na
 https://rtcwproapi.donkanator.com/groups/region/na/type/6
 
 https://rtcwproapi.donkanator.com/groups/region/na/type/6/group_name/gather15943
+
+https://rtcwproapi.donkanator.com/leaders/elo/region/na/type/6/limit/10
+
+https://rtcwproapi.donkanator.com/leaders/acc/region/eu/type/3/limit/10
+
+https://rtcwproapi.donkanator.com/leaders/kdr/region/sa/type/6/limit/10
+
+https://rtcwproapi.donkanator.com/aliases/player/22b0e88467093a63d5dd979eec2631d1
+
+https://rtcwproapi.donkanator.com/aliases/search/donk
+
+https://rtcwproapi.donkanator.com/eloprogress/player/22b0e88467093a63d5dd979eec2631d1/region/na/type/6
+
+https://rtcwproapi.donkanator.com/eloprogress/match/1632108123
 
 ## Usage 
 * Familiarize yourself with what's available in the API section
@@ -219,4 +238,9 @@ If you are an API consumer, please do your part:
 * add: used new api in server POC page https://s3.amazonaws.com/donkanator.com/forever/get_servers.html?region=eu&active=yes
 * add: discord webhook reporting 
 * fix: redo table structure behind players. /player/search/{begins_with} should not be affected /player/{player_guid} is changing.
+* add: /leaders/{category}/region/{region}/type/{type}
+* add: /aliases/search/{begins_with}
+* add: /aliases/player/{player_guid}
+* add: /eloprogress/player/{player_guid}/region/{region}/type/{type}
+* add: /eloprogress/match/{match_id}
 
