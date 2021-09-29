@@ -37,55 +37,45 @@ def process_rtcwpro_summary(ddb_table, ddb_client, match_id, log_stream_name):
         message += "Error in getting wstats" + response["error"]
         return message
     
+    item_list = []
+    real_name_list = prepare_playerinfo_list(stats, "realname")
+    item_list.extend(real_name_list)
     
-    real_name_list = prepare_playerinfo_list(stats, match_region_type, "realname")
-    item_list = real_name_list
+    aggstats_item_list = prepare_playerinfo_list(stats, "aggstats#" + match_region_type)
+    item_list.extend(aggstats_item_list)
+    
+    aggwstats_item_list = prepare_playerinfo_list(stats, "aggwstats#" + match_region_type)
+    item_list.extend(aggwstats_item_list)
+    
+    killpeak_item_list = prepare_playerinfo_list(stats, "killpeak#" + match_region_type)
+    item_list.extend(killpeak_item_list)
+    
     response = get_batch_items(item_list, ddb_table, log_stream_name)
     
-    real_names = {}
-    if "error" not in response:
-        for result in response:
-            guid = result["pk"].split("#")[1]
-            if "data" in result:
-                real_names[guid] = result["data"]
-                logger.debug("Retrieved " + guid + " name: " + result["data"])
-    
-    aggstats_item_list = prepare_playerinfo_list(stats, match_region_type, "aggstats#" + match_region_type)
-    item_list = aggstats_item_list
-    response = get_batch_items(item_list, ddb_table, log_stream_name)
-
     stats_old = {}
-    if "error" not in response:
-        for result in response:
-            guid = result["pk"].split("#")[1]
-            if "data" in result:
-                stats_old[guid] = result["data"]
-    else:
-        if "Items do not exist" in response["error"]:
-            logger.warning("Starting fresh.")
-        else:   
-            logger.error("Failed to retrieve any player wstats.")
-            logger.error(json.dumps(response))
-            message += "Error in getting prepare_playerinfo_list" + response["error"]
-            return message
-    
-    aggwstats_item_list = prepare_playerinfo_list(stats, match_region_type, "aggwstats#" + match_region_type)
-    item_list = aggwstats_item_list
-    response = get_batch_items(item_list, ddb_table, log_stream_name)
-
+    real_names = {}
     wstats_old = {}
+    killpeak_old = {}
     if "error" not in response:
         for result in response:
             guid = result["pk"].split("#")[1]
+            
             if "data" in result:
-                wstats_old[guid] = result["data"]
+                if "aggstats" in result["sk"]:
+                    stats_old[guid] = result["data"]
+                if result["sk"] == "realname":
+                    real_names[guid] = result["data"]
+                if "aggwstats" in result["sk"]:
+                    wstats_old[guid] = result["data"]
+                if "killpeak" in result["sk"]:
+                    killpeak_old[guid] = result["data"]
     else:
         if "Items do not exist" in response["error"]:
             logger.warning("Starting fresh.")
         else:   
-            logger.error("Failed to retrieve any player wstats.")
+            logger.error("Failed to retrieve any batch records.")
             logger.error(json.dumps(response))
-            message += "Error in getting prepare_playerinfo_list" + response["error"]
+            message += "Error in summary_calc.get_batch_items" + response["error"]
             return message
    
     new_wstats = {}
@@ -104,11 +94,15 @@ def process_rtcwpro_summary(ddb_table, ddb_client, match_id, log_stream_name):
     wstats = new_wstats
     wstats_dict_updated = build_new_wstats_summary(wstats, wstats_old)
     wstats_items = ddb_prepare_statswstats_items("wstats", wstats_dict_updated, match_region_type, real_names)
+    
+    # build updated killpeaks
+    killpeak_items = ddb_prepare_killpeak_items(stats, killpeak_old, match_region_type, real_names)
 
     # submit updated summaries
     items = []
     items.extend(stats_items)
     items.extend(wstats_items)
+    items.extend(killpeak_items)
     
     try:
         ddb_batch_write(ddb_client, ddb_table.name, items)
@@ -215,7 +209,7 @@ def get_item(pk, sk, table, log_stream_name):
     return result
 
 
-def prepare_playerinfo_list(stats, match_region_type, sk):
+def prepare_playerinfo_list(stats, sk):
     """Make a list of guids to retrieve from ddb."""
     item_list = []
     for guid, player_stats in stats.items():
@@ -228,7 +222,7 @@ def get_batch_items(item_list, ddb_table, log_stream_name):
     dynamodb = boto3.resource('dynamodb')
     item_info = "get_batch_items. Logstream: " + log_stream_name
     try:
-        response = dynamodb.batch_get_item(RequestItems={ddb_table.name: {'Keys': item_list, 'ProjectionExpression': 'pk, #data_value', 'ExpressionAttributeNames': {'#data_value': 'data'}}})
+        response = dynamodb.batch_get_item(RequestItems={ddb_table.name: {'Keys': item_list, 'ProjectionExpression': 'pk, sk, #data_value', 'ExpressionAttributeNames': {'#data_value': 'data'}}})
     except ClientError as e:
         logger.warning("Exception occurred: " + e.response['Error']['Message'])
         result = make_error_dict("[x] Client error calling database: ", item_info)
@@ -303,9 +297,28 @@ def ddb_prepare_stat_item(stat_type, guid, match_region_type, player_stat, real_
             'games'         : games,
             "real_name"     : real_name
         }
-    
-
     return item
+
+def ddb_prepare_killpeak_items(stats, killpeak_old, match_region_type, real_names):
+    items = []
+    for guid, player_stat in stats.items():
+        if int(player_stat.get("categories", {}).get("killpeak",0)) > int(killpeak_old.get(guid,0)):
+            item = {
+                'pk'            : "player"+ "#" + guid,
+                'sk'            : "killpeak#" + match_region_type,
+                # 'lsipk'         : "",
+                'gsi1pk'        : "leaderkillpeak#" + match_region_type,
+                'gsi1sk'        : str(player_stat["categories"]["killpeak"]).zfill(3),
+                'data'          : str(player_stat["categories"]["killpeak"]),
+                'games'         : -1,
+                "real_name"     : real_names.get(guid, "no_name#")
+            }
+            items.append(item)
+    return items
+            
+    
+    
+    return items
 
 def calculate_accuracy(player_stat):
     try:
