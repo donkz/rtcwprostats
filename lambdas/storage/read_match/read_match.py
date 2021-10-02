@@ -4,6 +4,7 @@ import json
 import time as _time
 import os
 import datetime
+from botocore.exceptions import ClientError
 
 from reader_writeddb import (
     # ddb_put_item,
@@ -18,7 +19,8 @@ from reader_writeddb import (
     ddb_batch_write,
     ddb_update_server_record,
     ddb_prepare_server_item,
-    ddb_get_server
+    ddb_get_server,
+    ddb_prepare_alias_items_v2
 )
 
 # pip install --target ./ sqlalchemy
@@ -132,6 +134,15 @@ def handler(event, context):
     gamestats["gameinfo"]["server_name"] = gamestats['serverinfo']['serverName']
 
     submitter_ip = gamestats.get("submitter_ip", "no.ip.in.file")
+    
+    stats = convert_stats_to_dict(gamestats["stats"])
+    real_name_item_list = prepare_playerinfo_list(stats, "realname")
+    response = get_batch_items(real_name_item_list, table, dynamodb, "real_names for match in file " + file_key)
+    real_names = {}
+    if "error" not in response:
+        for result in response:
+            guid = result["pk"].split("#")[1]          
+            real_names[guid] = result["data"]
 
     items = []
     match_item = ddb_prepare_match_item(gamestats)
@@ -142,6 +153,7 @@ def handler(event, context):
     wstats_items = ddb_prepare_wstat_items(gamestats)
     wstatsall_item = ddb_prepare_wstatsall_item(gamestats)
     alias_items = ddb_prepare_alias_items(gamestats)
+    aliasv2_items = ddb_prepare_alias_items_v2(gamestats, real_names)
     log_item = ddb_prepare_log_item(match_id, file_key,
                                     len(match_item["data"]),
                                     len(stats_items),
@@ -160,6 +172,7 @@ def handler(event, context):
     items.extend(wstats_items)
     items.append(wstatsall_item)
     items.extend(alias_items)
+    items.extend(aliasv2_items)
     items.append(log_item)
     if server_item:
         items.append(server_item)
@@ -216,6 +229,39 @@ def handler(event, context):
     logger.info(f"Time to write {total_items} items is {time_to_write} s")
     return message
 
+def prepare_playerinfo_list(stats, sk):
+    """Make a list of guids to retrieve from ddb."""
+    item_list = []
+    for guid, player_stats in stats.items():
+        item_list.append({"pk": "player#" + guid, "sk": sk})
+    return item_list
+
+def convert_stats_to_dict(stats):
+    if len(stats) == 2 and len(stats[0]) > 1: #stats grouped in teams in a list of 2 teams , each team over 1 player
+        logger.info("Number of stats entries 2, trying to merge teams")
+        stats_tmp = stats[0].copy()
+        stats_tmp.update(stats[1])
+    else:
+        logger.info("Merging list into dict.")
+        stats_tmp = {}
+        for player in stats:
+            stats_tmp.update(player)
+    logger.info("New statsall has " + str(len(stats_tmp)) + " players in a " + str(type(stats_tmp)))
+    return stats_tmp
+
+def get_batch_items(item_list, ddb_table, dynamodb, log_stream_name):
+    """Get items in a batch."""
+    item_info = "get_batch_items. Logstream: " + log_stream_name
+    try:
+        response = dynamodb.batch_get_item(RequestItems={ddb_table.name: {'Keys': item_list, 'ProjectionExpression': 'pk, sk, #data_value', 'ExpressionAttributeNames': {'#data_value': 'data'}}})
+    except ClientError as e:
+        logger.warning("Exception occurred: " + e.response['Error']['Message'])
+    else:
+        if len(response["Responses"][ddb_table.name]) > 0:
+            result = response["Responses"][ddb_table.name]
+        else:
+            logger.warning("Items do not exist" + item_info)
+    return result
 
 def integrity_checks(gamestats):
     """Check if gamestats valid for any known things."""

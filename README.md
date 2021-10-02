@@ -59,7 +59,6 @@ x is done , / is work in progress, blank is planned
 |[x] |Players |/player/{player_guid} |Filter by given guid to get player info |
 |    |Players |/player/{player_guid}/aliases |Filter by guid to get aliases range and dates |
 |    |Players |/player/{player_guid}/eloprogress/region/{region}/type/{type} |Filter by guid sort by time to get elo progress |
-|    |Players |/player/recent |Filter by last 30 days to get primary aliases |
 |[x] |Players |/player/search/{begins_with} |Search for real names that start with a string |
 |[x] |Servers |/servers |Get list of all servers with stats |
 |[x] |Servers |/servers/detail |Same, but with details |
@@ -75,6 +74,8 @@ x is done , / is work in progress, blank is planned
 |[x] |Elo prog.|/eloprogress/player/{player_guid}/region/{region}/type/{type}| Elo progress for a player|
 |[x] |Aliases  |/aliases/search/{begins_with}| Get guids for partial alias match|
 |[x] |Aliases  |/aliases/player/{player_guid}| Get aliases for a player|
+|[x] |Aliases  |/aliases/recent/limit/{limit}| Get last x seen aliases |
+
 
 Example:
 
@@ -129,6 +130,8 @@ https://rtcwproapi.donkanator.com/aliases/search/donk
 https://rtcwproapi.donkanator.com/eloprogress/player/22b0e88467093a63d5dd979eec2631d1/region/na/type/6
 
 https://rtcwproapi.donkanator.com/eloprogress/match/1632108123
+
+https://rtcwproapi.donkanator.com/aliases/recent/limit/3
 
 ## Usage 
 * Familiarize yourself with what's available in the API section
@@ -243,4 +246,6 @@ If you are an API consumer, please do your part:
 * add: /aliases/player/{player_guid}
 * add: /eloprogress/player/{player_guid}/region/{region}/type/{type}
 * add: /eloprogress/match/{match_id}
+* fix: redo db schema for recording aliases. Previous /aliases/* functions should not be affected.
+* add: /aliases/recent/limit/{limit}
 

@@ -142,6 +142,10 @@ class DeliveryStack(Stack):
         aliases_search = aliases.add_resource("search").add_resource("{begins_with}")
         aliases_search.add_method("GET", retriever_integration)
         
+        #72
+        aliases_recent = aliases.add_resource("recent").add_resource("limit").add_resource("{limit}")
+        aliases_recent.add_method("GET", retriever_integration)
+        
         
         
         
