@@ -267,6 +267,24 @@ def ddb_prepare_alias_items(gamestats):
         
     return player_items
 
+def ddb_prepare_alias_items_v2(gamestats, real_names):
+    player_items = []
+    matchid = gamestats["gameinfo"]["match_id"]
+    for player_wrapper in gamestats["stats"]:
+        for playerguid, stat in player_wrapper.items():
+            player_item = {
+                'pk'    : "aliases",
+                'sk'    : playerguid + "#" + stat["alias"],
+                'lsipk' : matchid + "#" + playerguid,
+                'gsi1pk': "aliassearch2",
+                'gsi1sk': stat["alias"],
+                'data'  : stat["alias"],
+                'last_seen' : datetime.now().isoformat(),
+                'real_name' : real_names.get(playerguid,"no_name#")
+                }
+            player_items.append(player_item)
+    return player_items
+
 def ddb_prepare_log_item(match_id_rnd,file_key,
                          match_item_size, 
                          num_stats_items, 

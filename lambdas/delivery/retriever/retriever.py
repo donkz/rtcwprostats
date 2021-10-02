@@ -397,57 +397,49 @@ def handler(event, context):
         begins_with = event["pathParameters"]["begins_with"]
         logger.info("Parameter: " + begins_with)
         pk_name = "gsi1pk"
-        pk = "aliassearch"
+        pk = "aliassearch2"
         index_name = "gsi1"
         skname="gsi1sk"
-        projections = "pk, sk, lsipk, gsi1sk"
+        projections = "sk, gsi1sk, last_seen, lsipk, real_name"
         responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, projections, log_stream_name, 40, True)
-
-        if "error" not in responses:
-            # logic specific to /player/search/{begins_with}
-            data = []
+        data = process_alias_responses(api_path, responses)
+        
             
-            aliases = {}
-            for player in responses:
-                data_line = {}
-                
-                data_line["last_seen"] = player.get("lsipk","na")
-                data_line["last_match"] = player.get("sk","na")
-                data_line["guid"] = player["pk"].split("#")[1]
-                data_line["alias"] = player.get("gsi1sk","na")
-                
-                if data_line["alias"] in aliases:
-                    if data_line["last_seen"] > aliases[data_line["alias"]]["last_seen"]:
-                        aliases[data_line["alias"]] = data_line
-                else:
-                   aliases[data_line["alias"]] = data_line
-                   
-            for alias, dict_ in aliases.items():
-                data.append(dict_)
-        else:
-            data = responses
-    
     if api_path == "/aliases/player/{player_guid}":
         logger.info("Processing " + api_path)
 
         player_guid = event["pathParameters"]["player_guid"]
         logger.info("Parameter: " + player_guid)
-        pk = "aliases#" + player_guid
-        responses = get_items_pk(pk, ddb_table, log_stream_name)
+        pk_name = "pk"
+        pk = "aliases"
+        index_name = None
+        skname="sk"
+        begins_with = player_guid + "#"
+        limit = 40
+        ascending = False
+        projections = "sk, gsi1sk, last_seen, lsipk, real_name"
+        responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, projections, log_stream_name, limit, ascending)  
+        data = process_alias_responses(api_path, responses)
+    
+    if api_path == "/aliases/recent/limit/{limit}":
+        logger.info("Processing " + api_path)
 
-        if "error" not in responses:
-            # logic specific to /aliases/player/{player_guid}
-            data = []
-            for player in responses:
-                data_line = {}
-                
-                data_line["last_seen"] = player.get("lsipk","na")
-                data_line["alias"] = player.get("gsi1sk","na")
-                data_line["last_match"] = player.get("sk","na")
-                data_line["guid"] = player["pk"].split("#")[1]
-                data.append(data_line)
-        else:
-            data = responses
+        limit_str = event["pathParameters"]["limit"]
+        logger.info("Parameter: " + limit_str)
+        pk_name = "pk"
+        pk = "aliases"
+        index_name = "lsi"
+        skname="lsipk"
+        begins_with = "1"  # TODO!!!!
+        
+        limit = 30
+        if limit_str.isdigit():
+            limit = min(int(limit_str),101)
+            
+        ascending = False
+        projections = "sk, gsi1sk, last_seen, lsipk, real_name"
+        responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, projections, log_stream_name, limit, ascending)  
+        data = process_alias_responses(api_path, responses)
                 
     if api_path == "/servers" or api_path == "/servers/detail":
         logger.info("Processing " + api_path)
@@ -455,7 +447,6 @@ def handler(event, context):
         pk = "server"
         limit =200
         responses = get_query_all(pk_name, pk, ddb_table, log_stream_name, limit)
-
         data = process_server_responses(api_path, responses)
     
     if api_path == "/servers/region/{region}" or api_path == "/servers/region/{region}/active":
@@ -820,7 +811,23 @@ def process_eloprogress_response(response):
             logger.error(data["error"])
     return data
     
-                
+def process_alias_responses(api_path, responses):
+    data = []
+    if "error" in responses:
+        data = responses
+    else:
+        # logic specific to /aliases/*
+        for player in responses:
+            data_line = {}
+            
+            data_line["last_seen"] = player.get("last_seen","na")
+            data_line["real_name"] = player.get("real_name","na")
+            data_line["alias"] = player.get("gsi1sk","na")
+            data_line["last_match"] = player["lsipk"].split("#")[0]
+            data_line["guid"] = player["sk"].split("#")[0]
+            data.append(data_line)
+    return data
+                       
         
 
 if __name__ == "__main__":
@@ -967,9 +974,9 @@ if __name__ == "__main__":
     event_str_aliases_search = '''
     {
       "resource": "/aliases/search/{begins_with}",
-      "pathParameters":{"begins_with":"donk"}
+      "pathParameters":{"begins_with":"fatal"}
     }
     '''
  
-    event = json.loads(event_str_aliases_guid)
+    event = json.loads(event_str_aliases_search)
     print(handler(event, None))
