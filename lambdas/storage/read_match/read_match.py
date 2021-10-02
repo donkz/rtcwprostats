@@ -111,7 +111,7 @@ def handler(event, context):
         server_item = ddb_prepare_server_item(gamestats)
 
     if region == "":
-        region = "unk"  # TODO: insert region logic
+        region = "unk"
 
     if len(gamestats.get("stats", 0)) == 2:
         team1_size = len(gamestats["stats"][0].keys())

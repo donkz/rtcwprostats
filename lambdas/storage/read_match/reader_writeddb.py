@@ -6,6 +6,7 @@ from datetime import datetime
 import botocore
 from botocore.exceptions import ClientError
 from collections import Counter
+from reader_country_detector import guess_server_country
 
 ddb_client = boto3.client('dynamodb')
 logger = logging.getLogger()
@@ -79,25 +80,9 @@ def ddb_update_server_record(gamestats, table, region, date_time_human):
     ddb_update_item(key, expression, values, table)
 
 def ddb_prepare_server_item(gamestats):
-    region = None
-    server_name = gamestats['serverinfo']['serverName']
-    
-    if " na "       in server_name.lower(): region = 'na'
-    if "-na "       in server_name.lower(): region = 'na'
-    if " virginia " in server_name.lower(): region = 'na'
-    if " donkz "    in server_name.lower(): region = 'na'
-    if " eu "       in server_name.lower(): region = 'eu'
-    if "-eu "       in server_name.lower(): region = 'eu'
-    if "adlad"      in server_name.lower(): region = 'eu'
-    if "amster"     in server_name.lower(): region = 'eu'
-    if "london"     in server_name.lower(): region = 'eu'
-    if "hyperion"   in server_name.lower(): region = 'eu'
-    if " sa "       in server_name.lower(): region = 'sa'
-    if "chile"      in server_name.lower(): region = 'sa'
-    if "brazil"     in server_name.lower(): region = 'sa'
-    
-    if not region: region = 'unk'
-    
+
+    region = guess_server_country(gamestats)
+    server_name = gamestats["serverinfo"].get("serverName", "No server name#")
     
     server_item = {
         'pk'    : 'server',
