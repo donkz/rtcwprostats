@@ -341,7 +341,7 @@ url_path_match = "aliases/recent/limit/5"
 obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, list)
 check_num_elements(obj, 1, 5)
-check_json_value(obj[0], "guid", int, 32)
+check_json_value(obj[0], "guid", str, 32)
 
 
 
