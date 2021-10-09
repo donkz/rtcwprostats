@@ -255,6 +255,7 @@ def ddb_prepare_alias_items(gamestats):
 def ddb_prepare_alias_items_v2(gamestats, real_names):
     player_items = []
     matchid = gamestats["gameinfo"]["match_id"]
+    ts = datetime.now().isoformat()
     for player_wrapper in gamestats["stats"]:
         for playerguid, stat in player_wrapper.items():
             player_item = {
@@ -264,10 +265,31 @@ def ddb_prepare_alias_items_v2(gamestats, real_names):
                 'gsi1pk': "aliassearch2",
                 'gsi1sk': stat["alias"],
                 'data'  : stat["alias"],
-                'last_seen' : datetime.now().isoformat(),
+                'last_seen' : ts,
                 'real_name' : real_names.get(playerguid,"no_name#")
                 }
             player_items.append(player_item)
+    return player_items
+
+def ddb_prepare_real_name_update(gamestats, real_names):
+    player_items = []
+    ts = datetime.now().isoformat()
+    duplicates_check = {}
+    for player_wrapper in gamestats["stats"]:
+        for playerguid, stat in player_wrapper.items():
+            real_name = real_names.get(playerguid,stat["alias"])
+            player_item = {
+                'pk'    : "player#" + playerguid,
+                'sk'    : "realname",
+                'gsi1pk': "realname",
+                'gsi1sk': "realname#" + real_name,
+                'data'  :  real_name,
+                'updated': ts
+                }
+            
+            if playerguid not in duplicates_check:
+                player_items.append(player_item)
+                duplicates_check[playerguid]=1
     return player_items
 
 def ddb_prepare_log_item(match_id_rnd,file_key,

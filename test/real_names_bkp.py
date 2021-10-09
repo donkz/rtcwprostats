@@ -92,6 +92,24 @@ def get_empty_real_names2(ddb_table, min_games = 5):
                 get_last_few_aliases2(ddb_table, guid, min_games)
 
 
+def get_empty_real_names3(ddb_table, min_games = 5):
+    
+    index_name = "gsi1"
+    pkname = "gsi1pk" 
+    # skname = "gsi1sk" 
+    
+    pk = "realname"
+    response = ddb_table.query(IndexName=index_name, KeyConditionExpression=Key(pkname).eq(pk),
+                               # & Key(skname).begins_with(begins_with),
+                               FilterExpression=Attr('data').not_exists(),
+                               ProjectionExpression="pk")
+    
+    if response['Count'] > 0:
+        for record in response["Items"]:
+            guid = record["pk"].replace("player#", "")
+            if guid not in ["","1"]:
+                get_last_few_aliases2(ddb_table, guid, min_games)
+
 def get_last_few_aliases2(ddb_table, guid, min_games):
     pk = "aliases#" + guid
     response = ddb_table.query(KeyConditionExpression=Key('pk').eq(pk))
@@ -112,6 +130,29 @@ def get_last_few_aliases2(ddb_table, guid, min_games):
             print("Not enough aliases(" + str(sum(alias_counter.values())) + ") for " + guid)
     elif debug:
         print("Not enough aliases(0) for " + guid)        
+        
+def get_last_few_aliases3(ddb_table, guid, min_games):
+    pk = "aliases"
+    skname = "sk" 
+    begins_with = guid
+    response = ddb_table.query(KeyConditionExpression=Key('pk').eq(pk) & Key(skname).begins_with(begins_with))
+    debug = False
+    
+    if response['Count'] > 0:
+        alias_counter = Counter()
+        for alias in response["Items"]:
+            alias_value = alias["data"]
+            alias_counter[alias_value] +=1
+        if sum(alias_counter.values()) > min_games:
+            print("-------")
+            print("Processing guid: " + guid)
+            print(alias_counter.most_common(6))
+            alias_most_common = alias_counter.most_common(10)[0][0]
+            print(f'        "{guid}": "{alias_most_common}",') 
+        elif debug:
+            print("Not enough aliases(" + str(sum(alias_counter.values())) + ") for " + guid)
+    elif debug:
+        print("Not enough aliases(0) for " + guid)
 
 def update_player_info_real_name2(ddb_table, real_name_dict):
     """Update existing players with new real_name."""
@@ -417,7 +458,7 @@ if __name__ == "__main__":
     
     read_only = True
     if read_only:
-        get_empty_real_names(ddb_table, min_games = 5)
+        get_empty_real_names2(ddb_table, min_games = 4)
     else:
         update_player_info_real_name(ddb_table, real_name_dict)
 

@@ -14,13 +14,14 @@ from reader_writeddb import (
     ddb_prepare_gamelog_item,
     ddb_prepare_wstat_items,
     ddb_prepare_wstatsall_item,
-    ddb_prepare_alias_items,
+    # ddb_prepare_alias_items,
     ddb_prepare_log_item,
     ddb_batch_write,
     ddb_update_server_record,
     ddb_prepare_server_item,
     ddb_get_server,
-    ddb_prepare_alias_items_v2
+    ddb_prepare_alias_items_v2,
+    ddb_prepare_real_name_update
 )
 
 # pip install --target ./ sqlalchemy
@@ -136,6 +137,7 @@ def handler(event, context):
     submitter_ip = gamestats.get("submitter_ip", "no.ip.in.file")
     
     stats = convert_stats_to_dict(gamestats["stats"])
+    
     real_name_item_list = prepare_playerinfo_list(stats, "realname")
     response = get_batch_items(real_name_item_list, table, dynamodb, "real_names for match in file " + file_key)
     real_names = {}
@@ -152,8 +154,9 @@ def handler(event, context):
     gamelog_item = ddb_prepare_gamelog_item(gamestats)
     wstats_items = ddb_prepare_wstat_items(gamestats)
     wstatsall_item = ddb_prepare_wstatsall_item(gamestats)
-    alias_items = ddb_prepare_alias_items(gamestats)
+    # alias_items = ddb_prepare_alias_items(gamestats)
     aliasv2_items = ddb_prepare_alias_items_v2(gamestats, real_names)
+    real_name_updates = ddb_prepare_real_name_update(gamestats, real_names)
     log_item = ddb_prepare_log_item(match_id, file_key,
                                     len(match_item["data"]),
                                     len(stats_items),
@@ -161,7 +164,7 @@ def handler(event, context):
                                     len(gamelog_item["data"]),
                                     len(wstats_items),
                                     len(wstatsall_item["data"]),
-                                    len(alias_items),
+                                    len(aliasv2_items),
                                     # timestamp,
                                     submitter_ip)
 
@@ -171,8 +174,9 @@ def handler(event, context):
     items.append(gamelog_item)
     items.extend(wstats_items)
     items.append(wstatsall_item)
-    items.extend(alias_items)
+    # items.extend(alias_items)
     items.extend(aliasv2_items)
+    items.extend(real_name_updates)
     items.append(log_item)
     if server_item:
         items.append(server_item)
@@ -303,4 +307,4 @@ if __name__ == "__main__":
                     }
         ]
     }
-    print("Test result" + handler(event, None))
+    # print("Test result" + handler(event, None))

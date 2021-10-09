@@ -375,7 +375,7 @@ def handler(event, context):
             pk = "realname"
             index_name = "gsi1"
             skname="gsi1sk"
-            projections = "data, pk"
+            projections = "data, pk, updated"
             responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, projections, log_stream_name, 100, True)
 
             if "error" not in responses:
@@ -383,9 +383,9 @@ def handler(event, context):
                 data = []
                 for player in responses:
                     data_line = {}
-                    
                     data_line["real_name"] = player.get("data","na")
                     data_line["guid"] = player["pk"].split("#")[1]
+                    data_line["last_seen"] = player.get("updated","2021-07-31T22:21:34.211247")
                     data.append(data_line)
             else:
                 data = responses
@@ -738,7 +738,9 @@ def process_player_response(response):
     data["aggwstats"] = {}
     data["kdr"] = {}
     data["acc"] = {}
-    data["realname"] = ""
+    data["real_name"] = ""
+    data["last_seen"] = ""
+
     if "error" in response:
         data = response
     else:
@@ -749,7 +751,8 @@ def process_player_response(response):
                     data["elos"][item["sk"].replace("elo#","")]["elo"] = int(item["data"])
                     data["elos"][item["sk"].replace("elo#","")]["games"] = int(item["games"])
                 if "realname" in  item["sk"]:
-                    data["realname"] = item["data"]
+                    data["real_name"] = item["data"]
+                    data["last_seen"] = item.get("updated","2021-07-31T22:21:34.211247")
                 if "aggstats#" in  item["sk"]:
                     data["aggstats"][item["sk"].replace("aggstats#","")] = item["data"]
                     data["kdr"][item["gsi1pk"].replace("leaderkdr#","")] = float(item["gsi1sk"])
@@ -856,19 +859,17 @@ if __name__ == "__main__":
     }
     '''
     
-    event_str = '''
+    event_str_player_search = '''
     {
     "resource": "/player/search/{begins_with}",
-    "pathParameters": {"begins_with": "caka"},
+    "pathParameters": {"begins_with": "jam"}
     }
     '''
     
-    event_str = '''
+    event_str_player_guid = '''
     {
     "resource": "/player/{player_guid}",
-    "pathParameters": {
-        "player_guid": "123456787"
-    },
+    "pathParameters": {"player_guid": "fbe2ed832f8415efbaaa5df10074484a" }
     }
     '''
     
@@ -978,5 +979,5 @@ if __name__ == "__main__":
     }
     '''
  
-    event = json.loads(event_str_aliases_search)
+    event = json.loads(event_str_player_search)
     print(handler(event, None))
