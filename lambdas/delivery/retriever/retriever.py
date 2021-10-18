@@ -8,6 +8,7 @@ import os
 import decimal
 import urllib.parse
 import datetime
+from match_info import build_teams, build_new_match_summary, convert_stats_to_dict
 
 if __name__ == "__main__":
     TABLE_NAME = "rtcwprostats-database-DDBTable2F2A2F95-1BCIOU7IE3DSE"
@@ -165,7 +166,7 @@ def handler(event, context):
             pk = "stats" + "#" + guid
             skhigh = int(time.time())
             sklow = skhigh - 60 * 60 * 24 * 30
-            responses = get_range(None, pk, str(sklow), str(skhigh), ddb_table, log_stream_name, 40, False)
+            responses = get_range(None, pk, str(sklow), str(skhigh), ddb_table, log_stream_name, 24, False)
 
             if "error" not in responses:
                 # logic specific to /stats/player/{player_guid}
@@ -187,42 +188,91 @@ def handler(event, context):
             logger.info("Parameter: " + match_id)
             
             if match_id.isnumeric(): 
-                pk = "statsall"
-                sk = match_id
-                response = get_item(pk, sk, ddb_table, log_stream_name)
-    
-                # logic specific to /stats/{match_id}
-                if "error" not in response:
-                    data = {"statsall": json.loads(response["data"])}
-                    data["match_id"] = response["sk"]
-                    data["type"] = response["gsi1pk"].replace("statsall#", "")
-                else:
-                    data = response
-                    
-            if len(match_id.split(','))>1:
-                matches = match_id.split(",")
-                item_list = []
-                match_dups = []
-                for match in matches:
-                    if match.isnumeric() and int(match) > 1006210516:  # rtcw release
-                        if match in match_dups:
-                            logger.warning("Matches query string contains duplicate values. Dropping duplicates.")
-                            continue
-                        item_list.append({"pk": "statsall", "sk": match})
-                        match_dups.append(match)
-                        
-                responses = get_batch_items(item_list, ddb_table, log_stream_name)
                 
-                # logic specific to /stats/{match_id} with match array
-                if "error" not in responses:
-                    data = []
-                    for match_stat in responses: 
-                        data_line = {match_stat["sk"]: json.loads(match_stat["data"])}
-                        data_line["match_id"] = match_stat["sk"]
-                        data_line["type"] = match_stat["gsi1pk"].replace("statsall#", "")
-                        data.append(data_line)
-                else:
+                item_list = []
+                item_list.append({"pk": "statsall", "sk": match_id})
+                item_list.append({"pk": "match", "sk": match_id + "1"})
+                item_list.append({"pk": "match", "sk": match_id + "2"})
+                responses = get_batch_items(item_list, ddb_table, log_stream_name)
+                    
+                # logic specific to /stats/{match_id}
+                if "error" in responses:
                     data = responses
+                else:
+                    data = {}
+                    match_dict= {}
+                    for response in responses:
+                        if response["pk"] == "statsall":
+                            data["statsall"] = json.loads(response["data"])
+                            data["match_id"] = response["sk"]
+                            data["type"] = response["gsi1pk"].replace("statsall#", "")
+                        if response["pk"] == "match":
+                            match_dict[response["sk"]] = json.loads(response["data"])
+                    
+                    new_total_stats = {}
+                    new_total_stats[match_id] = convert_stats_to_dict(data["statsall"])
+                        
+                    teamA, teamB, aliases, team_mapping, alias_team_str = build_teams(new_total_stats)
+                    match_summary = build_new_match_summary(match_dict, team_mapping)
+                    data["match_summary"] = match_summary
+                        
+
+                    
+            # if len(match_id.split(','))>1:
+            #     matches = match_id.split(",")
+            #     item_list = []
+            #     match_dups = []
+            #     for match in matches:
+            #         if match.isnumeric() and int(match) > 1006210516:  # rtcw release
+            #             if match in match_dups:
+            #                 logger.warning("Matches query string contains duplicate values. Dropping duplicates.")
+            #                 continue
+            #             item_list.append({"pk": "statsall", "sk": match})
+            #             match_dups.append(match)
+                        
+            #     responses = get_batch_items(item_list, ddb_table, log_stream_name)
+                
+            #     # logic specific to /stats/{match_id} with match array
+            #     if "error" not in responses:
+            #         data = []
+            #         for match_stat in responses: 
+            #             data_line = {match_stat["sk"]: json.loads(match_stat["data"])}
+            #             data_line["match_id"] = match_stat["sk"]
+            #             data_line["type"] = match_stat["gsi1pk"].replace("statsall#", "")
+            #             data.append(data_line)
+            #     else:
+            #         data = responses
+                    
+                    
+    if api_path == "/stats/group/{group_name}":
+        logger.info("Processing " + api_path)
+        group_name = urllib.parse.unquote(event["pathParameters"]["group_name"])
+        logger.info("Parameter: " + group_name)
+                
+        pk = "groupcache#stats"
+        sk = group_name
+        response = get_item(pk, sk, ddb_table, log_stream_name)
+
+        # logic specific to /stats/group/{group_name}
+        if "error" not in response:
+            data = json.loads(response["data"])
+        else:
+            data = response
+            
+    if api_path == "/wstats/group/{group_name}":
+        logger.info("Processing " + api_path)
+        group_name = urllib.parse.unquote(event["pathParameters"]["group_name"])
+        logger.info("Parameter: " + group_name)
+        
+        pk = "groupcache#wstats"
+        sk = group_name
+        response = get_item(pk, sk, ddb_table, log_stream_name)
+
+        # logic specific to /stats/group/{group_name}
+        if "error" not in response:
+            data = json.loads(response["data"])
+        else:
+            data = response
 
     if api_path == "/wstats/player/{player_guid}":
         logger.info("Processing " + api_path)
@@ -257,7 +307,7 @@ def handler(event, context):
             sk = match_id
             response = get_item(pk, sk, ddb_table, log_stream_name)
 
-            # logic specific to /stats/{match_id}
+            # logic specific to /wstats/{match_id}
             if "error" not in response:
                 data = {"wstatsall": json.loads(response["data"])}
                 data["match_id"] = response["sk"]
@@ -290,7 +340,7 @@ def handler(event, context):
             sk = match_id
             response = get_item(pk, sk, ddb_table, log_stream_name)
 
-            # logic specific to /stats/{match_id}
+            # logic specific to /wstats/{match_id}
             if "error" not in response:
                 data = {"wstats": json.loads(response["data"])}
                 data["match_id"] = match_id
@@ -375,7 +425,7 @@ def handler(event, context):
             pk = "realname"
             index_name = "gsi1"
             skname="gsi1sk"
-            projections = "data, pk"
+            projections = "data, pk, updated"
             responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, projections, log_stream_name, 100, True)
 
             if "error" not in responses:
@@ -383,9 +433,9 @@ def handler(event, context):
                 data = []
                 for player in responses:
                     data_line = {}
-                    
                     data_line["real_name"] = player.get("data","na")
                     data_line["guid"] = player["pk"].split("#")[1]
+                    data_line["last_seen"] = player.get("updated","2021-07-31T22:21:34.211247")
                     data.append(data_line)
             else:
                 data = responses
@@ -483,7 +533,7 @@ def handler(event, context):
         logger.info("Proxy path " + path)
         path_tokens = path.split("/")
         data = {}
-        projections = "sk, data"
+        projections = "sk, data, cached, teams, games, finish_human, duration_nice"
         
         if len(path_tokens) == 2 and path_tokens[0] == "group_name" and len(path_tokens[0].strip())>0:
             logger.info("Parameter: /groups/group_name/{group_name}")
@@ -492,16 +542,10 @@ def handler(event, context):
             index_name = None
             skname="sk"
             begins_with = path_tokens[1]
-            ascending = False
+            ascending = True #next group with same id will overwrite the older one
             responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, projections, log_stream_name, 100, ascending)  
-            
-            if "error" not in responses:
-                data = {}
-                for group in responses:
-                    data[group["sk"].split("#")[0]] = json.loads(group["data"])
-            else:
-                data = responses    
-        
+            data = process_group_responses(responses)
+                     
         if len(path_tokens) == 2 and path_tokens[0] == "region" and path_tokens[1] in ["sa","na","eu","unk"]:
             logger.info("Parameter: /groups/region/{region_name}")
             pk_name = "pk"
@@ -511,13 +555,7 @@ def handler(event, context):
             begins_with = path_tokens[1]
             ascending = False
             responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, projections, log_stream_name, 100, ascending)  
-            
-            if "error" not in responses:
-                data = {}
-                for group in responses:
-                    data[group["sk"].split("#")[0]] = json.loads(group["data"])
-            else:
-                data = responses    
+            data = process_group_responses(responses)    
         
         if (len(path_tokens) == 4 and path_tokens[0] == "region" and path_tokens[1] in ["sa","na","eu","unk"] and 
            path_tokens[2] == "type" and path_tokens[3] in ["3","6","6plus"]) :
@@ -529,13 +567,7 @@ def handler(event, context):
             begins_with = path_tokens[1] + "#" + path_tokens[3]
             ascending = False
             responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, projections, log_stream_name, 100, ascending)  
-            
-            if "error" not in responses:
-                data = {}
-                for group in responses:
-                    data[group["sk"].split("#")[0]] = json.loads(group["data"])
-            else:
-                data = responses
+            data = process_group_responses(responses)
                 
         if (len(path_tokens) == 6 and path_tokens[0] == "region" and path_tokens[1] in ["sa","na","eu","unk"] and 
            path_tokens[2] == "type" and path_tokens[3] in ["3","6","6plus"] and
@@ -548,13 +580,7 @@ def handler(event, context):
             begins_with = path_tokens[1] + "#" + path_tokens[3] + "#" + path_tokens[5]
             ascending = False
             responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, projections, log_stream_name, 100, ascending)  
-            
-            if "error" not in responses:
-                data = {}
-                for group in responses:
-                    data[group["sk"].split("#")[0]] = json.loads(group["data"])
-            else:
-                data = responses
+            data = process_group_responses(responses)
         
         if len(data) == 0:
             data = make_error_dict("Could not match path:", path)
@@ -731,6 +757,23 @@ def process_server_responses(api_path, responses):
         data = responses
     return data
 
+def process_group_responses(responses):
+    if "error" in responses:
+        data = responses 
+    else:
+        data = {}
+        for response in responses: #these should be sorted in order
+            group_name = response["sk"].split("#")[0]
+            group = {}
+            group["matches"] = json.loads(response["data"])
+            group["cached"] = response.get("cached","No")
+            group["teams"] = response.get("teams","A: player1, player2 B: player3, player4")
+            group["games"] = int(response.get("games",len(group["matches"])))
+            group["finish_human"] = response.get("finish_human","2021-07-31 23:59:59")
+            group["duration_nice"] = response.get("duration_nice","00:00")
+            data[group_name] = group
+    return data
+
 def process_player_response(response):
     data = {}
     data["elos"] = {}
@@ -738,7 +781,9 @@ def process_player_response(response):
     data["aggwstats"] = {}
     data["kdr"] = {}
     data["acc"] = {}
-    data["realname"] = ""
+    data["real_name"] = ""
+    data["last_seen"] = ""
+
     if "error" in response:
         data = response
     else:
@@ -749,7 +794,8 @@ def process_player_response(response):
                     data["elos"][item["sk"].replace("elo#","")]["elo"] = int(item["data"])
                     data["elos"][item["sk"].replace("elo#","")]["games"] = int(item["games"])
                 if "realname" in  item["sk"]:
-                    data["realname"] = item["data"]
+                    data["real_name"] = item["data"]
+                    data["last_seen"] = item.get("updated","2021-07-31T22:21:34.211247")
                 if "aggstats#" in  item["sk"]:
                     data["aggstats"][item["sk"].replace("aggstats#","")] = item["data"]
                     data["kdr"][item["gsi1pk"].replace("leaderkdr#","")] = float(item["gsi1sk"])
@@ -840,12 +886,19 @@ if __name__ == "__main__":
     }
     '''
     
-    event_stats_csv = '''
+    # event_stats_csv = '''
+    # {
+    # "resource": "/stats/{match_id}",
+    # "pathParameters": {
+    #     "match_id": "1630476331,1630475541,1630474233,1630472750"
+    # },
+    # }
+    # '''
+    
+    event_stats_one = '''
     {
     "resource": "/stats/{match_id}",
-    "pathParameters": {
-        "match_id": "1630476331,1630475541,1630474233,1630472750"
-    },
+    "pathParameters": {"match_id": "1630476331"}
     }
     '''
     
@@ -856,19 +909,17 @@ if __name__ == "__main__":
     }
     '''
     
-    event_str = '''
+    event_str_player_search = '''
     {
     "resource": "/player/search/{begins_with}",
-    "pathParameters": {"begins_with": "caka"},
+    "pathParameters": {"begins_with": "jam"}
     }
     '''
     
-    event_str = '''
+    event_str_player_guid = '''
     {
     "resource": "/player/{player_guid}",
-    "pathParameters": {
-        "player_guid": "123456787"
-    },
+    "pathParameters": {"player_guid": "fbe2ed832f8415efbaaa5df10074484a" }
     }
     '''
     
@@ -977,6 +1028,19 @@ if __name__ == "__main__":
       "pathParameters":{"begins_with":"fatal"}
     }
     '''
+    
+    event_str_stats_group = '''
+    {
+      "resource": "/stats/group/{group_name}",
+      "pathParameters":{"group_name":"gather15943"}
+    }
+    '''
+    event_str_wstats_group = '''
+    {
+      "resource": "/wstats/group/{group_name}",
+      "pathParameters":{"group_name":"gather15943"}
+    }
+    '''
  
-    event = json.loads(event_str_aliases_search)
+    event = json.loads(event_str_stats_group)
     print(handler(event, None))

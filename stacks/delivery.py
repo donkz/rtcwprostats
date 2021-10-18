@@ -52,16 +52,23 @@ class DeliveryStack(Stack):
 
         stats_player_guid = stats_player.add_resource("{player_guid}")
         stats_player_guid.add_method("GET", retriever_integration)
-        # 5
-        stats_type = statsall.add_resource("type")
+        
+        stats_group = statsall.add_resource("group").add_resource("{group_name}")
+        stats_group.add_method("GET", retriever_integration)
 
-        stats_type_type = stats_type.add_resource("{type}")
-        stats_type_type.add_method("GET", retriever_integration)
+        # 5
+        # stats_type = statsall.add_resource("type")
+
+        # stats_type_type = stats_type.add_resource("{type}")
+        # stats_type_type.add_method("GET", retriever_integration)
 
         # 6
         wstatsall = api.root.add_resource("wstats")
         wstats_match_id = wstatsall.add_resource("{match_id}")
         wstats_match_id.add_method("GET", retriever_integration)
+        
+        wstats_group = wstatsall.add_resource("group").add_resource("{group_name}")
+        wstats_group.add_method("GET", retriever_integration)
         # 7
         wstats_player = wstatsall.add_resource("player")
         wstats_player_guid = wstats_player.add_resource("{player_guid}")
@@ -101,8 +108,8 @@ class DeliveryStack(Stack):
         servers_region_name_active.add_method("GET", retriever_integration)
         
         #32
-        servers_detail = servers.add_resource("detail")
-        servers_detail.add_method("GET", retriever_integration)
+        # servers_detail = servers.add_resource("detail")
+        # servers_detail.add_method("GET", retriever_integration)
         
         #40
         groups = api.root.add_resource("groups")
@@ -114,7 +121,7 @@ class DeliveryStack(Stack):
         
         #49
         groups_add = groups.add_resource("add")
-        groups_add.add_method("POST", delivery_writer_integration, request_parameters={"method.request.header.pass": True})
+        groups_add.add_method("POST", delivery_writer_integration, api_key_required=True)
         
         #50
         leaders_cat_region_name_type_name = api.root.add_resource("leaders").add_resource("{category}").add_resource("region").add_resource("{region}").add_resource("type").add_resource("{type}")

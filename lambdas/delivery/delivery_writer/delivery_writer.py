@@ -8,11 +8,14 @@ import datetime
 
 if __name__ == "__main__":
     TABLE_NAME = "rtcwprostats-database-DDBTable2F2A2F95-1BCIOU7IE3DSE"
+    MATCH_STATE_MACHINE = ""  # set this at debug time
 else:
     TABLE_NAME = os.environ['RTCWPROSTATS_TABLE_NAME']
+    MATCH_STATE_MACHINE = os.environ['RTCWPROSTATS_FUNNEL_STATE_MACHINE']
     
 dynamodb = boto3.resource('dynamodb')
 ddb_table = dynamodb.Table(TABLE_NAME)
+sf_client = boto3.client('stepfunctions')
 
 log_level = logging.INFO
 logging.basicConfig(format='%(name)s:%(levelname)s:%(message)s')
@@ -34,20 +37,15 @@ def handler(event, context):
     if api_path == "/groups/add":
     
         data = {}
-
         submitter_ip = event.get("headers", {}).get("X-Forwarded-For","")
-        password = event.get("headers", {}).get("pass","")
-        
-        if password == 123: #i'll put this somewhere for sure
-            message = "Wrong pass code"
-            logger.error(message)
-            data = make_error_dict(message,"")
-            
+                   
         try:
             body = event["body"]
             body_json = json.loads(body)
             logger.info("submitted info: " + body)
         except:
+            logger.error("Event was")
+            logger.error(event)
             message = "Could not get body from the event"
             logger.error(message)
             data = make_error_dict(message,"")
@@ -70,6 +68,7 @@ def handler(event, context):
             message = "Matches added to group " + str(group_name)
             data["response"] = message
             logger.info(message)
+            execute_state_machine(group_name)
             
     return {
         'statusCode': 200,
@@ -79,6 +78,26 @@ def handler(event, context):
             },
         'body': json.dumps(data, default=default_type_error_handler)
         }
+
+def execute_state_machine(group_name):
+    try:
+        response = sf_client.start_execution(
+                stateMachineArn=MATCH_STATE_MACHINE,
+                input='{"tasktype": "group_cacher","taskdetail": "' + group_name + '"}'
+                )
+    except Exception as ex:
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        error_msg = template.format(type(ex).__name__, ex.args)
+        message = "Failed to start state machine for group_cacher group: " + group_name + "\n" + error_msg
+        logger.error(message)
+    else:
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            logger.info("Started state machine " + response['executionArn'])
+        else:
+            logger.warning("Bad response from state machine " + str(response))
+            message += "\nState machine failed."
+            logger.error(message)
+            
 
 # https://stackoverflow.com/questions/63278737/object-of-type-decimal-is-not-json-serializable
 def default_type_error_handler(obj):
@@ -127,7 +146,7 @@ def ddb_prepare_group_item(region, match_type, group_name, matches, submitter_ip
         }
     return group_item
 
-
+# curl -X POST "https://rtcwproapi.donkanator.com/groups/add" -H "content-type: application/json" -H "pass: 123" -d "{ \"region\": \"eu\" , \"type\": \"6\", \"group_name\": \"gather16904\", \"matches\": [1634234950,1634236160,1634238542,1634238932] }"
 if __name__ == "__main__":
     event = {
         "resource": "/groups/add",
@@ -135,6 +154,6 @@ if __name__ == "__main__":
             "pass": "123",
             "X-Forwarded-For": "199.247.45.106",
         },
-    "body": "{ \"region\": \"na\" , \"type\": \"6\", \"group_name\": \"gather14567\", \"matches\": [1234,2345,3456]  }"
+    "body": "{ \"region\": \"na\" , \"type\": \"6\", \"group_name\": \"gather16916\", \"matches\": [1634262652,1634264098,1634265028,1634265601]  }"
     }
     print(handler(event, None))

@@ -168,7 +168,7 @@ url_path_match = "player/" +  player_guid
 obj = get_api_response_as_json(url_path_match)
 check_obj_type(obj, dict)
 check_num_elements(obj, 4, 30)
-check_json_value(obj, "realname", str, None)
+check_json_value(obj, "real_name", str, None)
 
 # /player/search/{begins_with}
 url_path_match = "player/search/" +  seach_player
