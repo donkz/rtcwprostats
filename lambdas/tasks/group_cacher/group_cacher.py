@@ -16,9 +16,8 @@ ddb_client = boto3.client('dynamodb')
 
 log_level = logging.INFO
 logging.basicConfig(format='%(name)s:%(levelname)s:%(message)s')
-logger = logging.getLogger('summary')
+logger = logging.getLogger('group_cacher')
 logger.setLevel(log_level)
-
 
 def handler(event, context):
     """Merge summaries for a player including match."""
@@ -27,12 +26,14 @@ def handler(event, context):
     else:
         log_stream_name = context.log_stream_name
 
-    group_name = event
+    group_name = event["taskdetail"]
     logger.info("Processing match group: " + group_name)
     process_rtcwpro_summary(ddb_table, ddb_client, group_name, log_stream_name)
     return {"result": "ok"}
 
-
 if __name__ == "__main__":
-    event = "gather15943"
+    event = {
+      "tasktype": "group_cacher",
+      "taskdetail": "gather16898"
+    }
     handler(event, None)
