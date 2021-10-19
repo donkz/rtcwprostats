@@ -37,13 +37,7 @@ def handler(event, context):
     
     process_rtcwpro_elo(ddb_table, ddb_client, match_id, log_stream_name)
 
-    return {
-        'statusCode': 200,
-        'headers': {
-            'Content-Type': 'text/plain'
-        },
-        'body': 'Elo function finished without exceptions.'
-    }
+    return { "matchid": int(match_id) }
 
 
 if __name__ == "__main__":

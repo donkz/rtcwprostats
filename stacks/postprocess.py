@@ -16,7 +16,7 @@ class PostProcessStack(Stack):
         super().__init__(scope, id, **kwargs)
 
         fail_topic = sns.Topic(self, "Postprocessing Failure Topic")
-        success_topic = sns.Topic(self, "Postprocessing Success Topic")
+        # success_topic = sns.Topic(self, "Postprocessing Success Topic")
 
         ddb_lambda_role = iam.Role(self, "Lambda-ddb-role",
                                    role_name='rtcwpro-lambda-postprocessing-role',
@@ -99,23 +99,22 @@ class PostProcessStack(Stack):
                                                      message=sfn.TaskInput.from_text("Process Failure")
                                                      )
 
-        success = tasks.SnsPublish(self, "Postprocessing Success",
-                                   topic=success_topic,
-                                   integration_pattern=sfn.IntegrationPattern.REQUEST_RESPONSE,
-                                   message=sfn.TaskInput.from_text("Process success!")
-                                   )
+        # success = tasks.SnsPublish(self, "Postprocessing Success",
+        #                            topic=success_topic,
+        #                            integration_pattern=sfn.IntegrationPattern.REQUEST_RESPONSE,
+        #                            message=sfn.TaskInput.from_text("Process success!")
+        #                            )
 
         Round1Processing = tasks.LambdaInvoke(self, "Process gamelog", input_path="$.matchid", lambda_function=gamelog_lambda)
-        #Round1Processing.next(success)
-        ELO = tasks.LambdaInvoke(self, "Calculate Elo", input_path="$.matchid", lambda_function=elo_lambda)
-        Summary = tasks.LambdaInvoke(self, "Summarize stats", input_path="$.matchid", lambda_function=summary_lambda)
+        
         Discordmatch = tasks.LambdaInvoke(self, "Discord match notify", input_path="$.matchid", lambda_function=discord_match_notify_lambda)
-        # wSummary = tasks.LambdaInvoke(self, "Summarize wstats", input_path="$.matchid", lambda_function=wsummary_lambda)
+        ELO = tasks.LambdaInvoke(self, "Calculate Elo", input_path="$.matchid", result_path="$.Payload",lambda_function=elo_lambda).next(Discordmatch)
+        Summary = tasks.LambdaInvoke(self, "Summarize stats", input_path="$.matchid", lambda_function=summary_lambda)
 
         Round2Processing = sfn.Parallel(self, "Do the work in parallel")
         Round2Processing.branch(ELO)
         Round2Processing.branch(Summary)
-        Round2Processing.branch(Discordmatch)
+
         # Round2Processing.branch(wSummary)
         Round2Processing.add_catch(send_failure_notification)
         #Round2Processing.next(success)
