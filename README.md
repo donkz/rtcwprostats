@@ -77,6 +77,7 @@ x is done , / is work in progress, blank is planned
 
 Example:
 
+### Matches
 https://rtcwproapi.donkanator.com/matches/recent/92 will (maybe) give match 16098173561, therefore stats and wstats will follow:
 
 https://rtcwproapi.donkanator.com/matches/type/na/6
@@ -84,36 +85,40 @@ note: idenitifying server region is done by some server name parts or manually
 
 https://rtcwproapi.donkanator.com/matches/server/virg
 
+### Stats
 https://rtcwproapi.donkanator.com/stats/1609817356
 
-https://rtcwproapi.donkanator.com/stats/1630476331,1630475541,1630474233,1630472750
+https://rtcwproapi.donkanator.com/stats/group/gather15943
 
+### Wstats
 https://rtcwproapi.donkanator.com/wstats/1609817356
 
 https://rtcwproapi.donkanator.com/wstats/player/A53B3ED2A896CB/match/1609817356
 
+### Player
 https://rtcwproapi.donkanator.com/player/01cf12e8114d67c45142e0f62cd24628#1626146020
 
 https://rtcwproapi.donkanator.com/player/search/donk
-note: idenitifying players by real_name is a manual effort at this time
+
+### Server
 
 https://rtcwproapi.donkanator.com/servers
-
-https://rtcwproapi.donkanator.com/servers/detail
 
 https://rtcwproapi.donkanator.com/servers/region/na
 
 https://rtcwproapi.donkanator.com/servers/region/na/active
 
+### Groups
+
 https://rtcwproapi.donkanator.com/groups/add (POST)
 
 https://rtcwproapi.donkanator.com/groups/group_name/gather15943
 
-https://rtcwproapi.donkanator.com/groups/region/na
-
 https://rtcwproapi.donkanator.com/groups/region/na/type/6
 
 https://rtcwproapi.donkanator.com/groups/region/na/type/6/group_name/gather15943
+
+### Leaderboards
 
 https://rtcwproapi.donkanator.com/leaders/elo/region/na/type/6/limit/10
 
@@ -121,15 +126,21 @@ https://rtcwproapi.donkanator.com/leaders/acc/region/eu/type/3/limit/10
 
 https://rtcwproapi.donkanator.com/leaders/kdr/region/sa/type/6/limit/10
 
+### Aliases
+
 https://rtcwproapi.donkanator.com/aliases/player/22b0e88467093a63d5dd979eec2631d1
 
 https://rtcwproapi.donkanator.com/aliases/search/donk
+
+https://rtcwproapi.donkanator.com/aliases/recent/limit/3
+
+### Elo progress
 
 https://rtcwproapi.donkanator.com/eloprogress/player/22b0e88467093a63d5dd979eec2631d1/region/na/type/6
 
 https://rtcwproapi.donkanator.com/eloprogress/match/1632108123
 
-https://rtcwproapi.donkanator.com/aliases/recent/limit/3
+
 
 ## Usage 
 * Familiarize yourself with what's available in the API section
