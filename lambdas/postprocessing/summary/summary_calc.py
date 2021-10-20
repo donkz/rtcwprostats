@@ -143,9 +143,19 @@ def build_new_stats_summary(stats, stats_old):
                 stats_dict_updated[guid][metric] = int(metrics[metric])
                 continue
             if metric in stats_old[guid]:
-                stats_dict_updated[guid][metric] = int(stats_old[guid][metric]) + int(metrics[metric])
+                if metric not in ["accuracy","efficiency", "killpeak"]:
+                    stats_dict_updated[guid][metric] = int(stats_old[guid][metric]) + int(metrics[metric])
             else:
                 stats_dict_updated[guid][metric] = int(metrics[metric])
+                
+        new_acc = metrics["hits"]/metrics["shots"]
+        stats_dict_updated[guid]["accuracy"] = int(new_acc)
+        
+        efficiency = 100*stats_dict_updated[guid]["kills"]/(stats_dict_updated[guid]["kills"] + stats_dict_updated[guid]["deaths"])                
+        stats_dict_updated[guid]["efficiency"] = int(efficiency)
+        stats_dict_updated[guid]["killpeak"] = max(stats_dict_updated[guid].get("killpeak",0),metrics.get("killpeak",0))
+                
+                
         stats_dict_updated[guid]["games"] = stats_old.get(guid,{}).get("games",0) + 1
     return stats_dict_updated
 
