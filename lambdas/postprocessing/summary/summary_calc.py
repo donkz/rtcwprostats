@@ -88,12 +88,17 @@ def process_rtcwpro_summary(ddb_table, ddb_client, match_id, log_stream_name):
     
     # build updated stats summaries
     stats_dict_updated = build_new_stats_summary(stats, stats_old)
-    stats_items = ddb_prepare_statswstats_items("stats", stats_dict_updated, match_region_type, real_names)
+    
+    games_dict = {}
+    for s in stats_dict_updated:
+        games_dict[s] = int(stats_dict_updated[s]["games"])
+    
+    stats_items = ddb_prepare_statswstats_items("stats", stats_dict_updated, match_region_type, real_names, games_dict)
     
     # build updated wtats summaries
     wstats = new_wstats
     wstats_dict_updated = build_new_wstats_summary(wstats, wstats_old)
-    wstats_items = ddb_prepare_statswstats_items("wstats", wstats_dict_updated, match_region_type, real_names)
+    wstats_items = ddb_prepare_statswstats_items("wstats", wstats_dict_updated, match_region_type, real_names, games_dict)
     
     # build updated killpeaks
     killpeak_items = ddb_prepare_killpeak_items(stats, killpeak_old, match_region_type, real_names)
@@ -258,14 +263,14 @@ def update_player_info_stats(ddb_table, stats_dict_updated, stats_type):
                               ExpressionAttributeValues=expression_values)
         
         
-def ddb_prepare_statswstats_items(stat_type, dict_, match_region_type, real_names):
+def ddb_prepare_statswstats_items(stat_type, dict_, match_region_type, real_names, games_dict):
     items = []
     for guid, player_stat in dict_.items():
-        item = ddb_prepare_stat_item(stat_type, guid, match_region_type, player_stat, real_names)
+        item = ddb_prepare_stat_item(stat_type, guid, match_region_type, player_stat, real_names, games_dict.get(guid, 0))
         items.append(item)
     return items
 
-def ddb_prepare_stat_item(stat_type, guid, match_region_type, player_stat, real_names): 
+def ddb_prepare_stat_item(stat_type, guid, match_region_type, player_stat, real_names, real_games): 
     if stat_type == "stats":
         sk = "aggstats#" + match_region_type
         gsi1pk = "leaderkdr#" + match_region_type
@@ -285,7 +290,7 @@ def ddb_prepare_stat_item(stat_type, guid, match_region_type, player_stat, real_
         gsi1pk = "leaderacc#" + match_region_type
         try:
             acc = calculate_accuracy(player_stat)
-            games = player_stat[list(player_stat.keys())[0]]['games']
+            games = real_games
         except: 
             logger.warning("Could not calculate KDR for guid")
             acc = 0.0
