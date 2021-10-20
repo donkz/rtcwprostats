@@ -799,7 +799,7 @@ def process_player_response(response):
                 if "aggstats#" in  item["sk"]:
                     data["aggstats"][item["sk"].replace("aggstats#","")] = item["data"]
                     data["kdr"][item["gsi1pk"].replace("leaderkdr#","")] = float(item["gsi1sk"])
-                if "aggstats#" in  item["sk"]:
+                if "aggwstats#" in  item["sk"]:
                     data["aggwstats"][item["sk"].replace("aggwstats#","")] = item["data"]
                     data["acc"][item["gsi1pk"].replace("leaderacc#","")] = float(item["gsi1sk"])
         except:
