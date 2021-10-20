@@ -57,8 +57,6 @@ x is done , / is work in progress, blank is planned
 |[x] |Weapons |/wstats/player/{player_guid}/match/{matchid} |By player by match |
 |[x] |Weapons |/wstats/player/{player_guid} |By player by several matches |
 |[x] |Players |/player/{player_guid} |Filter by given guid to get player info |
-|    |Players |/player/{player_guid}/aliases |Filter by guid to get aliases range and dates |
-|    |Players |/player/{player_guid}/eloprogress/region/{region}/type/{type} |Filter by guid sort by time to get elo progress |
 |[x] |Players |/player/search/{begins_with} |Search for real names that start with a string |
 |[x] |Servers |/servers |Get list of all servers with stats |
 |[x] |Servers |/servers/detail |Same, but with details |
@@ -248,4 +246,13 @@ If you are an API consumer, please do your part:
 * add: /eloprogress/match/{match_id}
 * fix: redo db schema for recording aliases. Previous /aliases/* functions should not be affected.
 * add: /aliases/recent/limit/{limit}
+* add: group summary calculation driven by group submission
+* add: /stats/group/{group_name}
+* remove: /stats/{csv of matches} (replaced by grouping functionality)
+* remove: /stats/{game_type} (no use cases)
+* add: match_summary element describing rounds, wins, and durations under /stats/xx
+* fix: Include ELO +/- info into discord notifier
+* fix: Fix wstats aggregation to include better number of games
+* fix: Don't summarize all stats keys (efficiency, accuracy, killpeak)
+* fix: player/{player_guid} was not returning wstats
 
