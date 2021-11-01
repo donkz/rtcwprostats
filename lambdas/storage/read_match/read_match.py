@@ -5,6 +5,7 @@ import time as _time
 import os
 import datetime
 from botocore.exceptions import ClientError
+from read_match_matchinfo import build_teams, build_new_match_summary, convert_stats_to_dict
 
 from reader_writeddb import (
     # ddb_put_item,
@@ -133,6 +134,7 @@ def handler(event, context):
     logger.info("Setting the match_type to " + match_type)
     gamestats["match_type"] = match_type
     gamestats["gameinfo"]["server_name"] = gamestats['serverinfo']['serverName']
+    gamestats["gameinfo"]["teams"] = add_team_info(gamestats)
 
     submitter_ip = gamestats.get("submitter_ip", "no.ip.in.file")
     
@@ -240,18 +242,18 @@ def prepare_playerinfo_list(stats, sk):
         item_list.append({"pk": "player#" + guid, "sk": sk})
     return item_list
 
-def convert_stats_to_dict(stats):
-    if len(stats) == 2 and len(stats[0]) > 1: #stats grouped in teams in a list of 2 teams , each team over 1 player
-        logger.info("Number of stats entries 2, trying to merge teams")
-        stats_tmp = stats[0].copy()
-        stats_tmp.update(stats[1])
-    else:
-        logger.info("Merging list into dict.")
-        stats_tmp = {}
-        for player in stats:
-            stats_tmp.update(player)
-    logger.info("New statsall has " + str(len(stats_tmp)) + " players in a " + str(type(stats_tmp)))
-    return stats_tmp
+# def convert_stats_to_dict(stats):
+#     if len(stats) == 2 and len(stats[0]) > 1: #stats grouped in teams in a list of 2 teams , each team over 1 player
+#         logger.info("Number of stats entries 2, trying to merge teams")
+#         stats_tmp = stats[0].copy()
+#         stats_tmp.update(stats[1])
+#     else:
+#         logger.info("Merging list into dict.")
+#         stats_tmp = {}
+#         for player in stats:
+#             stats_tmp.update(player)
+#     logger.info("New statsall has " + str(len(stats_tmp)) + " players in a " + str(type(stats_tmp)))
+#     return stats_tmp
 
 def get_batch_items(item_list, ddb_table, dynamodb, log_stream_name):
     """Get items in a batch."""
@@ -296,6 +298,22 @@ def integrity_checks(gamestats):
         return integrity, message
 
     return integrity, message
+
+def add_team_info(gamestats):
+    teams = "TeamA:error;TeamB:error"
+    
+    try:
+        new_total_stats = {}
+        new_total_stats["dummy"] = convert_stats_to_dict(gamestats["stats"])
+        teamA, teamB, aliases, team_mapping, alias_team_str = build_teams(new_total_stats)
+        teams = alias_team_str
+    except Exception as ex:
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        error_msg = template.format(type(ex).__name__, ex.args)
+        message = "Failed to make teams" + error_msg
+        logger.warning(message)
+    
+    return teams  
 
 
 if __name__ == "__main__":

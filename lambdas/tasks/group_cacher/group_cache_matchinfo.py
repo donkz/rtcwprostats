@@ -15,12 +15,15 @@ def build_teams(new_total_stats):
     teamB = []
     assigned = False
     team_mapping = {}
+    aliases = {}
     for match, match_stats in new_total_stats.items():
         current_axis = []
         current_allied = []
-        aliases = {}
+        
         # print("Processing match " + match)
         team_mapping[match] = {}
+        team_mapping[match]["TeamB"] = "unset"
+        team_mapping[match]["TeamA"] = "unset"
         for guid, player_stat in match_stats.items():
             # print("Processing player " + guid)
             # print("saw guy " + player_stat.get('alias',''))
@@ -41,10 +44,10 @@ def build_teams(new_total_stats):
             else:
                 if guid in teamA:
                     if debug: print(guid + " was already in a teamA")
-                    if "TeamA" not in team_mapping[match]:
+                    if team_mapping[match]["TeamA"] == "unset":
                         team_mapping[match]["TeamA"]= player_stat.get('team','Axis')
                 elif guid in teamB:
-                    if "TeamB" not in team_mapping[match]:
+                    if team_mapping[match]["TeamB"] == "unset":
                         team_mapping[match]["TeamB"]= player_stat.get('team','Allied')
                     if debug: print(guid + " was already in a teamB")
                 else:
@@ -73,13 +76,13 @@ def build_teams(new_total_stats):
         # print("Done with match " + match)
         game +=1
     
-    alias_team_str = "A:"
+    alias_team_str = "TeamA:"
     for guid in teamA:
-        alias_team_str += aliases[guid][0:8] + ","
+        alias_team_str += aliases[guid][0:12] + ","
     
-    alias_team_str = alias_team_str[0:-1] + " B:"
+    alias_team_str = alias_team_str[0:-1] + ";TeamB:"
     for guid in teamB:
-        alias_team_str += aliases[guid][0:8] + ","
+        alias_team_str += aliases[guid][0:12] + ","
         
     return teamA, teamB, aliases, team_mapping, alias_team_str[0:-1]
 
@@ -211,7 +214,6 @@ def seconds_to_minutes(duration):
     """Convert int seconds to string minutes."""
     duration_nice = str(int(duration/60)).zfill(2) + ":" + str(duration%60).zfill(2)
     return duration_nice
-
 
 def convert_stats_to_dict(stats):
     """Convert stats list to dict for easier processing."""

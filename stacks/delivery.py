@@ -53,6 +53,9 @@ class DeliveryStack(Stack):
         stats_player_guid = stats_player.add_resource("{player_guid}")
         stats_player_guid.add_method("GET", retriever_integration)
         
+        stats_player_guid_region_type = stats_player_guid.add_resource("region").add_resource("{region}").add_resource("type").add_resource("{type}")
+        stats_player_guid_region_type.add_method("GET", retriever_integration)
+        
         stats_group = statsall.add_resource("group").add_resource("{group_name}")
         stats_group.add_method("GET", retriever_integration)
 

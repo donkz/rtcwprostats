@@ -158,15 +158,23 @@ def handler(event, context):
                 else:
                     data = responses
 
-    if api_path == "/stats/player/{player_guid}":
+    if api_path == "/stats/player/{player_guid}" or api_path == "/stats/player/{player_guid}/region/{region}/type/{type}":
         logger.info("Processing " + api_path)
         if "player_guid" in event["pathParameters"]:
-            guid = event["pathParameters"]["player_guid"]
-            logger.info("Parameter: " + guid)
-            pk = "stats" + "#" + guid
+            guid = event["pathParameters"]["player_guid"]      
             skhigh = int(time.time())
             sklow = skhigh - 60 * 60 * 24 * 30
-            responses = get_range(None, pk, str(sklow), str(skhigh), ddb_table, log_stream_name, 24, False)
+            
+            if api_path == "/stats/player/{player_guid}/region/{region}/type/{type}":
+                region = event["pathParameters"]["region"]
+                type_ = event["pathParameters"]["type"]
+                logger.info("Parameter: " + guid + " " + region + " " + type_)
+                pk = "stats#" + region + "#" + type_ + "#" + guid
+                responses = get_range("gsi1", pk, str(sklow), str(skhigh), ddb_table, log_stream_name, 40, False)
+            else:
+                logger.info("Parameter: " + guid)
+                pk = "stats" + "#" + guid
+                responses = get_range(None, pk, str(sklow), str(skhigh), ddb_table, log_stream_name, 40, False)
 
             if "error" not in responses:
                 # logic specific to /stats/player/{player_guid}
@@ -546,24 +554,24 @@ def handler(event, context):
             responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, projections, log_stream_name, 100, ascending)  
             data = process_group_responses(responses)
                      
-        if len(path_tokens) == 2 and path_tokens[0] == "region" and path_tokens[1] in ["sa","na","eu","unk"]:
-            logger.info("Parameter: /groups/region/{region_name}")
-            pk_name = "pk"
-            pk = "group"
-            index_name = "lsi"
-            skname="lsipk"
-            begins_with = path_tokens[1]
-            ascending = False
-            responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, projections, log_stream_name, 100, ascending)  
-            data = process_group_responses(responses)    
+        # if len(path_tokens) == 2 and path_tokens[0] == "region" and path_tokens[1] in ["sa","na","eu","unk"]:
+        #     logger.info("Parameter: /groups/region/{region_name}")
+        #     pk_name = "pk"
+        #     pk = "group"
+        #     index_name = "lsi"
+        #     skname="lsipk"
+        #     begins_with = path_tokens[1]
+        #     ascending = False
+        #     responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, projections, log_stream_name, 100, ascending)  
+        #     data = process_group_responses(responses)    
         
         if (len(path_tokens) == 4 and path_tokens[0] == "region" and path_tokens[1] in ["sa","na","eu","unk"] and 
            path_tokens[2] == "type" and path_tokens[3] in ["3","6","6plus"]) :
             logger.info("Parameter: /groups/region/{region_name}/type/{match_type}")
-            pk_name = "pk"
+            pk_name = "gsi1pk"
             pk = "group"
-            index_name = "lsi"
-            skname="lsipk"
+            index_name = "gsi1"
+            skname="gsi1sk"
             begins_with = path_tokens[1] + "#" + path_tokens[3]
             ascending = False
             responses = get_begins(pk_name, pk, begins_with, ddb_table, index_name, skname, projections, log_stream_name, 100, ascending)  
@@ -654,8 +662,10 @@ def get_range(index_name, pk, sklow, skhigh, table, log_stream_name, limit, asce
     """Get several items by pk and range of sk."""
     item_info = pk + ":" + sklow + " to " + skhigh + ". Logstream: " + log_stream_name
     try:
-        if index_name:
+        if index_name == "lsi":
             response = table.query(IndexName=index_name, KeyConditionExpression=Key('pk').eq(pk) & Key("lsipk").between(sklow, skhigh), Limit=limit,ReturnConsumedCapacity='NONE', ScanIndexForward=ascending)
+        elif index_name == "gsi1":
+            response = table.query(IndexName=index_name, KeyConditionExpression=Key('gsi1pk').eq(pk) & Key("gsi1sk").between(sklow, skhigh), Limit=limit,ReturnConsumedCapacity='NONE', ScanIndexForward=ascending)
         else:
             response = table.query(KeyConditionExpression=Key('pk').eq(pk) & Key('sk').between(sklow, skhigh), Limit=limit,ReturnConsumedCapacity='NONE', ScanIndexForward=ascending)
     except ClientError as e:
@@ -886,6 +896,17 @@ if __name__ == "__main__":
     }
     '''
     
+    event_str_stats_player_region_type = '''
+    {
+    "resource": "/stats/player/{player_guid}/region/{region}/type/{type}",
+    "pathParameters": {
+        "player_guid": "ecfc385510bbbaa564f8b6cfd4c68f61",
+        "region":"na",
+        "type":"6"
+    }
+    }
+    '''
+    
     # event_stats_csv = '''
     # {
     # "resource": "/stats/{match_id}",
@@ -1042,5 +1063,5 @@ if __name__ == "__main__":
     }
     '''
  
-    event = json.loads(event_str_stats_group)
+    event = json.loads(event_str_stats_player_region_type)
     print(handler(event, None))

@@ -33,5 +33,5 @@ def truncateTable(table):
                 Key={key: each[key] for key in tableKeyNames}
             )
             
-truncateTable(table)
+# truncateTable(table)
 

@@ -140,7 +140,7 @@ def ddb_prepare_group_item(region, match_type, group_name, matches, submitter_ip
         'sk'    : group_name + "#" + ts,
         'lsipk' : region + "#" + match_type + "#" + group_name + "#" + ts,
         'gsi1pk': "group",
-        'gsi1sk': region + "#" + ts,
+        'gsi1sk': region + "#" + match_type + "#" + ts,
         'data'  : json.dumps(matches),
         "submitter_ip": submitter_ip
         }

@@ -152,7 +152,7 @@ def ddb_prepare_stats_items(gamestats):
             stats_item = {
                 'pk'    : 'stats#' + playerguid,
                 'sk'    : matchid,
-                'gsi1pk': "stats#" + gamestats["match_type"],
+                'gsi1pk': "stats#" + gamestats["match_type"] + "#" + playerguid,
                 'gsi1sk': matchid,
                 'data'  : json.dumps(stat)
              }
