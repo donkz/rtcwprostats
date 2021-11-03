@@ -52,6 +52,7 @@ x is done , / is work in progress, blank is planned
 |[x] |Matches |/matches/server/{begins_with} |Get 100 recent matches from a server |
 |[x] |Gamelog |/gamelogs/{match_round_id} |Retrieve game log for a match |
 |[x] |Stats   |/stats/player/{guid} |Filter stats for a player guid from many matches |
+|[x] |Stats   |/stats/player/{player_guid}/region/{region}/type/{type} |Filter stats for a player/region/type |
 |[x] |Stats   |/stats/{matchid} |Filter stats for a match or range of matches |
 |[x] |Weapons |/wstats/{matchid} |By match retrieve all wstats |
 |[x] |Weapons |/wstats/player/{player_guid}/match/{matchid} |By player by match |
@@ -89,6 +90,8 @@ https://rtcwproapi.donkanator.com/matches/server/virg
 https://rtcwproapi.donkanator.com/stats/1609817356
 
 https://rtcwproapi.donkanator.com/stats/group/gather15943
+
+https://rtcwproapi.donkanator.com/stats/player/ecfc385510bbbaa564f8b6cfd4c68f61/region/na/type/6
 
 ### Wstats
 https://rtcwproapi.donkanator.com/wstats/1609817356
@@ -266,4 +269,8 @@ If you are an API consumer, please do your part:
 * fix: Fix wstats aggregation to include better number of games
 * fix: Don't summarize all stats keys (efficiency, accuracy, killpeak)
 * fix: player/{player_guid} was not returning wstats
+* add: /stats/player/{player_guid}/region/{region}/type/{type} and corresponding changes to the db
+* fix: sorted groups by added date
+* fix: grouping summarization errors
+* add: teams to match info
 

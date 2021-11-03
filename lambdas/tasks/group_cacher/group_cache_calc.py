@@ -67,7 +67,6 @@ def process_rtcwpro_summary(ddb_table, ddb_client, group_name, log_stream_name):
     stats_old = {}
     for match_id, stats in new_total_stats.items():
         stats_dict_updated = build_new_stats_summary(stats, stats_old)
-        # print(stats_dict_updated["8ff4ecf7bd1b87edad5383efcfdb3c8d"]["kills"])
         stats_old = stats_dict_updated.copy()
     
     teamA, teamB, aliases, team_mapping, alias_team_str = build_teams(new_total_stats)
@@ -146,55 +145,67 @@ def emulate_wstats_api(wstats_dict_updated, group_name):
 def build_new_stats_summary(stats, stats_old):
     """Add up new and old stats."""
     
-    stats_dict_updated = {}
+    stats_dict_new = {}
     for guid in stats:
         metrics = stats[guid]["categories"]
-        stats_dict_updated[guid] = {}
+        stats_dict_new[guid] = {}
         for metric in metrics:
             if guid not in stats_old:
-                stats_dict_updated[guid][metric] = int(metrics[metric])
+                stats_dict_new[guid][metric] = int(metrics[metric])
                 continue
             if metric in stats_old[guid]:
                 if metric not in ["accuracy","efficiency", "killpeak"]:
-                    stats_dict_updated[guid][metric] = int(stats_old[guid][metric]) + int(metrics[metric])
+                    stats_dict_new[guid][metric] = int(stats_old[guid][metric]) + int(metrics[metric])
             else:
-                stats_dict_updated[guid][metric] = int(metrics[metric])
+                stats_dict_new[guid][metric] = int(metrics[metric])
         
         new_acc = metrics["hits"]/metrics["shots"]
-        stats_dict_updated[guid]["accuracy"] = int(new_acc)
+        stats_dict_new[guid]["accuracy"] = int(new_acc)
         
-        efficiency = 100*stats_dict_updated[guid]["kills"]/(stats_dict_updated[guid]["kills"] + stats_dict_updated[guid]["deaths"])                
-        stats_dict_updated[guid]["efficiency"] = int(efficiency)
-        stats_dict_updated[guid]["killpeak"] = max(stats_dict_updated[guid].get("killpeak",0),metrics.get("killpeak",0))
+        efficiency = 100*stats_dict_new[guid]["kills"]/(stats_dict_new[guid]["kills"] + stats_dict_new[guid]["deaths"])                
+        stats_dict_new[guid]["efficiency"] = int(efficiency)
+        stats_dict_new[guid]["killpeak"] = max(stats_dict_new[guid].get("killpeak",0),metrics.get("killpeak",0))
     
-        stats_dict_updated[guid]["games"] = stats_old.get(guid,{}).get("games",0) + 1
-    return stats_dict_updated
+        stats_dict_new[guid]["games"] = stats_old.get(guid,{}).get("games",0) + 1
+    
+    #re-fill untouched data from stats_old
+    for guid in stats_old:
+        if guid not in stats_dict_new:
+            stats_dict_new[guid] = stats_old[guid]
+    
+    return stats_dict_new
                     
 def build_new_wstats_summary(wstats, wstats_old):
     """Add up new and old stats."""
-    wstats_dict_updated = {}
+    wstats_dict_new = {}
     for guid, wstat in wstats.items():
-        wstats_dict_updated[guid] = {}
+        wstats_dict_new[guid] = {}
         for weapon, metrics in wstat.items():
             # print(weapon,weapon_info)
-            wstats_dict_updated[guid][weapon] = {}
+            wstats_dict_new[guid][weapon] = {}
 
             for metric in metrics:
                 if metric == "weapon":
                     continue
                 #print(metric, metrics[metric])
                 if guid not in wstats_old:
-                    wstats_dict_updated[guid][weapon][metric] = int(metrics[metric])
+                    wstats_dict_new[guid][weapon][metric] = int(metrics[metric])
                     continue
                 if weapon not in wstats_old[guid]:
-                    wstats_dict_updated[guid][weapon][metric] = int(metrics[metric])
+                    wstats_dict_new[guid][weapon][metric] = int(metrics[metric])
                     continue
                 if metric in wstats_old[guid][weapon]:
-                    wstats_dict_updated[guid][weapon][metric] = int(wstats_old[guid][weapon][metric]) + int(metrics[metric])
+                    wstats_dict_new[guid][weapon][metric] = int(wstats_old[guid][weapon][metric]) + int(metrics[metric])
                 else:
-                    wstats_dict_updated[guid][weapon][metric] = int(metrics[metric])
-            wstats_dict_updated[guid][weapon]["games"] = wstats_old.get(guid,{}).get(weapon, {}).get("games",0) + 1
-    return wstats_dict_updated
+                    wstats_dict_new[guid][weapon][metric] = int(metrics[metric])
+            wstats_dict_new[guid][weapon]["games"] = wstats_old.get(guid,{}).get(weapon, {}).get("games",0) + 1
+    
+    #re-fill untouched data from stats_old
+    for guid in wstats_old:
+        if guid not in wstats_dict_new:
+            wstats_dict_new[guid] = wstats_old[guid]
+            
+    return wstats_dict_new
         
 
 def make_error_dict(message, item_info):
