@@ -14,6 +14,7 @@ from stacks.delivery import DeliveryStack
 from stacks.postprocess import PostProcessStack
 from stacks.read_match_lambda import ReadMatchStack
 from stacks.taskfunnel import TaskFunnelStack
+from stacks.custom_bus import CustomBusStack
 
 from stacks.settings import (
     cert_arn,
@@ -36,9 +37,10 @@ database = DatabaseStack(app, "rtcwprostats-database", env=env)
 storage = StorageStack(app, "rtcwprostats-storage", env=env, lambda_tracing=lambda_tracing)
 
 task_funnel_stack = TaskFunnelStack(app, "rtcwprostats-taskfunnel", lambda_tracing=lambda_tracing, ddb_table=database.ddb_table, env=env)
+custom_bus_stack = CustomBusStack(app, "rtcwprostats-custom-bus", lambda_tracing=lambda_tracing, ddb_table=database.ddb_table, env=env)
 post_process_stack = PostProcessStack(app, "rtcwprostats-postprocess", lambda_tracing=lambda_tracing, ddb_table=database.ddb_table, env=env)
 
-reader = ReadMatchStack(app, "rtcwprostats-reader", storage_bucket=storage.storage_bucket, ddb_table=database.ddb_table, read_queue=storage.read_queue, read_dlq=storage.read_dlq, postproc_state_machine=post_process_stack.postproc_state_machine, lambda_tracing=lambda_tracing, env=env)
+reader = ReadMatchStack(app, "rtcwprostats-reader", storage_bucket=storage.storage_bucket, ddb_table=database.ddb_table, read_queue=storage.read_queue, read_dlq=storage.read_dlq, postproc_state_machine=post_process_stack.postproc_state_machine, custom_event_bus=custom_bus_stack.custom_bus, lambda_tracing=lambda_tracing, env=env)
 retriever = DeliveryRetrieverStack(app, "rtcwprostats-retriever", ddb_table=database.ddb_table, env=env, lambda_tracing=lambda_tracing)
 delivery_writer = DeliveryWriterStack(app, "rtcwprostats-delivery-writer", ddb_table=database.ddb_table, funnel_sf=task_funnel_stack.funnel_state_machine, env=env, lambda_tracing=lambda_tracing)
 

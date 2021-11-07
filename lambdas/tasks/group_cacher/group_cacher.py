@@ -9,7 +9,7 @@ if __name__ == "__main__":
     TABLE_NAME = "rtcwprostats-database-DDBTable2F2A2F95-1BCIOU7IE3DSE"
 else:
     TABLE_NAME = os.environ['RTCWPROSTATS_TABLE_NAME']
-    
+
 dynamodb = boto3.resource('dynamodb')
 ddb_table = dynamodb.Table(TABLE_NAME)
 ddb_client = boto3.client('dynamodb')
@@ -18,6 +18,7 @@ log_level = logging.INFO
 logging.basicConfig(format='%(name)s:%(levelname)s:%(message)s')
 logger = logging.getLogger('group_cacher')
 logger.setLevel(log_level)
+
 
 def handler(event, context):
     """Merge summaries for a player including match."""
@@ -31,9 +32,10 @@ def handler(event, context):
     process_rtcwpro_summary(ddb_table, ddb_client, group_name, log_stream_name)
     return {"result": "ok"}
 
+
 if __name__ == "__main__":
     event = {
-      "tasktype": "group_cacher",
-      "taskdetail": "gather-Tuesday-1635951773"
+        "tasktype": "group_cacher",
+        "taskdetail": "gather-17737-1636049799"
     }
     handler(event, None)

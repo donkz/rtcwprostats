@@ -144,7 +144,7 @@ def infer_winners_bandaid(results, match_dict):
     """Determine winner of the game before this issue is closed and tested.
     https://github.com/rtcwmp-com/rtcwPro/issues/369 ."""
     
-    offense_allied = ["mp_base", "mp_sub","braundorf_b7", "mp_password2", "mp_village","bd_bunker_b2", "mp_beach","te_adlernest_b1","te_cipher_b5","te_delivery_b1","te_escape2","te_frostbite"]
+    offense_allied = ["mp_base", "mp_sub","braundorf_b7", "mp_password2", "mp_village","bd_bunker_b2", "mp_beach","te_adlernest_b1","te_cipher_b5","te_delivery_b1","te_escape2","te_frostbite", "te_ufo"]
     offense_axis = ["mp_assault", "mp_ice", "te_kungfugrip"]
     
     for match_id, info in results.items():
@@ -154,6 +154,7 @@ def infer_winners_bandaid(results, match_dict):
                 if "round1" not in info:
                     info["round1"] = {}
                     info["round1"]["duration"] = 600
+                    info["round1"]["duration_nice"] = seconds_to_minutes(600)
                     logger.warning("winners_bandaid: Missing round1 info " + match_id + "2")
     
                 if len(match_dict[match_id + "2"]["winner"].strip()) == 0:
@@ -176,18 +177,18 @@ def infer_winners_bandaid(results, match_dict):
                             logger.warning("winners_bandaid: Missing map condition to determine winner, setting default Allied")
                     elif info["round2"]["duration"] == info["round1"]["duration"]:
                         winner = "Draw"
-                elif info["round2"]["duration"] == info["round1"]["duration"]:
+                elif info["round2"]["duration"] == info["round1"]["duration"] and match_dict.get(match_id + "2",{}).get("winner","abc") == match_dict.get(match_id + "1",{}).get("winner","xyz"):
                     winner = "Draw"
                 else:
                     winner = match_dict[match_id + "2"]["winner"]
             else:
                 # if round 2 is missing, people probably gave up in r1 and offence won?
                 if info["map"] in offense_allied:
-                    winner = "Allied"
-                elif info["map"] in offense_axis:
                     winner = "Axis"
+                elif info["map"] in offense_axis:
+                    winner = "Allied"
                 else:
-                    winner = "Allied" # most likely
+                    winner = "Axis" # most likely
                     logger.warning("winners_bandaid: Missing map condition to determine winner, setting default Allied")
         except:
             logger.warning("winners_bandaid: failed badly for " + match_id)

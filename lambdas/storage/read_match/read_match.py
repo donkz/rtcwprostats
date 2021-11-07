@@ -5,7 +5,7 @@ import time as _time
 import os
 import datetime
 from botocore.exceptions import ClientError
-from read_match_matchinfo import build_teams, build_new_match_summary, convert_stats_to_dict
+from read_match_matchinfo import build_teams, convert_stats_to_dict
 
 from reader_writeddb import (
     # ddb_put_item,
@@ -35,13 +35,17 @@ logger.setLevel(log_level)
 
 if __name__ == "__main__":
     TABLE_NAME = "rtcwprostats-database-DDBTable2F2A2F95-1BCIOU7IE3DSE"
+    print("\n\n\nSet state machine and custom bus values in console\n\n\n")
     MATCH_STATE_MACHINE = ""  # set this at debug time
+    CUSTOM_BUS = ""
 else:
     TABLE_NAME = os.environ['RTCWPROSTATS_TABLE_NAME']
     MATCH_STATE_MACHINE = os.environ['RTCWPROSTATS_MATCH_STATE_MACHINE']
+    CUSTOM_BUS = os.environ['RTCWPROSTATS_CUSTOM_BUS_ARN']
 
 dynamodb = boto3.resource('dynamodb')
 ddb_client = boto3.client('dynamodb')
+event_client = boto3.client('events')
 
 
 table = dynamodb.Table(TABLE_NAME)
@@ -49,12 +53,20 @@ table = dynamodb.Table(TABLE_NAME)
 s3 = boto3.client('s3')
 sf_client = boto3.client('stepfunctions')
 
+event_template = {
+    'Source': 'rtcwpro-pipeline',
+    'DetailType': 'Discord notification',
+    'Detail': '',
+    'EventBusName': CUSTOM_BUS
+}
+
+
 def handler(event, context):
     """Read new incoming json and submit it to the DB."""
     # s3 event source
     # bucket_name = event['Records'][0]['s3']['bucket']['name']
     # file_key = event['Records'][0]['s3']['object']['key']
-    
+
     # sqs event source
     s3_request_from_sqs = json.loads(event['Records'][0]["body"])
     bucket_name = s3_request_from_sqs["Records"][0]['s3']['bucket']['name']
@@ -66,7 +78,7 @@ def handler(event, context):
         obj = s3.get_object(Bucket=bucket_name, Key=file_key)
     except s3.exceptions.ClientError as err:
         if err.response['Error']['Code'] == 'EndpointConnectionError':
-           logger.error("Connection could not be established to AWS. Possible firewall or proxy issue. " + str(err))
+            logger.error("Connection could not be established to AWS. Possible firewall or proxy issue. " + str(err))
         elif err.response['Error']['Code'] == 'ExpiredToken':
             logger.error("Credentials for AWS S3 are not valid. " + str(err))
         elif err.response['Error']['Code'] == 'AccessDenied':
@@ -93,13 +105,13 @@ def handler(event, context):
     if not integrity:
         logger.error("Failed integrity check:" + message)
         return message
-    
+
     date_time_human = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     try:
         date_time_human = datetime.datetime.fromtimestamp(int(gamestats["gameinfo"]["match_id"])).strftime("%Y-%m-%d %H:%M:%S")
     except:
         logger.warning("Could not convert epoch time to timestamp: " + gamestats["gameinfo"]["match_id"])
-     
+
     gamestats["gameinfo"]["date_time_human"] = date_time_human
 
     server = ddb_get_server(gamestats['serverinfo']['serverName'], table)
@@ -119,9 +131,9 @@ def handler(event, context):
         team1_size = len(gamestats["stats"][0].keys())
         team2_size = len(gamestats["stats"][1].keys())
         total_size = team1_size + team2_size
-    else: 
+    else:
         total_size = len(gamestats["stats"])
-                         
+
     gametype = "notype"
     if 5 < total_size <= 7:  # normally 6, but shit happens 5-8
         gametype = "3"
@@ -137,15 +149,15 @@ def handler(event, context):
     gamestats["gameinfo"]["teams"] = add_team_info(gamestats)
 
     submitter_ip = gamestats.get("submitter_ip", "no.ip.in.file")
-    
+
     stats = convert_stats_to_dict(gamestats["stats"])
-    
+
     real_name_item_list = prepare_playerinfo_list(stats, "realname")
     response = get_batch_items(real_name_item_list, table, dynamodb, "real_names for match in file " + file_key)
     real_names = {}
     if "error" not in response:
         for result in response:
-            guid = result["pk"].split("#")[1]          
+            guid = result["pk"].split("#")[1]
             real_names[guid] = result["data"]
 
     items = []
@@ -209,12 +221,11 @@ def handler(event, context):
         message = "Failed to load all records for a match " + file_key + "\n" + error_msg
         logger.error(message)
         return message
-        
+
     try:
-        response = sf_client.start_execution(
-                stateMachineArn=MATCH_STATE_MACHINE,
-                input='{"matchid": "' + gamestats["gameinfo"]["match_id"] + '","roundid": ' + gamestats["gameinfo"]["round"] + '}'
-                )
+        response = sf_client.start_execution(stateMachineArn=MATCH_STATE_MACHINE,
+                                             input='{"matchid": "' + gamestats["gameinfo"]["match_id"] + '","roundid": ' + gamestats["gameinfo"]["round"] + '}'
+                                             )
     except Exception as ex:
         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
         error_msg = template.format(type(ex).__name__, ex.args)
@@ -229,11 +240,64 @@ def handler(event, context):
             message += "\nState machine failed."
             logger.error(message)
             return message
-            
+
+    try:
+        events = []
+        new_player_events = announce_new_players(gamestats, real_names)
+        new_server_events = announce_new_server(server_item)
+        events.extend(new_player_events)
+        events.extend(new_server_events)
+
+        if len(events) > 0:
+            response = event_client.put_events(Entries=events)
+    except Exception as ex:
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        error_msg = template.format(type(ex).__name__, ex.args)
+        message = "Failed to announce new players via event bridge in " + gamestats["gameinfo"]["match_id"] + "\n" + error_msg
+        logger.error(message)
+        return message
+    else:
+        if response and response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            logger.info("Submitted new player event(s)")
+        else:
+            logger.warning("Bad response from event bridge " + str(response))
+            message += "Failed to announce new players\n."
+            logger.error(message)
+
     logger.info(message)
     time_to_write = str(round((_time.time() - t1), 3))
     logger.info(f"Time to write {total_items} items is {time_to_write} s")
     return message
+
+
+def announce_new_players(gamestats, real_names):
+    """Put event about new players for discord announcement."""
+    events = []
+    for player_wrapper in gamestats["stats"]:
+        for playerguid, stat in player_wrapper.items():
+            if playerguid not in real_names:
+                logger.info("New guid event: " + playerguid + " as " + stat["alias"])
+                tmp_event = event_template.copy()
+                tmp_event["Detail"] = json.dumps({"notification_type": "new player",
+                                                  "guid": playerguid,
+                                                  "alias": stat["alias"]})
+                events.append(tmp_event)
+    return events
+
+
+def announce_new_server(server_item):
+    """Put event about new server for discord announcement."""
+    events = []
+
+    if server_item:
+        logger.info("New server event")
+        tmp_event = event_template.copy()
+        tmp_event["Detail"] = json.dumps({"notification_type": "new server",
+                                          "server_name": server_item["sk"],
+                                          "server_region": server_item["region"]})
+        events.append(tmp_event)
+    return events
+
 
 def prepare_playerinfo_list(stats, sk):
     """Make a list of guids to retrieve from ddb."""
@@ -255,6 +319,7 @@ def prepare_playerinfo_list(stats, sk):
 #     logger.info("New statsall has " + str(len(stats_tmp)) + " players in a " + str(type(stats_tmp)))
 #     return stats_tmp
 
+
 def get_batch_items(item_list, ddb_table, dynamodb, log_stream_name):
     """Get items in a batch."""
     item_info = "get_batch_items. Logstream: " + log_stream_name
@@ -268,6 +333,7 @@ def get_batch_items(item_list, ddb_table, dynamodb, log_stream_name):
         else:
             logger.warning("Items do not exist" + item_info)
     return result
+
 
 def integrity_checks(gamestats):
     """Check if gamestats valid for any known things."""
@@ -286,7 +352,7 @@ def integrity_checks(gamestats):
         integrity = False
         message = "No stats in " + gamestats["gameinfo"].get('match_id', 'na')
         return integrity, message
-    
+
     if len(gamestats["stats"]) < 5:
         integrity = False
         message = "Number of players is less than 3v3, not saving."
@@ -299,9 +365,11 @@ def integrity_checks(gamestats):
 
     return integrity, message
 
+
 def add_team_info(gamestats):
+    """Add a new element with teams and players in one string."""
     teams = "TeamA:error;TeamB:error"
-    
+
     try:
         new_total_stats = {}
         new_total_stats["dummy"] = convert_stats_to_dict(gamestats["stats"])
@@ -312,17 +380,17 @@ def add_team_info(gamestats):
         error_msg = template.format(type(ex).__name__, ex.args)
         message = "Failed to make teams" + error_msg
         logger.warning(message)
-    
-    return teams  
+
+    return teams
 
 
 if __name__ == "__main__":
-    #not working since sqs was introduced. Finniky json double quotes
-    event = {
-    "Records": [
-                    {
-                    "body": "{\"Records\":[{\"s3\":{\"bucket\":{\"name\":\"rtcwprostats\"},\"object\":{\"key\":\"intake/20210916-144606-1631803341.txt\"}}}]}"
-                    }
-        ]
-    }
+    # not working since sqs was introduced. Finniky json double quotes
+    event = {"Records":
+             [
+                 {
+                     "body": "{\"Records\":[{\"s3\":{\"bucket\":{\"name\":\"rtcwprostats\"},\"object\":{\"key\":\"intake/20210916-144606-1631803341.txt\"}}}]}"
+                 }
+             ]
+             }
     # print("Test result" + handler(event, None))

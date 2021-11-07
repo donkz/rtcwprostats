@@ -1,8 +1,6 @@
 import logging
 import boto3
 import json
-import time as _time
-import os
 
 log_level = logging.INFO
 logging.basicConfig(format='%(name)s:%(levelname)s:%(message)s')
@@ -11,14 +9,14 @@ logger.setLevel(log_level)
 
 s3 = boto3.resource('s3')
 
+
 def handler(event, context):
     """Read new incoming json and submit it to the DB."""
-    
     # sqs event source
     s3_request_from_sqs = event['Records'][0]
     bucket_name = s3_request_from_sqs['s3']['bucket']['name']
     file_key    = s3_request_from_sqs['s3']['object']['key']
-    dlq_key = file_key.replace("intake","reader_dlq")
+    dlq_key = file_key.replace("intake", "reader_dlq")
 
     logger.info('Copying {} to read_dlq'.format(file_key))
 
@@ -29,12 +27,12 @@ def handler(event, context):
     bucket = s3.Bucket(bucket_name)
     new_obj = bucket.Object(dlq_key)
     new_obj.copy(copy_source)
-    
+
     logger.info('Deleting object {}'.format(file_key))
     s3.Object(bucket_name, file_key).delete()
-    
+
     logger.info('Done')
-    
+
 
 if __name__ == "__main__":
     event_str = """
@@ -80,8 +78,3 @@ if __name__ == "__main__":
     """
     event = json.loads(event_str)
     handler(event, None)
-    
-    
-
-
-

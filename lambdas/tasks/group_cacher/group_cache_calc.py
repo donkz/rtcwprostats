@@ -118,9 +118,9 @@ def emulate_stats_api(stats_dict_updated, teamA, teamB, aliases, match_region_ty
     
     for guid, player_stat in stats_dict_updated.items():
         
-        team = "Allied"
+        team = "TeamB"
         if guid in teamA:
-            team = "Axis"
+            team = "TeamA"
             
         player_wrapper = {}
         player_wrapper[guid] = {}
