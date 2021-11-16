@@ -9,6 +9,7 @@ import aws_cdk.aws_sns as sns
 
 from aws_cdk.aws_dynamodb import Table
 
+
 class PostProcessStack(Stack):
     """Make a step function state machine with lambdas doing the work."""
 
@@ -66,11 +67,11 @@ class PostProcessStack(Stack):
                 'RTCWPROSTATS_TABLE_NAME': ddb_table.table_name,
             }
         )
-        
+
         discord_match_notify_lambda = _lambda.Function(
             self, 'discord-match-notify-lambda',
             function_name='rtcwpro-discord-match-notify',
-            code=_lambda.Code.from_asset('lambdas\postprocessing\discord'),
+            code=_lambda.Code.from_asset('lambdas/postprocessing/discord'),
             handler='discord-match-notify.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
             role=ddb_lambda_role,
@@ -105,19 +106,20 @@ class PostProcessStack(Stack):
         #                            message=sfn.TaskInput.from_text("Process success!")
         #                            )
 
-        Round1Processing = tasks.LambdaInvoke(self, "Process gamelog", input_path="$.matchid", lambda_function=gamelog_lambda)
-        
+        Round1Processing = tasks.LambdaInvoke(self, "Discord round1 notify", lambda_function=discord_match_notify_lambda)
+
         Discordmatch = tasks.LambdaInvoke(self, "Discord match notify", input_path="$.matchid", lambda_function=discord_match_notify_lambda)
-        ELO = tasks.LambdaInvoke(self, "Calculate Elo", input_path="$.matchid", result_path="$.Payload",lambda_function=elo_lambda).next(Discordmatch)
+        ELO = tasks.LambdaInvoke(self, "Calculate Elo", input_path="$.matchid", result_path="$.Payload", lambda_function=elo_lambda).next(Discordmatch)
         Summary = tasks.LambdaInvoke(self, "Summarize stats", input_path="$.matchid", lambda_function=summary_lambda)
+        Gamelog = tasks.LambdaInvoke(self, "Process gamelog", input_path="$.matchid", lambda_function=gamelog_lambda)
 
         Round2Processing = sfn.Parallel(self, "Do the work in parallel")
         Round2Processing.branch(ELO)
         Round2Processing.branch(Summary)
+        Round2Processing.branch(Gamelog)
 
-        # Round2Processing.branch(wSummary)
         Round2Processing.add_catch(send_failure_notification)
-        #Round2Processing.next(success)
+        # Round2Processing.next(success)
 
         choice = sfn.Choice(self, "Round 1 or 2")
 
@@ -126,8 +128,9 @@ class PostProcessStack(Stack):
         choice.otherwise(send_failure_notification)
 
         postproc_state_machine = sfn.StateMachine(self, "ProcessMatchData",
-                         definition=choice,
-                         timeout=Duration.minutes(5)
-                         )
-        
+                                                  definition=choice,
+                                                  timeout=Duration.minutes(5),
+                                                  state_machine_type=sfn.StateMachineType.EXPRESS
+                                                  )
+
         self.postproc_state_machine = postproc_state_machine

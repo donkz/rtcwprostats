@@ -42,7 +42,7 @@ post_process_stack = PostProcessStack(app, "rtcwprostats-postprocess", lambda_tr
 
 reader = ReadMatchStack(app, "rtcwprostats-reader", storage_bucket=storage.storage_bucket, ddb_table=database.ddb_table, read_queue=storage.read_queue, read_dlq=storage.read_dlq, postproc_state_machine=post_process_stack.postproc_state_machine, custom_event_bus=custom_bus_stack.custom_bus, lambda_tracing=lambda_tracing, env=env)
 retriever = DeliveryRetrieverStack(app, "rtcwprostats-retriever", ddb_table=database.ddb_table, env=env, lambda_tracing=lambda_tracing)
-delivery_writer = DeliveryWriterStack(app, "rtcwprostats-delivery-writer", ddb_table=database.ddb_table, funnel_sf=task_funnel_stack.funnel_state_machine, env=env, lambda_tracing=lambda_tracing)
+delivery_writer = DeliveryWriterStack(app, "rtcwprostats-delivery-writer", ddb_table=database.ddb_table, funnel_sf=task_funnel_stack.funnel_state_machine, custom_event_bus=custom_bus_stack.custom_bus, env=env, lambda_tracing=lambda_tracing)
 
 apistack = APIStack(app, "rtcwprostats-API", cert_arn=cert_arn, api_key=api_key, storage_bucket=storage.storage_bucket, env=env, lambda_tracing=lambda_tracing)
 DNSStack(app, "rtcwprostats-DNS", api=apistack.api, env=env, dns_resource_name=dns_resource_name, hosted_zone_id=hosted_zone_id, zone_name=zone_name)

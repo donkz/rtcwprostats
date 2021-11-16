@@ -9,6 +9,7 @@ import aws_cdk.aws_sns as sns
 
 from aws_cdk.aws_dynamodb import Table
 
+
 class TaskFunnelStack(Stack):
     """Make a step function state machine with lambdas doing the work."""
 
@@ -18,9 +19,9 @@ class TaskFunnelStack(Stack):
         fail_topic = sns.Topic(self, "Funnel Failure Topic")
 
         funnel_lambda_role = iam.Role(self, "Lambda-funnel-role",
-                                   role_name='rtcwpro-lambda-funnel-role',
-                                   assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
-                                   )
+                                      role_name='rtcwpro-lambda-funnel-role',
+                                      assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+                                      )
         funnel_lambda_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('service-role/AWSLambdaBasicExecutionRole'))
         ddb_table.grant_read_write_data(funnel_lambda_role)
 
@@ -55,10 +56,9 @@ class TaskFunnelStack(Stack):
         choice.otherwise(send_failure_notification)
 
         funnel_state_machine = sfn.StateMachine(self, "ProcessMatchData",
-                         definition=choice,
-                         timeout=Duration.minutes(5)
-                         )
-        
+                                                definition=choice,
+                                                timeout=Duration.minutes(5),
+                                                state_machine_type=sfn.StateMachineType.EXPRESS
+                                                )
+
         self.funnel_state_machine = funnel_state_machine
-
-

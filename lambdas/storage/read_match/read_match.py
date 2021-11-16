@@ -243,7 +243,7 @@ def handler(event, context):
 
     try:
         events = []
-        new_player_events = announce_new_players(gamestats, real_names)
+        new_player_events = announce_new_players(gamestats, real_names, match_type)
         new_server_events = announce_new_server(server_item)
         events.extend(new_player_events)
         events.extend(new_server_events)
@@ -270,7 +270,7 @@ def handler(event, context):
     return message
 
 
-def announce_new_players(gamestats, real_names):
+def announce_new_players(gamestats, real_names, match_type):
     """Put event about new players for discord announcement."""
     events = []
     for player_wrapper in gamestats["stats"]:
@@ -280,7 +280,8 @@ def announce_new_players(gamestats, real_names):
                 tmp_event = event_template.copy()
                 tmp_event["Detail"] = json.dumps({"notification_type": "new player",
                                                   "guid": playerguid,
-                                                  "alias": stat["alias"]})
+                                                  "alias": stat["alias"],
+                                                  "match_type" : match_type})
                 events.append(tmp_event)
     return events
 
