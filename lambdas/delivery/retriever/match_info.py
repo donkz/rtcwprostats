@@ -224,6 +224,12 @@ def convert_stats_to_dict(stats):
         stats_tmp.update(stats[1])
     else:
         stats_tmp = {}
+        i = 0
         for player in stats:
+            if list(player.keys())[0] in stats_tmp:
+                i = i + 1
+                # quick fix to keep duplicate cd key players
+                # no need to care what happens to their stats
+                player = {(list(player.keys())[0][0:-1] + str(i)): player[list(player.keys())[0]]}
             stats_tmp.update(player)
     return stats_tmp

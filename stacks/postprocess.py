@@ -13,7 +13,11 @@ from aws_cdk.aws_dynamodb import Table
 class PostProcessStack(Stack):
     """Make a step function state machine with lambdas doing the work."""
 
-    def __init__(self, scope: Construct, id: str, lambda_tracing, ddb_table: Table, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, 
+                 lambda_tracing, 
+                 ddb_table: Table, 
+                 gamelog_lambda: _lambda.Function, 
+                 **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         fail_topic = sns.Topic(self, "Postprocessing Failure Topic")
@@ -31,20 +35,6 @@ class PostProcessStack(Stack):
             function_name='rtcwpro-elo',
             code=_lambda.Code.from_asset('lambdas/postprocessing/elo'),
             handler='elo.handler',
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            role=ddb_lambda_role,
-            tracing=lambda_tracing,
-            timeout=Duration.seconds(30),
-            environment={
-                'RTCWPROSTATS_TABLE_NAME': ddb_table.table_name,
-            }
-        )
-
-        gamelog_lambda = _lambda.Function(
-            self, 'gamelog-lambda',
-            function_name='rtcwpro-gamelog',
-            code=_lambda.Code.from_asset('lambdas/postprocessing/gamelog'),
-            handler='gamelog.handler',
             runtime=_lambda.Runtime.PYTHON_3_8,
             role=ddb_lambda_role,
             tracing=lambda_tracing,

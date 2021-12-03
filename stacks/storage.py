@@ -3,12 +3,9 @@ from constructs import Construct
 
 import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_iam as iam
-import aws_cdk.aws_lambda as _lambda
 import aws_cdk.aws_sns as sns
 import aws_cdk.aws_sqs as sqs
 import aws_cdk.aws_s3_notifications as s3n
-
-from aws_cdk.aws_dynamodb import Table
 
 
 class StorageStack(Stack):

@@ -35,15 +35,9 @@ def handler(event, context):
 
     logger.info("Processing match id " + match_id)
     
-    process_rtcwpro_summary(ddb_table, ddb_client, match_id, log_stream_name)
+    message = process_rtcwpro_summary(ddb_table, ddb_client, match_id, log_stream_name)
 
-    return {
-        'statusCode': 200,
-        'headers': {
-            'Content-Type': 'text/plain'
-        },
-        'body': 'Summary function finished without exceptions.'
-    }
+    return {"Final Message" : message}
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ from aws_cdk.aws_dynamodb import Table
 class TaskFunnelStack(Stack):
     """Make a step function state machine with lambdas doing the work."""
 
-    def __init__(self, scope: Construct, id: str, lambda_tracing, ddb_table: Table, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, lambda_tracing, ddb_table: Table, gamelog_lambda: _lambda.Function, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         fail_topic = sns.Topic(self, "Funnel Failure Topic")
@@ -44,9 +44,10 @@ class TaskFunnelStack(Stack):
                                                      integration_pattern=sfn.IntegrationPattern.REQUEST_RESPONSE,
                                                      message=sfn.TaskInput.from_text("Process Failure")
                                                      )
-
-        group_cacher_task = tasks.LambdaInvoke(self, "Group Cache Task", lambda_function=group_cacher_lambda)
-        group_cacher_task.add_catch(send_failure_notification)
+        
+        gamelog_lambda_task = tasks.LambdaInvoke(self, "Group Cache Awards", input_path="$.Payload.group_name", lambda_function=gamelog_lambda)
+        group_cacher_task = tasks.LambdaInvoke(self, "Group Cache Task", lambda_function=group_cacher_lambda).next(gamelog_lambda_task)
+        gamelog_lambda_task.add_catch(send_failure_notification)
 
         choice = sfn.Choice(self, "What task?")
 
@@ -55,7 +56,7 @@ class TaskFunnelStack(Stack):
         # choice.when(sfn.Condition.number_equals("$.tasktype", "new_server"), new_server_task)
         choice.otherwise(send_failure_notification)
 
-        funnel_state_machine = sfn.StateMachine(self, "ProcessMatchData",
+        funnel_state_machine = sfn.StateMachine(self, "Task Funnel",
                                                 definition=choice,
                                                 timeout=Duration.minutes(5),
                                                 state_machine_type=sfn.StateMachineType.EXPRESS

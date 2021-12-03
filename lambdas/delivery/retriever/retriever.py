@@ -267,6 +267,16 @@ def handler(event, context):
         else:
             data = response
             
+        pk = "groupawards"
+        sk = group_name
+        award_response = get_item(pk, sk, ddb_table, log_stream_name)
+        if "error" not in award_response:
+            data["awards"] = award_response["data"]
+        else:
+            data["awards"] = {"error" : "Award cache was not found in database."}
+            logger.error(award_response["error"])
+            
+            
     if api_path == "/wstats/group/{group_name}":
         logger.info("Processing " + api_path)
         group_name = urllib.parse.unquote(event["pathParameters"]["group_name"])
@@ -276,7 +286,7 @@ def handler(event, context):
         sk = group_name
         response = get_item(pk, sk, ddb_table, log_stream_name)
 
-        # logic specific to /stats/group/{group_name}
+        # logic specific to /wstats/group/{group_name}
         if "error" not in response:
             data = json.loads(response["data"])
         else:
@@ -369,7 +379,7 @@ def handler(event, context):
     if api_path == "/leaders/{category}/region/{region}/type/{type}" or api_path == "/leaders/{category}/region/{region}/type/{type}/limit/{limit}":
         logger.info("Processing " + api_path)
 
-        category = event["pathParameters"]["category"]
+        category = urllib.parse.unquote(event["pathParameters"]["category"])
         region = event["pathParameters"]["region"]
         type_ = event["pathParameters"]["type"]
         
@@ -380,8 +390,13 @@ def handler(event, context):
             
         logger.info("Parameters: " + category + " " + region + " " + type_)
 
-        pk = "leader" + category + "#" + region + "#" + type_
-        projection = "pk, gsi1sk, real_name, games"
+
+        projection = "pk, gsi1sk, real_name"
+        if category.lower() in ["longest kill"]:
+            pk = "leader#Longest Kill"
+        else:
+            pk = "leader" + category + "#" + region + "#" + type_
+            projection += ", games"
         
         response = get_leaders(pk, ddb_table, projection, limit, log_stream_name)
         data = process_leader_response(response)
@@ -791,6 +806,7 @@ def process_player_response(response):
     data["aggwstats"] = {}
     data["kdr"] = {}
     data["acc"] = {}
+    data["achievements"] = {}
     data["real_name"] = ""
     data["last_seen"] = ""
 
@@ -812,6 +828,8 @@ def process_player_response(response):
                 if "aggwstats#" in  item["sk"]:
                     data["aggwstats"][item["sk"].replace("aggwstats#","")] = item["data"]
                     data["acc"][item["gsi1pk"].replace("leaderacc#","")] = float(item["gsi1sk"])
+                if "achievement#" in  item["sk"]:
+                    data["achievements"][item["sk"].replace("achievement#","")] = float(item["gsi1sk"])
         except:
             item_info = "unkown"
             if len(response) > 0:
@@ -833,7 +851,7 @@ def process_leader_response(response):
                leader_line['real_name'] = item.get("real_name","no_name#")
                leader_line['value'] = float(item["gsi1sk"])
                leader_line['guid'] = item["pk"].split("#")[1]
-               leader_line['games'] = int(item.get("games",0)) 
+               leader_line['games'] = int(item.get("games",-1)) 
                data.append(leader_line)
         except:
             item_info = "unkown"
@@ -940,7 +958,7 @@ if __name__ == "__main__":
     event_str_player_guid = '''
     {
     "resource": "/player/{player_guid}",
-    "pathParameters": {"player_guid": "fbe2ed832f8415efbaaa5df10074484a" }
+    "pathParameters": {"player_guid": "5379320f3c64f43cdaf3350fc13011ce" }
     }
     '''
     
@@ -1022,6 +1040,17 @@ if __name__ == "__main__":
     }
     '''
     
+    event_str_leader_ach = '''
+    {
+      "resource": "/leaders/{category}/region/{region}/type/{type}",
+      "pathParameters": {
+        "category": "Longest Kill",
+        "region": "xx",
+        "type": "xxx"
+      }
+    }
+    '''
+    
     event_str_eloprogress_guid = '''
     {
       "resource": "/eloprogress/player/{player_guid}/region/{region}/type/{type}",
@@ -1053,7 +1082,7 @@ if __name__ == "__main__":
     event_str_stats_group = '''
     {
       "resource": "/stats/group/{group_name}",
-      "pathParameters":{"group_name":"gather15943"}
+      "pathParameters":{"group_name":"gather-sub-cipher-1638166212"}
     }
     '''
     event_str_wstats_group = '''
@@ -1063,5 +1092,5 @@ if __name__ == "__main__":
     }
     '''
  
-    event = json.loads(event_str_stats_player_region_type)
-    print(handler(event, None))
+    event = json.loads(event_str_stats_group)
+    print(handler(event, None)['body'])

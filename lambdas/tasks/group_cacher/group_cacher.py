@@ -1,6 +1,7 @@
 import boto3
 import logging
 import os
+import json
 from group_cache_calc import process_rtcwpro_summary
 
 # for local testing use actual table
@@ -30,7 +31,7 @@ def handler(event, context):
     group_name = event["taskdetail"]
     logger.info("Processing match group: " + group_name)
     process_rtcwpro_summary(ddb_table, ddb_client, group_name, log_stream_name)
-    return {"result": "ok"}
+    return {"group_name": json.dumps(group_name)}
 
 
 if __name__ == "__main__":
