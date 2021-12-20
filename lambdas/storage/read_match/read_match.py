@@ -99,7 +99,8 @@ def handler(event, context):
         error_msg = template.format(type(ex).__name__, ex.args)
         # Todo expand these
         message = "Failed to read content from " + file_key + "\n" + error_msg
-        return message
+        logger.error(message)
+        raise
 
     integrity, message = integrity_checks(gamestats)
     if not integrity:

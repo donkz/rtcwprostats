@@ -1,3 +1,15 @@
+try:
+    from gamelog_process.longest_kill import LongestKill
+    from gamelog_process.frontliner import Frontliner
+    from gamelog_process.megakill import MegaKill
+    from gamelog_process.top_feuds import TopFeuds
+except:
+    print("Debug imports")
+    from longest_kill import LongestKill
+    from frontliner import Frontliner
+    from megakill import MegaKill
+    from top_feuds import TopFeuds
+
 import logging
 from botocore.exceptions import ClientError
 import json
@@ -6,9 +18,6 @@ from boto3.dynamodb.conditions import Key
 import math
 from datetime import datetime
 import time as _time
-
-from gamelog_process.longest_kill import LongestKill
-from gamelog_process.frontliner import Frontliner
 
 log_level = logging.INFO
 logging.basicConfig(format='%(name)s:%(levelname)s:%(message)s')
@@ -21,14 +30,16 @@ def process_gamelog(ddb_table, ddb_client, match_or_group_id, log_stream_name):
     # Put individual award calculator classes into an array 
     award_classes = [
         LongestKill(),
-        Frontliner()
+        Frontliner(),
+        MegaKill(),
+        TopFeuds()
         ]
-    achievment_award_names = ["Longest Kill"]
+    achievment_award_names = ["Longest Kill", "MegaKill"]
     
     is_single_match = isinstance(match_or_group_id, int)
     is_group = not is_single_match
 
-    gamelog_all = get_multi_round_gamelog_array(ddb_table, match_or_group_id,log_stream_name, is_single_match)
+    gamelog_all, match_region_type = get_multi_round_gamelog_array(ddb_table, match_or_group_id,log_stream_name, is_single_match)
     
     # Loop through all events in the match or a group
     for rtcw_event in gamelog_all:
@@ -38,28 +49,35 @@ def process_gamelog(ddb_table, ddb_client, match_or_group_id, log_stream_name):
     
     potential_achievements = {}
     awards = {}
+    top_feuds = []
     for class_ in award_classes:
         if is_single_match and class_.award_name in achievment_award_names:
-                potential_achievements.update(class_.get_full_results())
+            potential_achievements.update(class_.get_full_results())
         if is_group:
-            awards.update(class_.get_all_top_results())
-            
-    
-     
+            if isinstance(class_, TopFeuds):
+                try:
+                    top_feuds = class_.get_custom_results()
+                except Exception as ex:
+                    template = "Top Feuds: An exception of type {0} occurred. Arguments:\n{1!r}"
+                    error_msg = template.format(type(ex).__name__, ex.args)
+                    logger.error(error_msg)
+            else:   
+                awards.update(class_.get_all_top_results())
+
     # only perform achievements per match (round 2)
     # by the time group is created, all personal achievements had been processed
     if is_single_match:
         logger.info("Updating achievements for a single match.")
-        real_names = get_real_names(potential_achievements, ddb_table)
-        update_achievements(ddb_table, ddb_client, potential_achievements, log_stream_name, real_names)
+        real_names = get_real_names(potential_achievements, [],  ddb_table)
+        update_achievements(ddb_table, ddb_client, potential_achievements, log_stream_name, real_names, match_region_type)
     
     if is_group:
         logger.info("Saving cache for a group of matches.")
-        real_names = get_real_names(awards, ddb_table)
-        cache_group_awards(ddb_table, awards, match_or_group_id, real_names)
+        real_names = get_real_names(awards, top_feuds, ddb_table)
+        cache_group_awards(ddb_table, awards, top_feuds, match_or_group_id, real_names)
 
 
-def cache_group_awards(ddb_table, awards, match_or_group_id, real_names):
+def cache_group_awards(ddb_table, awards, top_feuds, match_or_group_id, real_names):
     """Cache results of the top awards for groups."""
     
     awards_with_names = {}
@@ -69,10 +87,22 @@ def cache_group_awards(ddb_table, awards, match_or_group_id, real_names):
             real_name = real_names.get(guid, "no_name")
             awards_with_names[award][real_name] = award_table[guid]
     
+    feuds_with_names = []
+    for feud in top_feuds:
+        # ['a928daaba6dbdb67ba9b392c3966b22e', '75955f0e5c3daa77a2e9250357195dbf', 3, 0]
+        feuds_with_names.append([
+            real_names.get(feud[0], "no_name"),
+            real_names.get(feud[1], "no_name"),
+            feud[2],
+            feud[3]
+            ]
+            )
+    
     item = {
         'pk': "groupawards",
         'sk': match_or_group_id,
-        'data': awards_with_names
+        'data': awards_with_names,
+        'top_feuds': feuds_with_names
     }
     ddb_put_item(item, ddb_table)
     logger.info("Cached group awards under " + "pk: groupawards"+ " sk: " + match_or_group_id)
@@ -81,12 +111,17 @@ def cache_group_awards(ddb_table, awards, match_or_group_id, real_names):
 def get_multi_round_gamelog_array(ddb_table, match_or_group_id, log_stream_name, is_single_match):
     """Based on the list of matches get their gamelogs for both rounds."""
     matches = []
+    match_region_type = "na#6"
     if is_single_match:
         matches.append(match_or_group_id)
+        match_response = ddb_table.query(KeyConditionExpression=Key("pk").eq("match") & Key("sk").begins_with(str(match_or_group_id)), Limit=1, ScanIndexForward=False)
+        if len(match_response.get("Items",[])) > 0:
+            match_region_type = "#".join(match_response["Items"][0]["lsipk"].split("#")[0:2])
     else:
         group_response = ddb_table.query(KeyConditionExpression=Key("pk").eq("group") & Key("sk").begins_with(match_or_group_id), Limit=1, ScanIndexForward=False)
         if len(group_response.get("Items",[])) > 0:
             matches = json.loads(group_response["Items"][0]["data"])
+            match_region_type = "#".join(group_response["Items"][0]["lsipk"].split("#")[0:2])
             
     big_item_list = []
     for match_id in matches: 
@@ -100,26 +135,28 @@ def get_multi_round_gamelog_array(ddb_table, match_or_group_id, log_stream_name,
     for gamelog_item in gamelog_responses:
         gamelog_all.extend(json.loads(gamelog_item["data"]))
     
-    return gamelog_all
+    return gamelog_all, match_region_type
 
 
-def update_achievements(ddb_table, ddb_client, potential_achievements, log_stream_name, real_names):
+def update_achievements(ddb_table, ddb_client, potential_achievements, log_stream_name, real_names, match_region_type):
     """Update personal achievments for each player."""
     big_item_list = []
     
     for award, award_table in potential_achievements.items():
         for guid in award_table:
-            big_item_list.append({"pk": "player#" + guid, "sk": "achievement#" + award})
+            big_item_list.append({"pk": "player#" + guid, "sk": "achievement#" + award + "#" + match_region_type})
     
-    logger.info("Getting achievements for " + str(len(big_item_list)) + " matches.")
+    logger.info("Getting achievements for " + str(len(big_item_list)) + " values.")
     achievments_old_response = get_big_batch_items(big_item_list, ddb_table, log_stream_name)
+    logger.info("Got achievements for " + str(len(achievments_old_response)) + " values.")
+    
     achievments_old = {}
     for achievement_item in achievments_old_response:
         guid = achievement_item["pk"].split("#")[1]
         achievement_code = achievement_item["sk"].split("#")[1]
         achievments_old[guid + "#" + achievement_code] = float(achievement_item["gsi1sk"])
     
-    update_achievement_items = ddb_prepare_achievement_items(potential_achievements, achievments_old, real_names)
+    update_achievement_items = ddb_prepare_achievement_items(potential_achievements, achievments_old, real_names, match_region_type)
     
     # submit updated summaries
     items = []
@@ -129,7 +166,7 @@ def update_achievements(ddb_table, ddb_client, potential_achievements, log_strea
         try:
             ddb_batch_write(ddb_client, ddb_table.name, items)
         except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            template = "gamelog_calc.ddb_batch_write: An exception of type {0} occurred. Arguments:\n{1!r}"
             error_msg = template.format(type(ex).__name__, ex.args)
             message = "Failed to insert achievements for a match.\n" + error_msg
         else:
@@ -186,7 +223,7 @@ def get_big_batch_items(big_item_list, ddb_table, log_stream_name):
     return big_response
 
 
-def ddb_prepare_achievement_items(potential_achievements, achievments_old, real_names):
+def ddb_prepare_achievement_items(potential_achievements, achievments_old, real_names, match_region_type):
     items = []
     ts = datetime.now().isoformat()
     for achievement, achievement_table in potential_achievements.items():
@@ -194,9 +231,9 @@ def ddb_prepare_achievement_items(potential_achievements, achievments_old, real_
             if int(player_value) > int(achievments_old.get(guid + "#" + achievement,0)):
                 item = {
                     'pk'            : "player"+ "#" + guid,
-                    'sk'            : "achievement#" + achievement,
+                    'sk'            : "achievement#" + achievement + "#" + match_region_type,
                     'lsipk'         : "achievement#" + ts,
-                    'gsi1pk'        : "leader#" + achievement,
+                    'gsi1pk'        : "leader#" + achievement + "#" + match_region_type,
                     'gsi1sk'        : str(player_value).zfill(6),
                     "real_name"     : real_names.get(guid, "no_name#")
                 }
@@ -204,8 +241,8 @@ def ddb_prepare_achievement_items(potential_achievements, achievments_old, real_
     return items
 
 
-def get_real_names(potential_achievements, ddb_table):
-    real_name_item_list = prepare_playerinfo_list(potential_achievements, "realname")
+def get_real_names(potential_achievements, top_feuds, ddb_table):
+    real_name_item_list = prepare_playerinfo_list(potential_achievements, top_feuds, "realname")
     response = get_batch_items(real_name_item_list, ddb_table, "real_names")
     real_names = {}
     if "error" not in response:
@@ -215,13 +252,23 @@ def get_real_names(potential_achievements, ddb_table):
     return real_names
 
             
-def prepare_playerinfo_list(potential_achievements, sk):
+def prepare_playerinfo_list(potential_achievements, top_feuds, sk):
     """Make a list of guids to retrieve from ddb."""
     item_list = []
+    unique_guids = {}
     for achievement, achievement_table in potential_achievements.items(): 
         for guid, player_stats in achievement_table.items():
             if {"pk": "player#" + guid, "sk": sk} not in item_list:
                 item_list.append({"pk": "player#" + guid, "sk": sk})
+                unique_guids[guid] = 1
+    
+    for feud in top_feuds:
+        if feud[0] not in unique_guids:
+            item_list.append({"pk": "player#" + feud[0], "sk": sk})
+            unique_guids[feud[0]] = 1
+        if feud[1] not in unique_guids:
+            item_list.append({"pk": "player#" + feud[1], "sk": sk})
+            unique_guids[feud[1]] = 1
     return item_list
 
 

@@ -47,7 +47,7 @@ def process_rtcwpro_summary(ddb_table, ddb_client, match_id, log_stream_name):
     aggwstats_item_list = prepare_playerinfo_list(stats, "aggwstats#" + match_region_type)
     item_list.extend(aggwstats_item_list)
     
-    killpeak_item_list = prepare_playerinfo_list(stats, "killpeak#" + match_region_type)
+    killpeak_item_list = prepare_playerinfo_list(stats, "achievement#Killpeak#" + match_region_type)
     item_list.extend(killpeak_item_list)
     
     response = get_batch_items(item_list, ddb_table, log_stream_name)
@@ -67,7 +67,7 @@ def process_rtcwpro_summary(ddb_table, ddb_client, match_id, log_stream_name):
                     real_names[guid] = result["data"]
                 if "aggwstats" in result["sk"]:
                     wstats_old[guid] = result["data"]
-                if "killpeak" in result["sk"]:
+                if "achievement#Killpeak#" in result["sk"]:
                     killpeak_old[guid] = result["data"]
     else:
         if "Items do not exist" in response["error"]:
@@ -320,9 +320,9 @@ def ddb_prepare_killpeak_items(stats, killpeak_old, match_region_type, real_name
         if int(player_stat.get("categories", {}).get("killpeak",0)) > int(killpeak_old.get(guid,0)):
             item = {
                 'pk'            : "player"+ "#" + guid,
-                'sk'            : "killpeak#" + match_region_type,
+                'sk'            : "achievement#Killpeak#" + match_region_type,
                 # 'lsipk'         : "",
-                'gsi1pk'        : "leaderkillpeak#" + match_region_type,
+                'gsi1pk'        : "leader#Killpeak#" + match_region_type,
                 'gsi1sk'        : str(player_stat["categories"]["killpeak"]).zfill(3),
                 'data'          : str(player_stat["categories"]["killpeak"]),
                 'games'         : -1,

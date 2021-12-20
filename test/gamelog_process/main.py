@@ -10,7 +10,10 @@ logger.setLevel(log_level)
 
 url_api = 'https://rtcwproapi.donkanator.com/'
 api_path = "gamelogs/"
-match_id = "1630953060"  # get more from https://rtcwproapi.donkanator.com/matches/type/na/6. Use match_round_id value
+# match_id = "1639976879" 
+match_id = "1639975736" 
+# match_id = "1639975094" 
+# match_id = "1639376151"  # get more from https://rtcwproapi.donkanator.com/matches/type/na/6. Use match_round_id value
 round_id = "1"
 url = url_api + api_path + match_id + round_id
 
@@ -44,21 +47,30 @@ gamelog.extend(gamelog_r2)
 
 from longest_kill import LongestKill
 from frontliner import Frontliner
+from megakill import MegaKill
+from top_feuds import TopFeuds
 # add your class here
 
 longest_kill = LongestKill()
 frontliner = Frontliner()
+megakill = MegaKill()
+top_feuds = TopFeuds()
 # init your class here
 
 # Loop through all events in the match or a group and feed events to different award calculator classes
 for rtcw_event in gamelog:
     longest_kill.process_event(rtcw_event)
     frontliner.process_event(rtcw_event)
+    megakill.process_event(rtcw_event)
+    top_feuds.process_event(rtcw_event)
     # your_class.process_event(rtcw_event)
 
 awards = {}
 awards.update(longest_kill.get_all_top_results())
 awards.update(frontliner.get_all_top_results())
+awards.update(megakill.get_all_top_results())
 # insert your result here
+
+print(top_feuds.get_custom_results())
 
 print(awards)

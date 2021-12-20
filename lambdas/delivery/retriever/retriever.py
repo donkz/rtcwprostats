@@ -272,6 +272,8 @@ def handler(event, context):
         award_response = get_item(pk, sk, ddb_table, log_stream_name)
         if "error" not in award_response:
             data["awards"] = award_response["data"]
+            if "top_feuds" in award_response:
+                data["top_feuds"] = award_response["top_feuds"]
         else:
             data["awards"] = {"error" : "Award cache was not found in database."}
             logger.error(award_response["error"])
@@ -390,10 +392,9 @@ def handler(event, context):
             
         logger.info("Parameters: " + category + " " + region + " " + type_)
 
-
         projection = "pk, gsi1sk, real_name"
-        if category.lower() in ["longest kill"]:
-            pk = "leader#Longest Kill"
+        if category.lower() not in ["elo", "kdr", "acc"]:
+            pk = "leader#" + category + "#" + region + "#" + type_
         else:
             pk = "leader" + category + "#" + region + "#" + type_
             projection += ", games"
@@ -1044,9 +1045,9 @@ if __name__ == "__main__":
     {
       "resource": "/leaders/{category}/region/{region}/type/{type}",
       "pathParameters": {
-        "category": "Longest Kill",
-        "region": "xx",
-        "type": "xxx"
+        "category": "Killpeak",
+        "region": "na",
+        "type": "6"
       }
     }
     '''
@@ -1082,7 +1083,7 @@ if __name__ == "__main__":
     event_str_stats_group = '''
     {
       "resource": "/stats/group/{group_name}",
-      "pathParameters":{"group_name":"gather-sub-cipher-1638166212"}
+      "pathParameters":{"group_name":"gather-Wednesday-1637863062"}
     }
     '''
     event_str_wstats_group = '''

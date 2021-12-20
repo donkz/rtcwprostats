@@ -4,7 +4,6 @@ from constructs import Construct
 import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_lambda as _lambda
-import aws_cdk.aws_s3_notifications as s3n
 import aws_cdk.aws_sqs as sqs
 import aws_cdk.aws_stepfunctions as sfn
 import aws_cdk.aws_events as events
@@ -17,13 +16,13 @@ class ReadMatchStack(Stack):
     """Lambda to react to incoming files."""
 
     def __init__(self, scope: Construct, id: str,
-                 lambda_tracing,
+                 storage_bucket: s3.Bucket,
                  ddb_table: Table,
                  read_queue: sqs.Queue,
                  read_dlq: sqs.Queue,
-                 storage_bucket: s3.Bucket,
                  postproc_state_machine: sfn.StateMachine,
                  custom_event_bus: events.IEventBus,
+                 lambda_tracing,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
@@ -72,7 +71,8 @@ class ReadMatchStack(Stack):
             code=_lambda.Code.from_asset('lambdas/storage/read_match_dlq'),
             role=read_dlq_role,
             tracing=lambda_tracing,
-            timeout=Duration.seconds(10)
+            timeout=Duration.seconds(10),
+            retry_attempts=0
         )
 
         read_dlq.grant_consume_messages(read_dlq_role)

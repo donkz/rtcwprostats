@@ -12,26 +12,42 @@ s3 = boto3.resource('s3')
 
 def handler(event, context):
     """Read new incoming json and submit it to the DB."""
+    """Read new incoming json and submit it to the DB."""
     # sqs event source
-    s3_request_from_sqs = event['Records'][0]
-    bucket_name = s3_request_from_sqs['s3']['bucket']['name']
-    file_key    = s3_request_from_sqs['s3']['object']['key']
-    dlq_key = file_key.replace("intake", "reader_dlq")
-
-    logger.info('Copying {} to read_dlq'.format(file_key))
-
-    copy_source = {
-        'Bucket': bucket_name,
-        'Key': file_key
-    }
-    bucket = s3.Bucket(bucket_name)
-    new_obj = bucket.Object(dlq_key)
-    new_obj.copy(copy_source)
-
-    logger.info('Deleting object {}'.format(file_key))
-    s3.Object(bucket_name, file_key).delete()
-
-    logger.info('Done')
+    # logger.info("EVENT\n")
+    # logger.info(json.dumps(event))
+    # logger.info("/EVENT\n")
+    
+    try:
+        s3_request_from_sqs = json.loads(event['Records'][0]["body"])
+        
+        # logger.info("BODY/RECORD/0\n")
+        # logger.info(json.dumps(s3_request_from_sqs['Records'][0]))
+        # logger.info("/BODY/RECORD/0\n")
+        
+        bucket_name = s3_request_from_sqs['Records'][0]['s3']['bucket']['name']
+        file_key    = s3_request_from_sqs['Records'][0]['s3']['object']['key']
+        dlq_key = file_key.replace("intake", "reader_dlq")
+    
+        logger.info('Copying {} to read_dlq'.format(file_key))
+    
+        copy_source = {
+            'Bucket': bucket_name,
+            'Key': file_key
+        }
+        bucket = s3.Bucket(bucket_name)
+        new_obj = bucket.Object(dlq_key)
+        new_obj.copy(copy_source)
+    
+        logger.info('Deleting object {}'.format(file_key))
+        s3.Object(bucket_name, file_key).delete()
+    
+        logger.info('Done')
+    except Exception as ex:
+        # very important to exit the function without an error, otherwise SQS processing will occur in a loop
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        error_msg = template.format(type(ex).__name__, ex.args)
+        logger.error(error_msg)
 
 
 if __name__ == "__main__":
