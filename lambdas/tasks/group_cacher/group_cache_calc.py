@@ -25,6 +25,8 @@ def process_rtcwpro_summary(ddb_table, ddb_client, group_name, log_stream_name):
     item_list.extend(prepare_stats_item_list(matches,"statsall"))
     item_list.extend(prepare_stats_item_list(matches,"wstatsall"))
     item_list.extend(prepare_matches_item_list(matches))
+    
+    logger.info("Getting basics stats, wstats, matches for number of items: " + str(len(item_list)))
     responses = get_batch_items(item_list, ddb_table, log_stream_name)
 
     match_dict= {}
@@ -40,6 +42,7 @@ def process_rtcwpro_summary(ddb_table, ddb_client, group_name, log_stream_name):
                 stats_dict[response["sk"]] = json.loads(response["data"])
             if response["pk"] == "match":
                 match_dict[response["sk"]] = json.loads(response["data"])
+        logger.info("Got basic stats for number of items: " + str(len(responses)))
     else:
         logger.error("Failed to retrieve any group data:" + group_name)
         logger.error(json.dumps(response))
@@ -49,7 +52,7 @@ def process_rtcwpro_summary(ddb_table, ddb_client, group_name, log_stream_name):
     new_total_stats = {}
     for match_id, stats in stats_dict.items():
         new_total_stats[match_id] = convert_stats_to_dict(stats)
-    
+        
     new_total_wstats = {}
     for match_id, wstats in wstats_dict.items():
         new_wstats = {}
@@ -79,8 +82,9 @@ def process_rtcwpro_summary(ddb_table, ddb_client, group_name, log_stream_name):
         wstats_old = wstats_dict_updated.copy()
     wstats_standard_response = emulate_wstats_api(wstats_dict_updated, group_name)
     
+    elos = get_elos(new_total_stats, ddb_table, match_region_type, log_stream_name)
     match_summary = build_new_match_summary(match_dict, team_mapping)
-    stats_standard_response = emulate_stats_api(stats_dict_updated, teamA, teamB, aliases, match_region_type, group_name, match_summary)
+    stats_standard_response = emulate_stats_api(stats_dict_updated, teamA, teamB, aliases, match_region_type, group_name, match_summary, elos)
     
     group_item = ddb_prepare_group_item(group_response, alias_team_str, match_summary)
     stats_item = ddb_prepare_stat_item("stats", stats_standard_response, match_region_type, group_name)
@@ -100,21 +104,40 @@ def process_rtcwpro_summary(ddb_table, ddb_client, group_name, log_stream_name):
         message = "Failed to submit aggregate stats for a group to database " + group_name + "\n" + error_msg
         logger.info(message)
     else:
-        message = "Elo progress records inserted.\n"
+        message = "Group cache records inserted.\n"
     
     time_to_write = str(round((_time.time() - t1), 3))
     logger.info(f"Time to process summaries is {time_to_write} s")
     message += "Group was cached"
     return message
 
+def get_elos(new_total_stats, ddb_table, match_region_type, log_stream_name):
+    item_list = []
+    item_list.extend(prepare_elo_item_list(new_total_stats, match_region_type))
+    
+    logger.info("Getting elos for number of items: " + str(len(item_list)))
+    responses = get_batch_items(item_list, ddb_table, log_stream_name)
+    
+    elos = {}
+    if "error" not in responses and len(responses) > 0:
+        logger.info("Got elos for number of items: " + str(len(responses)))
+        for response in responses:
+            guid = response["pk"].split("#")[1]
+            elo = int(response["data"])
+            real_name = response["real_name"]
+            elos[guid] = [real_name, elo]
+    else:
+        logger.error("group_cache_calc.get_elos failed to get any results back.")
+    return elos
 
-def emulate_stats_api(stats_dict_updated, teamA, teamB, aliases, match_region_type, group_name, match_summary):
+def emulate_stats_api(stats_dict_updated, teamA, teamB, aliases, match_region_type, group_name, match_summary, elos):
     """ Convert current wstats summary to json format consistent with raw match data."""
     response = {}
     response["statsall"] = []
     response["match_id"] = "group " + group_name
     response["type"] = match_region_type
     response["match_summary"] = match_summary
+    response["elos"] = elos
     
     for guid, player_stat in stats_dict_updated.items():
         
@@ -159,9 +182,14 @@ def build_new_stats_summary(stats, stats_old):
             else:
                 stats_dict_new[guid][metric] = int(metrics[metric])
         
-        new_acc = metrics["hits"]/metrics["shots"]
+        shots = 1
+        if metrics["shots"] > 0:
+            shots = metrics["shots"]
+        new_acc = metrics["hits"]/shots
         stats_dict_new[guid]["accuracy"] = int(new_acc)
         
+        if stats_dict_new[guid]["kills"] + stats_dict_new[guid]["deaths"] == 0:
+            efficiency = 100*stats_dict_new[guid]["kills"]/1
         efficiency = 100*stats_dict_new[guid]["kills"]/(stats_dict_new[guid]["kills"] + stats_dict_new[guid]["deaths"])                
         stats_dict_new[guid]["efficiency"] = int(efficiency)
         stats_dict_new[guid]["killpeak"] = max(stats_dict_new[guid].get("killpeak",0),metrics.get("killpeak",0))
@@ -212,20 +240,13 @@ def make_error_dict(message, item_info):
     """Make an error message for API gateway."""
     return {"error": message + " " + item_info}
 
-def prepare_playerinfo_list(stats, sk):
-    """Make a list of guids to retrieve from ddb."""
-    item_list = []
-    for guid, player_stats in stats.items():
-        item_list.append({"pk": "player#" + guid, "sk": sk})
-    return item_list
-
 
 def get_batch_items(item_list, ddb_table, log_stream_name):
     """Get items in a batch."""
     dynamodb = boto3.resource('dynamodb')
     item_info = "get_batch_items. Logstream: " + log_stream_name
     try:
-        response = dynamodb.batch_get_item(RequestItems={ddb_table.name: {'Keys': item_list, 'ProjectionExpression': 'pk, sk, #data_value, gsi1pk', 'ExpressionAttributeNames': {'#data_value': 'data'}}}, ReturnConsumedCapacity='NONE') #10 RCU 
+        response = dynamodb.batch_get_item(RequestItems={ddb_table.name: {'Keys': item_list, 'ProjectionExpression': 'pk, sk, #data_value, gsi1pk, real_name', 'ExpressionAttributeNames': {'#data_value': 'data'}}}, ReturnConsumedCapacity='NONE') #10 RCU 
     except ClientError as e:
         logger.warning("Exception occurred: " + e.response['Error']['Message'])
         result = make_error_dict("[x] Client error calling database: ", item_info)
@@ -291,6 +312,17 @@ def prepare_stats_item_list(matches, pk):
         item_list.append({"pk": pk, "sk": str(match)})
     return item_list
 
+def prepare_elo_item_list(new_total_stats, match_region_type):
+    """Make a list of stats or wstats to retrieve from ddb."""
+    item_list = []
+    guids = []
+    for match, stats in new_total_stats.items():
+        for guid in stats.keys():
+            if guid not in guids:
+                item_list.append({"pk": "player#" + guid, "sk": "elo#" + match_region_type})
+                guids.append(guid)
+    return item_list
+
 def ddb_batch_write(client, table_name, items):
         messages = ""
         num_items = len(items)
@@ -342,3 +374,23 @@ def ddb_batch_write(client, table_name, items):
             start += 25
             
 # print(matchinfo["match_id"].ljust(12) + matchinfo["round"].ljust(2) + matchinfo["map"].ljust(20) + matchinfo["winner"].ljust(10))
+
+
+#not used
+def get_elo_progress(ddb_table, match_id, log_stream_name):
+    """Get several items by pk and range of sk."""
+    item_info = "pk: eloprogressmatch, sk: " + match_id + ". Logstream: " + log_stream_name
+    projections = projections = "#data_value, gsi1sk, elo, real_name"    
+    expressionAttributeNames = {'#data_value' : 'data'} # knee deep
+
+    try:
+        response = ddb_table.query(IndexName="gsi1",KeyConditionExpression=Key("gsi1pk").eq("eloprogressmatch") & Key("gsi1sk").eq(match_id), ProjectionExpression=projections, ExpressionAttributeNames=expressionAttributeNames)
+    except ClientError as e:
+        logger.warning("Exception occurred: " + e.response['Error']['Message'])
+        result = make_error_dict("[x] Client error calling database: ", item_info)
+    else:
+        if response['Count'] > 0:
+            result = response['Items']
+        else:
+            result = make_error_dict("[x] Items do not exist: ", item_info)
+    return result
