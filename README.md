@@ -1,4 +1,10 @@
 
+## ----
+## project moved to the rtcwpro organization
+## https://github.com/rtcwmp-com/rtcwprostats
+## what remains here is a personal archive
+## ----
+
 # RTCWPro Stats developer doc
 
 This project is build to collect RTCWPro stats submitted by servers after the end of each round. The solution is built in a modern pipeline design fashion where data is:
